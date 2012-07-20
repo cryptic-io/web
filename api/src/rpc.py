@@ -1,10 +1,17 @@
-#default meta object
-default_meta = {
-    "args":[],
-    "read_post_data":True
-}
+from src.metadata import ArgType
 
 def echo_meta():
-    return {}
+    return {
+        "args":{
+            "echo": {
+                "type":ArgType.STRING,
+                "required":True
+            }
+        }
+    }
+
 def echo_rpc(args,env):
-    return args
+    if "echo" in args:
+        return {"echo":args["echo"]}
+    else:
+        return {}
