@@ -4,9 +4,8 @@ def echo_meta():
     return {
         "args":{
             "echo": {
-                "type":ArgType.STRING,
-                "required":True,
-                "maxlength":5
+                "type":ArgType.INTEGER,
+                "required":True
             }
         }
     }
