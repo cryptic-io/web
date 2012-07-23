@@ -1,4 +1,5 @@
 import pprint
+import re
 
 #default meta object
 default_meta = {
@@ -19,7 +20,9 @@ default_arg_meta = {
     "minlength":0,
     "maxlength":0,
     "minvalue":0,
-    "maxvalue":0
+    "maxvalue":0,
+    "regex":False,
+    "not_regex":False
 }
 
 #Begin processessing the metadata object
@@ -52,7 +55,7 @@ def confirm_arg_general(data,arg,arg_meta):
     else:
         raise MetadataError("missing arg '"+arg+"'")
 
-#Checks a string (minlength,maxlength)
+#Checks a string (minlength,maxlength,regex,not_regex)
 def confirm_string(data,arg,arg_meta):
     if not isinstance(data[arg],str):
         raise MetadataError("'"+arg+"' not a string")
@@ -60,6 +63,10 @@ def confirm_string(data,arg,arg_meta):
         raise MetadataError("'"+arg+"' too short")
     elif arg_meta["maxlength"] and len(data[arg]) > arg_meta["maxlength"]:
         raise MetadataError("'"+arg+"' too long")
+    elif arg_meta["regex"] and re.search(arg_meta["regex"],data[arg]) == None:
+        raise MetadataError("'"+arg+"' is invalid")
+    elif arg_meta["not_regex"] and re.search(arg_meta["not_regex"],data[arg]) != None:
+        raise MetadataError("'"+arg+"' is invalid")
     else:
         return True
 
