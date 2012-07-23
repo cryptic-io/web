@@ -47,7 +47,7 @@ def dispatch(method,env):
                 
             #process the metadata, do the method
             args = src.metadata.process(meta,data_json)
-            return getattr(src.rpc,method_rpc)(data_json,env)
+            return getattr(src.rpc,method_rpc)(args,env)
 
         else:
             return getattr(src.rpc,method_rpc)({},env)
