@@ -11,7 +11,7 @@ class ArgType:
     STRING  =1
     INTEGER =2
     OBJECT  =3
-    LIST    =4
+    ARRAY   =4
 
 #default arg object
 default_arg_meta = {
@@ -52,7 +52,7 @@ def confirm_arg_general(data,arg,arg_meta):
     else:
         raise MetadataError("missing arg '"+arg+"'")
 
-#Checks a string
+#Checks a string (minlength,maxlength)
 def confirm_string(data,arg,arg_meta):
     if not isinstance(data[arg],str):
         raise MetadataError("'"+arg+"' not a string")
@@ -63,7 +63,7 @@ def confirm_string(data,arg,arg_meta):
     else:
         return True
 
-#Checks an integer
+#Checks an integer (minvalue,maxvalue)
 def confirm_integer(data,arg,arg_meta):
     if not isinstance(data[arg],int):
         raise MetadataError("'"+arg+"' not an integer")
@@ -74,11 +74,31 @@ def confirm_integer(data,arg,arg_meta):
     else:
         return True
 
+#Checks an object ()
+def confirm_object(data,arg,arg_meta):
+    if not isinstance(data[arg],dict):
+        raise MetadataError("'"+arg+"' not an object")
+    else: 
+        return True
+
+#Checks an array (minlength,maxlength)
+def confirm_array(data,arg,arg_meta):
+    if not isinstance(data[arg],list):
+        raise MetadataError("'"+arg+"' not an array")
+    elif arg_meta["minlength"] and len(data[arg]) < arg_meta["minlength"]:
+        raise MetadataError("'"+arg+"' too short")
+    elif arg_meta["maxlength"] and len(data[arg]) > arg_meta["maxlength"]:
+        raise MetadataError("'"+arg+"' too long")
+    else:
+        return True
+
 #Used as a switch statement (bootleg, but probably more efficient)
 #Each ArgType has it's own function
 argtype_switch = {
     ArgType.STRING:     confirm_string,
-    ArgType.INTEGER:    confirm_integer
+    ArgType.INTEGER:    confirm_integer,
+    ArgType.OBJECT:     confirm_object,
+    ArgType.ARRAY:      confirm_array
 }
 
 

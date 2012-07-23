@@ -4,8 +4,8 @@ def echo_meta():
     return {
         "args":{
             "echo": {
-                "type":ArgType.INTEGER,
-                "required":True
+                "type":ArgType.ARRAY,
+                "required":True,
             }
         }
     }
