@@ -1,4 +1,4 @@
-import pprint
+from pprint import pprint
 import json
 import src.metadata
 import src.rpc
@@ -53,7 +53,7 @@ def dispatch(method,env):
             return getattr(src.rpc,method_rpc)({},env)
 
     #procs if eithere method_meta or method_rpc don't exist
-    except AttributeError:
+    except AttributeError as e:
         return {"error":"invalid method"}
 
     #procs if json isn't valid

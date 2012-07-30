@@ -108,8 +108,6 @@ argtype_switch = {
     ArgType.ARRAY:      confirm_array
 }
 
-
-
 class MetadataError(Exception):
     def __init__(self,error):
         self.error = error
