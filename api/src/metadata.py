@@ -13,6 +13,7 @@ class ArgType:
     INTEGER =2
     OBJECT  =3
     ARRAY   =4
+    ANY     =5
 
 #default arg object
 default_arg_meta = {

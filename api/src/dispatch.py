@@ -20,7 +20,7 @@ def discovery(env):
     if method == '':
         return {"error":"no method"}
     else:
-        ret_obj = dispatch(method,env)
+        ret_obj = {"return":dispatch(method,env)}
         ret_obj['method'] = method
         return ret_obj
 
