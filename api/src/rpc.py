@@ -1,8 +1,10 @@
 from src.metadata import ArgType
 from pprint import pprint
 import pylib.mongo
+import pylib.user
 
 '''
+====================================================
     createUser
         @(str)username
         @(str)password
@@ -22,15 +24,13 @@ def createUser_meta():
         }
     }
 def createUser_rpc(args,env):
-    pylib.mongo.users().insert({
-        "u": args["username"],
-        "p": args["password"],
-        "b": ""
-    })
-    return "success"
-
+    if pylib.user.createUser(username,password):
+        return "success"
+    else: 
+        {"error":"username taken"}
 
 '''
+====================================================
     getUserBlob
         @(str)username
         =(str)blob
@@ -45,13 +45,14 @@ def getUserBlob_meta():
         }
     }
 def getUserBlob_rpc(args,env):
-    mongoObj = pylib.mongo.users().find_one({"u":args["username"]})
-    if mongoObj == None:
+    mongoObj = pylib.user.getUserBlob(args["username"])
+    if blob == False:
         return {"error":"user doesn't exist"}
     else:
-        return mongoObj["b"]
+        return blob
 
 '''
+====================================================
     updateUserBlob
         @(str)username
         @(str)newblob
@@ -70,5 +71,7 @@ def updateUserBlob_meta():
         }
     }
 def updateUserBlob_rpc(args,env):
-    pylib.mongo.users().update({"u":args["username"]},{"$set":{"b":args["newBlob"]}})
-    return "success"
+    if pylib.user.updateUserBlob(args["username"],args["newblob"]):
+        return "success"
+    else:
+        return {"error":"user doesn't exist"}
