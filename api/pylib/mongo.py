@@ -1,13 +1,18 @@
 import pymongo
 
 def connection():
+    '''Returns a Connection object which connects to the proper mongo instance.'''
     return pymongo.Connection()
 
 def users():
-    return ConnectionExt(connection().crypticcandy.users)
+    '''Returns a CollectionExt object for the users collection'''
+    return CollectionExt(connection().crypticcandy.users)
 
 
-class ConnectionExt():
+class CollectionExt():
+    '''Used to extend the functionality of pymongo.collection.Collection, mostly
+    to make sure safe is always on'''
+
     def __init__(self,coll):
         self.coll = coll
 
