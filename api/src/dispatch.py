@@ -6,16 +6,16 @@ import src.rpc
 from src.metadata import MetadataError
 
 
-#handles all the bytes nonsense, after this function no other part of the api should
-#half to handle string to bytes conversion. Passes off the rest to discovery
 def application(env, start_response):
+    '''Entry point for uwsgi, calls discovery which returns an object. Turns
+    that object into a json_str, encodes that into bytes, and sends it back'''
     start_response('200 OK', [('Content-Type','application/json')])
     obj = discovery(env)
     json_str = json.dumps(obj)
     return bytes(json_str,'utf8')
 
-#Discovers the method (or errors), sends the request down to dispatch
 def discovery(env):
+    '''Figures out the method, dispatches the method'''
     method = env['REQUEST_URI'].split('/')[-1]
     if method == '':
         return {"error":"no method"}
@@ -24,8 +24,8 @@ def discovery(env):
         ret_obj['method'] = method
         return ret_obj
 
-#Dispatches the user given method
 def dispatch(method,env):
+    '''Determines the method's metadata, calls the method if everything is ok'''
     method_meta = method+"_meta"
     method_rpc = method+"_rpc"
     try:

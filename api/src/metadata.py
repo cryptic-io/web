@@ -26,8 +26,9 @@ default_arg_meta = {
     "not_regex":False
 }
 
-#Begin processessing the metadata object
 def process(meta,data):
+    '''Begins processing metadata object for a method. Checks all args and calls 
+    the confirm_ method for that type'''
     ret = {}
     #Each key in meta is the name of a request argument, the object attached
     #to that key is the metadata requirements for that argument's value
@@ -43,12 +44,14 @@ def process(meta,data):
 
     return ret
 
-#Returns True if key arg in data is value when checked against meta
-#Returns False if it should be ignored
-#Will raise an exception if it's not valid
 def confirm_arg_general(data,arg,arg_meta):
-    #Check if arg is even required, if so and it's present send data
-    #off to appropriate method through the use of the argtype_switch dict
+    '''Does the check for an arg.
+
+    True if arg is in data and it is valid
+    False if it should be ignored (not required)
+    Will raise exception on error
+
+    '''
     if arg in data:
         return argtype_switch[arg_meta["type"]](data,arg,arg_meta)
     elif not arg_meta["required"]:
@@ -56,8 +59,12 @@ def confirm_arg_general(data,arg,arg_meta):
     else:
         raise MetadataError("missing arg '"+arg+"'")
 
-#Checks a string (minlength,maxlength,regex,not_regex)
 def confirm_string(data,arg,arg_meta):
+    '''Checks a string
+
+    minlength,maxlength,regex,not_regex
+
+    '''
     if not isinstance(data[arg],str):
         raise MetadataError("'"+arg+"' not a string")
     elif arg_meta["minlength"] and len(data[arg]) < arg_meta["minlength"]:
@@ -71,8 +78,12 @@ def confirm_string(data,arg,arg_meta):
     else:
         return True
 
-#Checks an integer (minvalue,maxvalue)
 def confirm_integer(data,arg,arg_meta):
+    '''Checks an integer
+
+    minvalue,maxvalue
+
+    '''
     if not isinstance(data[arg],int):
         raise MetadataError("'"+arg+"' not an integer")
     elif arg_meta["minvalue"] and data[arg] < arg_meta["minvalue"]:
@@ -82,15 +93,20 @@ def confirm_integer(data,arg,arg_meta):
     else:
         return True
 
-#Checks an object ()
 def confirm_object(data,arg,arg_meta):
+    '''Checks an object'''
     if not isinstance(data[arg],dict):
         raise MetadataError("'"+arg+"' not an object")
     else: 
         return True
 
-#Checks an array (minlength,maxlength)
+
 def confirm_array(data,arg,arg_meta):
+    '''Checks an array
+
+    minlength,maxlength
+
+    '''
     if not isinstance(data[arg],list):
         raise MetadataError("'"+arg+"' not an array")
     elif arg_meta["minlength"] and len(data[arg]) < arg_meta["minlength"]:

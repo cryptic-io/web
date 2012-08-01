@@ -3,14 +3,10 @@ from pprint import pprint
 import pylib.mongo
 import pylib.user
 
-'''
-====================================================
-    createUser
-        @(str)username
-        @(str)password
-        ="success"
-'''
+'''==================================================================='''
+
 def createUser_meta():
+'''Creates a user '''
     return {
         "args":{
             "username": {
@@ -29,13 +25,10 @@ def createUser_rpc(args,env):
     else: 
         {"error":"username taken"}
 
-'''
-====================================================
-    getUserBlob
-        @(str)username
-        =(str)blob
-'''
+'''==================================================================='''
+
 def getUserBlob_meta():
+'''Gets a user's blob'''
     return {
         "args":{
             "username": {
@@ -51,14 +44,10 @@ def getUserBlob_rpc(args,env):
     else:
         return blob
 
-'''
-====================================================
-    updateUserBlob
-        @(str)username
-        @(str)newblob
-        =(str)blob
-'''
+'''==================================================================='''
+
 def updateUserBlob_meta():
+'''Updates a user's blob'''
     return {
         "args":{
             "username": {
