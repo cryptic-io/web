@@ -5,7 +5,7 @@ import cgi
 import os
 import pylib.mongo
 import pylib.user
-import pylib.file
+import pylib.fs
 
 '''==================================================================='''
 
@@ -79,16 +79,22 @@ def uploadFile_meta():
     }
 def uploadFile_rpc(args,env):
     form = cgi.FieldStorage(fp=env['wsgi.input'], environ=env) 
-    if "file" in form:
-        fileitem = form["file"]
-        filename = os.path.basename(fileitem.filename) 
-        fh = open(config.upload_root+filename, 
-                  'wb', 
-                  config.upload_buffer_size)
-        for chunk in pylib.file.fbuffer(fileitem.file):
-            fh.write(chunk)
-        fh.close()
-        return "success"
-    else:
+    if not "file" in form:
         return {"error":"no file"}
+
+    fileitem = form["file"]
+    filename = os.path.basename(fileitem.filename) 
+
+    if len(filename) < 3:
+        return {"error":"filename too short"}
+    path = os.path.join(config.upload_root,filename[0],filename[1])+os.sep
+    pylib.fs.mkdir_p(path)
+
+    fh = open(path+filename, 
+              'wb', 
+              config.upload_buffer_size)
+    for chunk in pylib.fs.fbuffer(fileitem.file):
+        fh.write(chunk)
+    fh.close()
+    return "success"
 
