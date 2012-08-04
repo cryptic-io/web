@@ -72,7 +72,21 @@ def updateUserBlob_rpc(args,env):
 '''==================================================================='''
 
 def uploadFile_meta():
-    '''handles the uploading of a file'''
+    '''Handles the uploading of a file
+
+    This method doesn't use the standard json object queries the others
+    do, since it would mean the entire uplaoded file would have to fit
+    into memory. Instead it uses a standard multi-part form and the cgi
+    module to get all it's info, including reading and writing the file
+    in chunks so as to not use all the memory.
+
+    The file will be put in a directory structure consisting of the
+    uploading root (set in config.py), followed by a directory whose name
+    is the first letter of the filename, followed by a directory whose
+    name is the second letter of the filename, followed by the filename
+    itself.
+
+    '''
     return {
         "args":{},
         "read_post_data":False
@@ -93,7 +107,7 @@ def uploadFile_rpc(args,env):
     fh = open(path+filename, 
               'wb', 
               config.upload_buffer_size)
-    for chunk in pylib.fs.fbuffer(fileitem.file):
+    for chunk in pylib.fs.fbuffer(fileitem.file, config.upload_buffer_size):
         fh.write(chunk)
     fh.close()
     return "success"

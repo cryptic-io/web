@@ -1,8 +1,7 @@
-import config
 import os
 import errno
 
-def fbuffer(f, chunk_size=config.upload_buffer_size):
+def fbuffer(f, chunk_size):
     '''Generator to buffer file chunks'''  
     while True:
         chunk = f.read(chunk_size)
@@ -10,6 +9,7 @@ def fbuffer(f, chunk_size=config.upload_buffer_size):
         yield chunk
 
 def mkdir_p(path):
+    '''Safely make sure a structure of directories exists'''
     try:
         os.makedirs(path)
     except OSError as exc: # Python >2.5
