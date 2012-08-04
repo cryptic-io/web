@@ -1,12 +1,16 @@
+import config
 from src.metadata import ArgType
 from pprint import pprint
+import cgi
+import os
 import pylib.mongo
 import pylib.user
+import pylib.file
 
 '''==================================================================='''
 
 def createUser_meta():
-'''Creates a user '''
+    '''Creates a user'''
     return {
         "args":{
             "username": {
@@ -28,7 +32,7 @@ def createUser_rpc(args,env):
 '''==================================================================='''
 
 def getUserBlob_meta():
-'''Gets a user's blob'''
+    '''Gets a user's blob'''
     return {
         "args":{
             "username": {
@@ -47,7 +51,7 @@ def getUserBlob_rpc(args,env):
 '''==================================================================='''
 
 def updateUserBlob_meta():
-'''Updates a user's blob'''
+    '''Updates a user's blob'''
     return {
         "args":{
             "username": {
@@ -64,3 +68,27 @@ def updateUserBlob_rpc(args,env):
         return "success"
     else:
         return {"error":"user doesn't exist"}
+
+'''==================================================================='''
+
+def uploadFile_meta():
+    '''handles the uploading of a file'''
+    return {
+        "args":{},
+        "read_post_data":False
+    }
+def uploadFile_rpc(args,env):
+    form = cgi.FieldStorage(fp=env['wsgi.input'], environ=env) 
+    if "file" in form:
+        fileitem = form["file"]
+        filename = os.path.basename(fileitem.filename) 
+        fh = open(config.upload_root+filename, 
+                  'wb', 
+                  config.upload_buffer_size)
+        for chunk in pylib.file.fbuffer(fileitem.file):
+            fh.write(chunk)
+        fh.close()
+        return "success"
+    else:
+        return {"error":"no file"}
+
