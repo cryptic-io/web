@@ -5,7 +5,6 @@ import src.rpc
 
 from src.metadata import MetadataError
 
-
 def application(env, start_response):
     '''Entry point for uwsgi, calls discovery which returns an object. Turns
     that object into a json_str, encodes that into bytes, and sends it back'''

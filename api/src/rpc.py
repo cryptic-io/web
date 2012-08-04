@@ -3,6 +3,7 @@ from src.metadata import ArgType
 from pprint import pprint
 import cgi
 import os
+import errno
 import pylib.mongo
 import pylib.user
 import pylib.fs
@@ -101,14 +102,11 @@ def uploadFile_rpc(args,env):
 
     if len(filename) < 3:
         return {"error":"filename too short"}
-    path = os.path.join(config.upload_root,filename[0],filename[1])+os.sep
+    path = config.upload_root+pylib.fs.upload_relpath(filename)
     pylib.fs.mkdir_p(path)
 
-    fh = open(path+filename, 
-              'wb', 
-              config.upload_buffer_size)
-    for chunk in pylib.fs.fbuffer(fileitem.file, config.upload_buffer_size):
-        fh.write(chunk)
-    fh.close()
-    return "success"
+    with open(path+filename, 'wb', config.upload_buffer_size) as fh:
+        for chunk in pylib.fs.fbuffer(fileitem.file, config.upload_buffer_size):
+            fh.write(chunk)
 
+    return "success"
