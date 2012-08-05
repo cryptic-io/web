@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+
+<head>
+    <script data-main="js/main.js" src="js/require.js"></script>
+</head>
+
+<body>
+    <p>
+        There is no GUI just yet still working on the backend JS, you can access the File Model through the console.
+        You can use model.get('file') to inspect the uploaded file. 
+    </P>
+    <br/>
+    <p>
+        model.split(1024) to split the file into kilobytes
+    </p>
+    <br/>
+    <p>
+        model.generateKey() to generate the encryption key
+    </p>
+    <br/>
+    <p>
+        model.getBinary(function(bin){ console.log('encrypted data is',model.encryptBinary(bin))}); // to encrypt the file
+    </p>
+    <br/>
+    <p>
+        look in models/File.js for more stuff to do
+    </p>
+    <br/>
+    <p>
+        if you upload a music file you can run playMusic() to play the song in the browser
+    </p>
+
+    
+
+    <div id="musicPlayer">
+    </div>
+
+</body>
+
+<script type="text/template" id="file-input-template">
+    <input type="file" id="file-input"></input>
+
+
+
+</script>
+
+<script type="text/template" id="music-template">
+    <audio controls=controls>
+        <source src="<%=dataURL%>">
+    </audio>
+</script>
+
+
+</html>
+
