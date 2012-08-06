@@ -1,5 +1,5 @@
 //returns the file model
-define(function(){ 
+define(['tools/uploader'],function(Uploader){ 
     return Backbone.Model.extend({
 
         defaults:{
@@ -10,12 +10,30 @@ define(function(){
              * reader: FileReader obj
              *
             */
+
+           chunkSize : 1e5 // 100 Kbytes
+           , uploadURL: 'api/uploadFile'
+           , manifest: {
+               fileName:''
+               , chunks:[] //array of objects containing the chunkNumber and chunk location
+               , chunkSize:0
+               , secretKey:''
+               , "content-type":''
+               , fileSize:''
+
+           }
+           , uploader: (new Uploader())
+
         },
 
         initialize: function(){
             this.set('reader',new FileReader());
 
             var file = this.get('file');
+
+            this.on('keyReady', this.syncManifest, this)
+
+            this.generateKey()
 
             this.set('privateManifest', {
                 type: file.type,
@@ -34,8 +52,9 @@ define(function(){
         //   { start: 1025, end: 2048 }
         //   ...
         //]
-        split: function(chunkSize) {
+        split: function() {
             var file = this.get('file');
+            var chunkSize = this.get("chunkSize")
 
             var counter = 0;
             var chunks = [];
@@ -50,7 +69,6 @@ define(function(){
             }
 
             this.set('chunks',chunks)
-            this.set('chunkSize',chunkSize)
             return chunks;
         },
 
@@ -75,10 +93,6 @@ define(function(){
 
             //lets start reading
             reader.readAsBinaryString(blob)
-
-
-
-
         },
 
         //returns the whole binary string through a callback that should accept a parameter for the binary string data
@@ -107,6 +121,7 @@ define(function(){
                 //check if we are done reading the file
                 if (event.target.readyState == FileReader.DONE){
                     callback(event.target.result) //call the callback with the binary data
+                    
                 }
 
             }, this)
@@ -115,43 +130,50 @@ define(function(){
             reader.readAsDataURL(file);
         },
 
-        //returns a public manifest file that only has the file chunksize and the number of chunks
-        getPublicManifest: function(){
-            return {
-                chunkSize: this.get('chunkSize'),
-                chunkNumber: this.get('chunks').length,
-            }
+        logChunkInManifest: function(chunkNumber, chunkFileName){
+            var manifest = this.get('manifest');
+            manifest.chunks.push({chunkNumber:chunkNumber,chunkFileName:chunkFileName});
         },
 
-        //returns a private manifest file that has a description and title 
-        getPrivateManifest: function(){
+        syncManifest: function(){
+            var file = this.get('file');
+            var manifest = this.get('manifest');
+
+            manifest.fileName = file.name;
+            manifest.fileSize = file.size;
+            manifest.contentType = file.type;
+            manifest.chunkSize = this.get('chunkSize');
+            manifest.secretKey = this.getKey();
+
+            this.set('manifest',manifest);
+
+            console.log('key is ready, and manifest is synced');
+
         },
 
         //Generates the encryption key, returns false if not ready
         generateKey: function(){
+            if (this.has('key')) return true;
             if (sjcl.random.isReady()){
                 this.set("key",sjcl.random.randomWords(4));
+
+                console.log('triggering keyReady')
+                this.trigger('keyReady');
                 return true;
             }
-            return false
+            setTimeout(this.generateKey, 1e3) 
         },
 
-        //Returns a base 32 representation of the key, with words separated by |
+        //Returns a base 64 representation of the key
         getKey: function() {
             var key = this.get('key');
-            //turn it into base 32
-            key = _.map(key, function(number){ return number.toString(32) } );
 
-            return key.join('|')
+            return sjcl.codec.base64.fromBits(key)
         },
 
-        //interpretes a base 32 representation of the key separated by a pipe ( | )
+        //interpretes a base 64 representation of the key
         setKey: function(key){
-            var key = key.split('|')
-            key = _.map(key, function(number){ return parseInt(number, 32) } )
-            console.log('key is now',key);
-
-            this.set('key',key);
+            this.set('key', sjcl.codec.base64.toBits(key))
         },
 
         //Decrypts given binary
@@ -166,6 +188,74 @@ define(function(){
             }
 
             console.error('no encryption key set');
+        },
+
+        encryptBinaryChunk: function(chunkNumber, callback){
+            if (chunkNumber > this.get('chunks').length){
+                return "Error, chunk number out of range";
+            }
+            var encryptedData = '';
+
+            this.getBinaryChunk(chunkNumber, _.bind(function(data){
+                debugger;
+                encryptedData = this.encryptBinary(data);
+                callback(encryptedData);
+            },this) )
+        },
+
+        uploadBinary: function(binaryData, fileName, callback){
+            var uploader = this.get('uploader');
+            uploader.send(this.get('uploadURL'), binaryData, fileName, callback)
+        },
+
+        getRandomFileName: function(){
+            return sjcl.codec.base64.fromBits(sjcl.random.randomWords(8));
+        },
+
+        /* 
+         *  This high level function 
+         *
+         *  splits the file into manageable chunks,
+         *  encrypts the chunks,
+         *  uploads the encrypted chunks and stores the chunk locations 
+         *  and chunk info in the private manifest
+         *  
+         *
+         */
+
+        upload: function(){
+            var chunks = this.split();
+            var manifest = this.get('manifest');
+
+            var complete = _.after(chunks.length, _.bind( this.trigger, this, 'uploadComplete') )  //async event trigger to be executed when all the chunks have been uploaded
+
+
+            _.each(chunks, function(chunk, chunkNumber){
+
+                this.encryptBinaryChunk(chunkNumber, _.bind(function(encryptedData){
+
+                    //create a random file name for the chunk to live under
+                    var randomFileName = this.getRandomFileName();
+
+                    this.uploadBinary(encryptedData,randomFileName,_.bind(function(response){
+                        //Check to see if the response is successful
+                        response = JSON.parse(response);
+                        if (response.return == "success"){
+                        
+                            //log the chunk in the manifest
+                            this.logChunkInManifest(chunkNumber, randomFileName);
+
+                        }else{
+                            console.error("error in uploading file", response);
+                        }
+
+                        //done with this chain
+
+                    },this))
+
+                },this))
+
+            }, this)
         }
 
 

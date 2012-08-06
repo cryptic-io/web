@@ -4,7 +4,7 @@
 var startApp = function(){
     console.log('the app has started woot woot');
 
-    require(['views/File','views/MusicPlayer'], function(FileView, MusicPlayer){
+    require(['models/File','views/File','views/MusicPlayer'], function(FileModel, FileView, MusicPlayer){
         var fileView = new FileView();
 
         $('body').append(fileView.render());
@@ -14,6 +14,25 @@ var startApp = function(){
                 var musicPlayer = new MusicPlayer({dataURL : data})
                 $('#musicPlayer').append(musicPlayer.render());
             })
+        }
+
+
+        fetchMusicPart = function(){
+            file = model.get('file');
+            musicPart = file.slice(0,100000);
+
+            musicPart = new Blob ([musicPart], {type :'audio/ogg'});
+            musicPartFile = new FileModel({file:musicPart});
+
+            (function(){
+                musicPartFile.getDataURL(function(data){
+                    var musicPlayer = new MusicPlayer({dataURL : data})
+                    $('#musicPlayer').append(musicPlayer.render());
+                })
+            })()
+
+
+
         }
 
     })
@@ -32,6 +51,7 @@ var dependencies = [
     , "core/backbone"
     /** crypt libraries **/
     , "crypt/sjcl"
+    //, "tools/uploader"
 ]
 
 
