@@ -136,19 +136,39 @@ define(function(){
             return false
         },
 
+        //Returns a base 32 representation of the key, with words separated by |
+        getKey: function() {
+            var key = this.get('key');
+            //turn it into base 32
+            key = _.map(key, function(number){ return number.toString(32) } );
+
+            return key.join('|')
+        },
+
+        //interpretes a base 32 representation of the key separated by a pipe ( | )
+        setKey: function(key){
+            var key = key.split('|')
+            key = _.map(key, function(number){ return parseInt(number, 32) } )
+            console.log('key is now',key);
+
+            this.set('key',key);
+        },
+
         //Decrypts given binary
         decryptBinary: function(encryptedData){
             return sjcl.decrypt(this.get('key'), encryptedData)
         },
 
         //encrypt given binary
-        encryptBinary: function(binary){
+        encryptBinary: function(binaryString){
             if (this.has('key')){
-                return sjcl.encrypt(this.get('key'), binary)
+                return sjcl.encrypt(this.get('key'), binaryString)
             }
 
             console.error('no encryption key set');
         }
+
+
     })
 });
 
