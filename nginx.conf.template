@@ -1,0 +1,21 @@
+    server {
+        listen       80;
+        server_name  crypticcandy.com;
+	    root   /opt/www/sites/crypticcandy;
+
+        location / {
+            index  index.html;
+        }
+
+        location /api {
+            uwsgi_pass unix:///tmp/cc.sock; 
+            include uwsgi_params;
+        }
+
+        location /api/downloadFile {
+            uwsgi_pass unix:///tmp/cc-fdl.sock; 
+            include uwsgi_params;
+        }
+
+    }
+
