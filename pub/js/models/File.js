@@ -11,7 +11,7 @@ define(['tools/uploader'],function(Uploader){
              *
             */
 
-           chunkSize : 1e5 // 100 Kbytes
+           chunkSize : 1e7 // 10 MB
            , uploadURL: 'api/uploadFile'
            , manifest: {
                fileName:''
@@ -77,7 +77,7 @@ define(['tools/uploader'],function(Uploader){
             var chunks = this.get('chunks');
             var chunk = chunks[chunkNumber];
 
-            var reader = this.get('reader');
+            var reader = new FileReader();
             var file = this.get('file');
 
             reader.onloadend = _.bind(function(event){
@@ -197,7 +197,6 @@ define(['tools/uploader'],function(Uploader){
             var encryptedData = '';
 
             this.getBinaryChunk(chunkNumber, _.bind(function(data){
-                debugger;
                 encryptedData = this.encryptBinary(data);
                 callback(encryptedData);
             },this) )

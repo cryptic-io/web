@@ -16,6 +16,11 @@ var startApp = function(){
             })
         }
 
+        readData = function(d){
+            data = d;
+            console.log('done');
+        };
+
 
         fetchMusicPart = function(){
             file = model.get('file');
