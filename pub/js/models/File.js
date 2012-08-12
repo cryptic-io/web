@@ -11,7 +11,7 @@ define(['tools/uploader'],function(Uploader){
              *
             */
 
-           chunkSize : 1e5 // 100 Kbytes
+           chunkSize : 1e7 // 10 MB
            , uploadURL: 'api/uploadFile'
            , manifest: {
                fileName:''
@@ -56,6 +56,8 @@ define(['tools/uploader'],function(Uploader){
             var file = this.get('file');
             var chunkSize = this.get("chunkSize")
 
+            if (this.has('chunks')) return this.get('chunks');
+
             var counter = 0;
             var chunks = [];
             while ( counter < file.size ){
@@ -77,7 +79,7 @@ define(['tools/uploader'],function(Uploader){
             var chunks = this.get('chunks');
             var chunk = chunks[chunkNumber];
 
-            var reader = this.get('reader');
+            var reader = new FileReader();
             var file = this.get('file');
 
             reader.onloadend = _.bind(function(event){
@@ -93,6 +95,28 @@ define(['tools/uploader'],function(Uploader){
 
             //lets start reading
             reader.readAsBinaryString(blob)
+        },
+
+        getArrayBufferChunk:function(chunkNumber, callback){
+            var chunks = this.get('chunks');
+            var chunk = chunks[chunkNumber];
+
+            var reader = new FileReader();
+            var file = this.get('file');
+
+            reader.onloadend = _.bind(function(event){
+                //check if we are done reading the file
+                if (event.target.readyState == FileReader.DONE){
+                    callback(event.target.result) //call the callback with the binary data
+                }
+
+            }, this)
+
+            //get the right chunk
+            var blob = file.slice(chunk.start, chunk.end);
+
+            //lets start reading
+            reader.readAsArrayBuffer(blob)
         },
 
         //returns the whole binary string through a callback that should accept a parameter for the binary string data
@@ -121,7 +145,6 @@ define(['tools/uploader'],function(Uploader){
                 //check if we are done reading the file
                 if (event.target.readyState == FileReader.DONE){
                     callback(event.target.result) //call the callback with the binary data
-                    
                 }
 
             }, this)
@@ -197,7 +220,6 @@ define(['tools/uploader'],function(Uploader){
             var encryptedData = '';
 
             this.getBinaryChunk(chunkNumber, _.bind(function(data){
-                debugger;
                 encryptedData = this.encryptBinary(data);
                 callback(encryptedData);
             },this) )

@@ -16,6 +16,52 @@ var startApp = function(){
             })
         }
 
+        psuedoSlice = function(start, end){
+            end = end || this.length;
+            output = [];
+            for (var i = start; i < end; i++){
+                output.push(this[i]);
+            }
+            return output;
+        }
+
+        Int16Array.prototype.slice = Int16Array.prototype.psuedoSlice
+
+        efficientEncrypt = function(){
+            key=sjcl.random.randomWords(4)
+
+            model.split()
+            var startTime = +(new Date());
+            model.getArrayBufferChunk(0, function(buffer){
+                buf = buffer;
+                intview = new Int16Array(buf)
+                e = sjcl.encrypt(key,intview)
+                
+
+
+                var endTime = +(new Date());
+
+                delta = (endTime - startTime)/1e3;
+
+                console.log('done. Time taken',delta);
+
+            })
+
+        }
+
+        readData = function(d){
+            data = d;
+            console.log('done');
+        };
+
+        timeAndReadData = function(){
+            var startTime = +(new Date());
+
+            return function(d){
+
+            }
+        };
+
 
         fetchMusicPart = function(){
             file = model.get('file');
@@ -50,8 +96,31 @@ var dependencies = [
     , "core/underscore"
     , "core/backbone"
     /** crypt libraries **/
-    , "crypt/sjcl"
+    //, "crypt/sjcl"
     //, "tools/uploader"
+    //
+    //
+    //sjcl stuff
+    , "crypt/core/sjcl"
+    , "crypt/core/aes"
+    , "crypt/core/bitArray"
+    , "crypt/core/codecString"
+    , "crypt/core/codecHex"
+    , "crypt/core/codecBase64"
+    , "crypt/core/codecBytes"
+    , "crypt/core/sha256"
+    , "crypt/core/sha1"
+    , "crypt/core/ccm"
+    , "crypt/core/cbc"
+    , "crypt/core/ocb2"
+    , "crypt/core/hmac"
+    , "crypt/core/pbkdf2"
+    , "crypt/core/random"
+    , "crypt/core/convenience"
+    , "crypt/core/bn"
+    , "crypt/core/ecc"
+    , "crypt/core/srp"
+
 ]
 
 
