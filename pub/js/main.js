@@ -27,7 +27,7 @@ var startApp = function(){
 
         Int16Array.prototype.slice = Int16Array.prototype.psuedoSlice
 
-        efficientEncrypt = function(){
+        testBetterCBC = function(){
             key=sjcl.random.randomWords(4)
 
             model.split()
@@ -35,15 +35,47 @@ var startApp = function(){
             model.getArrayBufferChunk(0, function(buffer){
                 buf = buffer;
                 intview = new Int16Array(buf)
-                e = sjcl.encrypt(key,intview)
+                e = sjcl.mode.betterCBC.encryptChunk(key,buffer)
                 
-
 
                 var endTime = +(new Date());
 
                 delta = (endTime - startTime)/1e3;
 
-                console.log('done. Time taken',delta);
+                console.log('done. Time taken for encryption',delta);
+
+
+                console.log('Now going to decrypt');
+
+                var startTime2 = +(new Date());
+
+                d = sjcl.mode.betterCBC.decryptChunk(key,e.buffer);
+                var endTime = +(new Date());
+
+                delta = (endTime - startTime2)/1e3;
+
+                console.log('done. Time taken for decryption',delta);
+
+                console.log('testing accuracy')
+
+                viewer = new Int32Array(buf);
+
+                var error = false;
+                for (var i=0;i<d.length;i++){
+                    if (d[i] != viewer[i]){
+                        error = true
+                        console.error('Error in checking accuracy at',i);
+                        break;
+                    }
+                }
+
+                if (!error){
+                    console.log('Everything checks out');
+                }
+
+                console.log('Report:');
+                console.log('Total Time (decryption+encryption+test):',(endTime-startTime)/1e3);
+
 
             })
 
@@ -58,6 +90,12 @@ var startApp = function(){
             var startTime = +(new Date());
 
             return function(d){
+                var endTime = +(new Date());
+
+                delta = (endTime - startTime)/1e3;
+
+                console.log('done. Time taken',delta);
+                data = d;
 
             }
         };
@@ -120,6 +158,7 @@ var dependencies = [
     , "crypt/core/bn"
     , "crypt/core/ecc"
     , "crypt/core/srp"
+    , "crypt/betterCBC"
 
 ]
 
