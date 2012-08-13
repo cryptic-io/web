@@ -11,7 +11,7 @@ define(['tools/uploader'],function(Uploader){
              *
             */
 
-           chunkSize : 1e7 // 10 MB
+           chunkSize : 1e6 // 10 MB
            , uploadURL: 'api/uploadFile'
            , manifest: {
                fileName:''
@@ -23,6 +23,7 @@ define(['tools/uploader'],function(Uploader){
 
            }
            , uploader: (new Uploader())
+           , encryptor: sjcl.mode.betterCBC
 
         },
 
@@ -187,16 +188,41 @@ define(['tools/uploader'],function(Uploader){
             setTimeout(this.generateKey, 1e3) 
         },
 
+        /*
+         * Encodes the key along with the iv
+         * The first for items in the array are the iv
+         */
+        encodeKey: function(key){
+            return sjcl.codec.base64.toBits(this.iv.concat(key))
+        },
+
+        /* Sets the internal iv and returns the decoded key
+         * The first four items belong to the iv
+         * The last four is the key
+         */
+        decodeKey: function(encodedKey){
+            var ivKey = sjcl.code.base64.fromBits(key);
+
+            this.iv = ivKey.slice(0,4);
+            return ivKey.slice(4);
+            
+            
+            
+        },
+
         //Returns a base 64 representation of the key
         getKey: function() {
             var key = this.get('key');
 
-            return sjcl.codec.base64.fromBits(key)
+
+            key = this.encryptor.encodeKey(key)
+
+            return key;
         },
 
         //interpretes a base 64 representation of the key
         setKey: function(key){
-            this.set('key', sjcl.codec.base64.toBits(key))
+            this.set('key', this.encryptor.decodeKey(key))
         },
 
         //Decrypts given binary
