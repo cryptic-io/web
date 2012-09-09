@@ -1,18 +1,25 @@
 define([],function(){ 
 
     return Backbone.Model.extend({
+
         defaults: {
-           encryptor: sjcl.mode.betterCBC
+           encryptor: sjcl.mode.betterCBC,
+           chunkSize: 1e6 //1 000 000 == 1MB
         },
 
-        /* The constructor values 
-         * are two arrays with 4 random values
-         */
-        initialize:  function(iv, key, chunkNumber, chunkBlob){
-            this.set('iv',iv);
-            this.set('key',key);
-            this.set('chunkNumber',chunkNumber);
-            this.set('blob',blob)
+        initialize:  function(options){
+            this.generateKey()
+
+            this.set('buffer',options.buffer);
+            this.set('start',options.start)
+            this.set('end', options.end)
+        },
+
+
+        // Generate the initial keys
+        generateKey: function(){
+            this.set('iv',sjcl.random.randomWords(4));
+            this.set('key',sjcl.random.randomWords(4));
         },
 
         /*
@@ -30,44 +37,55 @@ define([],function(){
         decodeIVKey: function(encodedKey){
             var ivKey = sjcl.code.base64.fromBits(key);
 
-            this.iv = ivKey.slice(0,4);
-            this.key = key
+            this.set('iv',ivKey.slice(0,4))
+            this.set('key' , key)
+
             return ivKey.slice(4);
         },
 
-        encryptChunk:function(callback){
-            this.getArrayBuffer( _.bind( function(buffer){
-                callback(this.encryptBuffer(buffer))
-            },this))
+        encryptChunk:function(){
+            e = sjcl.mode.betterCBC.encryptChunk( {
+                buffer: this.get('buffer')
+                , iv: this.get('iv')
+                , key: this.get('key')
+            })
+            this.set('buffer', e.buffer)
+
+            return e
+
         },
 
+        decryptChunk:function(){
+            d = sjcl.mode.betterCBC.decryptChunk( {
+                buffer: this.get('buffer')
+                , iv: this.get('iv')
+                , key: this.get('key')
+            })
 
-        /*
-         * Returns the encrypted string of an ArrayBuffer
-         */
-        encryptBuffer:function(buffer){
-            var encryptedInt32 = sjcl.mode.betterCBC.encryptChunk(key,buffer);
-            return sjcl.codec.base64.fromBits(encryptedInt32)
+            this.set('buffer', d.buffer)
+
+            return d
+
         },
 
-        getArrayBuffer:function(callback){
-            var chunks = this.get('chunks');
-            var chunk = chunks[chunkNumber];
-
-            var reader = new FileReader();
-            var file = this.get('file');
-
-            reader.onloadend = _.bind(function(event){
-                //check if we are done reading the file
-                if (event.target.readyState == FileReader.DONE){
-                    callback(event.target.result) //call the callback with the binary data
-                }
-
-            }, this)
-
-            //lets start reading
-            reader.readAsArrayBuffer(blob)
+        serializeChunk: function(){
+            //Converts the array buffer into a string, where each char is = to two bytes
+            return String.fromCharCode.apply(null, new Uint16Array(this.get('buffer')))
         },
+
+        deserializeChunk: function(str){
+            var buf = new ArrayBuffer(str.length*2)
+            var bufView = new Uint16Array(buf)
+
+            for (var i = 0; i < str.length; i++) {
+                bufView[i] = str.charCodeAt(i)
+            };
+
+            this.set('buffer',buf)
+        },
+
+        upload: function(){
+        }
 
     })
 })

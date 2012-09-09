@@ -4,8 +4,9 @@
 var startApp = function(){
     console.log('the app has started woot woot');
 
-    require(['models/File','views/File','views/MusicPlayer'], function(FileModel, FileView, MusicPlayer){
+    require(['models/File','views/File','views/MusicPlayer','test/test'], function(FileModel, FileView, MusicPlayer, test){
         var fileView = new FileView();
+        ballz = test
 
         $('body').append(fileView.render());
 

@@ -1,40 +1,3 @@
-<!DOCTYPE html>
-
-<head>
-    <script data-main="js/main.js" src="js/require.js"></script>
-</head>
-
-<body>
-    <p>
-        There is no GUI just yet still working on the backend JS, you can access the File Model through the console.
-        You can use model.get('file') to inspect the uploaded file. 
-    </P>
-    <br/>
-    <p>
-        model.split(1024) to split the file into kilobytes
-    </p>
-    <br/>
-    <p>
-        model.generateKey() to generate the encryption key
-    </p>
-    <br/>
-    <p>
-        model.getBinary(function(bin){ console.log('encrypted data is',model.encryptBinary(bin))}); // to encrypt the file
-    </p>
-    <br/>
-    <p>
-        look in models/File.js for more stuff to do
-    </p>
-    <br/>
-    <p>
-        if you upload a music file you can run playMusic() to play the song in the browser
-    </p>
-
-
-    <div id="musicPlayer">
-    </div>
-
-    <div id="testData" style="display:none">
 Bacon ipsum dolor sit amet beef ground round ham hock tri-tip beef ribs. Shoulder ground round andouille beef. Capicola prosciutto corned beef, short ribs flank strip steak andouille. Meatball tail pork, turducken turkey pancetta filet mignon brisket ham chicken kielbasa tri-tip bresaola t-bone drumstick.
 
 Spare ribs short ribs hamburger pork chop beef sausage strip steak tri-tip fatback salami ground round bacon beef ribs tail. Capicola sirloin filet mignon, pork chop pork sausage ball tip strip steak drumstick bacon spare ribs. Hamburger rump chicken, swine corned beef pork strip steak ground round tail turducken brisket. Ham hock ball tip tongue prosciutto venison, chuck meatloaf pork pastrami t-bone pork loin.
@@ -232,20 +195,3 @@ Ham tri-tip pork belly swine pastrami turkey pork shankle meatloaf. Sirloin capi
 Capicola hamburger shankle pastrami, pancetta ribeye bacon jowl turkey pork chop turducken ground round salami tenderloin cow. Bresaola tail pig t-bone ribeye ground round hamburger cow shankle strip steak. Brisket meatloaf prosciutto ham hock ribeye. Tail short ribs fatback ball tip chicken chuck.
 
 Corned beef ham hock tail rump ground round pastrami t-bone kielbasa cow ham. Pork loin shoulder tongue beef ribs. Shankle chuck ham hock, pig ham fatback shoulder venison pancetta beef. Short loin chicken corned beef bacon sausage salami pork tenderloin cow ball tip beef.
-    </div>
-
-</body>
-
-<script type="text/template" id="file-input-template">
-    <input type="file" id="file-input"></input>
-</script>
-
-<script type="text/template" id="music-template">
-    <audio controls=controls>
-        <source src="<%=dataURL%>">
-    </audio>
-</script>
-
-
-</html>
-

@@ -6,19 +6,34 @@
 
 /*********************\
 |*      START        *|
+
+You need to supply an IV and a key to use the crypt functions
+Everything as an object to make things simple
+
+settings = {
+buffer : ArrayBuffer
+key : 4 word key
+iv : 4 word iv
+}
+
 \*********************/
 
 sjcl.mode.betterCBC= {
-    iv : sjcl.random.randomWords(4),
 
-    encryptChunk: function(key, buffer){
-        var aes = new sjcl.cipher.aes(key)
+
+
+    encryptChunk: function(settings){
+        var key = settings.key
+        , buffer = settings.buffer
+        , iv = settings.iv
+
+        , aes = new sjcl.cipher.aes(key)
 
         , data = new Int32Array(buffer)
         , outputStruct = new OutputStruct(data.length)
         , temp = new TempChainingStruct();
 
-        temp.setSubArray(this.iv);
+        temp.setSubArray(iv);
 
         //Use the encryption algorithm 4 bytes at a time
         for (var i=0; i<data.length; i+=4){
@@ -35,14 +50,18 @@ sjcl.mode.betterCBC= {
         return outputStruct.output;
     },
 
-    decryptChunk: function(key, buffer){
-        var aes = new sjcl.cipher.aes(key)
+    decryptChunk: function(settings){
+        var key = settings.key
+        , buffer = settings.buffer
+        , iv = settings.iv
+
+        , aes = new sjcl.cipher.aes(key)
 
         , data = new Int32Array(buffer)
         , outputStruct = new OutputStruct(data.length)
         , temp = new TempChainingStruct();
 
-        temp.setSubArray(this.iv)
+        temp.setSubArray(iv)
 
         //Use the encryption algorithm 4 bytes at a time
         for (var i=0; i<data.length; i+=4){

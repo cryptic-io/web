@@ -215,7 +215,7 @@ define(['tools/uploader'],function(Uploader){
             var key = this.get('key');
 
 
-            key = this.encryptor.encodeKey(key)
+            key = this.encodeKey(key)
 
             return key;
         },
