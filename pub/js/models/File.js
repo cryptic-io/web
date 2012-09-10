@@ -50,6 +50,11 @@ define(['tools/uploader','models/Chunk','models/Manifest'],function(Uploader, Ch
             var file = this.get('file');
             var chunkSize = Chunk.prototype.defaults.chunkSize
             var chunkCount = Math.ceil(file.size/chunkSize)
+            //see if we need padding
+            //32 is becasue the encryption works on a 32 bit array
+            //we add one more chunk for padding sake
+            if ( (file.size%chunkSize)%32 != 0 )  chunkCount++;
+            
 
             //if (this.has('chunks')) return callback(this.get('chunks'));
 
@@ -64,15 +69,40 @@ define(['tools/uploader','models/Chunk','models/Manifest'],function(Uploader, Ch
             },this) )
 
 
+            padding = false
             while ( counter < file.size ){
                 var start = counter;
                 counter += chunkSize;
                 var end = counter < file.size ? counter : file.size;
 
+                if ( (end - start)%32 != 0){
+                    leftover = (end - start)%32
+                    padding = true;
+                    end -= leftover;
+                }
+
                 this.getArrayBufferChunk(start, end, function(buffer){
                     chunks.push(new Chunk({buffer:buffer}));
                     saveChunks(chunks)
                 })
+                
+                if (padding){
+                    start = end;
+                    end = file.size + 32-leftover
+                    counter += chunkSize;
+                    this.getArrayBufferChunk(start, end, function(buffer){
+                        paddedBuffer = new ArrayBuffer(32)
+
+                        buffer1View = new Int8Array(buffer)
+                        buffer2View = new Int8Array(paddedBuffer)
+                        for (var i = 0; i < buffer1View.length; i++) {
+                            buffer2View[i] = buffer1View[i]
+                        };
+
+                        chunks.push(new Chunk({buffer:paddedBuffer}));
+                        saveChunks(chunks)
+                    })
+                }
 
             }
 
