@@ -1,4 +1,4 @@
-define([],function(){ 
+define(['tools/uploader'],function(Uploader){ 
 
     return Backbone.Model.extend({
 
@@ -9,10 +9,6 @@ define([],function(){
 
         initialize:  function(options){
             this.generateKey()
-
-            this.set('buffer',options.buffer);
-            this.set('start',options.start)
-            this.set('end', options.end)
         },
 
 
@@ -26,8 +22,8 @@ define([],function(){
          * Encodes the key along with the iv
          * The first for items in the array are the iv
          */
-        encodeIVKey: function(key){
-            return sjcl.codec.base64.toBits(this.iv.concat(key))
+        encodeIVKey: function(){
+            return sjcl.codec.base64.fromBits(this.get('iv').concat(this.get('key')))
         },
 
         /* Sets the internal iv and returns the decoded key
@@ -35,10 +31,10 @@ define([],function(){
          * The last four is the key
          */
         decodeIVKey: function(encodedKey){
-            var ivKey = sjcl.code.base64.fromBits(key);
+            var ivKey = sjcl.code.base64.toBits(key);
 
             this.set('iv',ivKey.slice(0,4))
-            this.set('key' , key)
+            this.set('key' , ivKey.slice(4))
 
             return ivKey.slice(4);
         },
@@ -70,7 +66,12 @@ define([],function(){
 
         serializeChunk: function(){
             //Converts the array buffer into a string, where each char is = to two bytes
-            return String.fromCharCode.apply(null, new Uint16Array(this.get('buffer')))
+            string = ''
+            stringBuffer = new Uint16Array(this.get('buffer'))
+            for (var i = 0; i < stringBuffer.length; i++) {
+                string += String.fromCharCode( stringBuffer[i] )
+            };
+            return string
         },
 
         deserializeChunk: function(str){
@@ -84,7 +85,17 @@ define([],function(){
             this.set('buffer',buf)
         },
 
-        upload: function(){
+        //The callback will contain the linkName
+        upload: function(callback){
+            var location = 'api/uploadFile'
+            var linkName = Math.random().toString(36).substring(2);
+            var chunkData = this.serializeChunk()
+
+            Uploader.prototype.send(location, chunkData, linkName, function(response){
+                result = JSON.parse(response)
+                result = result['return'];
+                callback(result.linkName)
+            })
         }
 
     })

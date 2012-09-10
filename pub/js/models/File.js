@@ -1,5 +1,5 @@
 //returns the file model
-define(['tools/uploader'],function(Uploader){ 
+define(['tools/uploader','models/Chunk','models/Manifest'],function(Uploader, Chunk, Manifest){ 
     return Backbone.Model.extend({
 
         defaults:{
@@ -27,19 +27,12 @@ define(['tools/uploader'],function(Uploader){
 
         },
 
+        manifest: new Manifest(),
+
         initialize: function(){
             this.set('reader',new FileReader());
 
             var file = this.get('file');
-
-            this.on('keyReady', this.syncManifest, this)
-
-            this.generateKey()
-
-            this.set('privateManifest', {
-                type: file.type,
-                size: file.size
-            });
 
 
             //Unfortunately somethings have vendor prefixes so we'll get that sorted right here and now
@@ -53,26 +46,64 @@ define(['tools/uploader'],function(Uploader){
         //   { start: 1025, end: 2048 }
         //   ...
         //]
-        split: function() {
+        split: function(callback) {
             var file = this.get('file');
-            var chunkSize = this.get("chunkSize")
+            var chunkSize = Chunk.prototype.defaults.chunkSize
+            var chunkCount = Math.ceil(file.size/chunkSize)
 
-            if (this.has('chunks')) return this.get('chunks');
+            //if (this.has('chunks')) return callback(this.get('chunks'));
 
             var counter = 0;
             var chunks = [];
+
+            //async call to save chunks
+            var saveChunks = _.after(chunkCount, _.bind(function(chunks){ 
+                this.set('chunks', chunks);
+                this.manifest.setChunks(chunks)
+                callback(chunks)
+            },this) )
+
+
             while ( counter < file.size ){
-                var chunk = {};
-
-                chunk.start = counter;
+                var start = counter;
                 counter += chunkSize;
-                chunk.end = counter < file.size ? counter : file.size;
+                var end = counter < file.size ? counter : file.size;
 
-                chunks.push(chunk);
+                this.getArrayBufferChunk(start, end, function(buffer){
+                    chunks.push(new Chunk({buffer:buffer}));
+                    saveChunks(chunks)
+                })
+
             }
 
-            this.set('chunks',chunks)
-            return chunks;
+        },
+
+        //Returns the linkName for the manifest and the key
+        upload: function(callback){
+            //this.split()
+            var chunks = this.get('chunks');
+            var file = this.get('file');
+            var chunkSize = Chunk.prototype.defaults.chunkSize
+            var chunkCount = Math.ceil(file.size/chunkSize)
+
+
+
+            uploadManifest = _.after(chunks.length, _.bind(this.manifest.uploadManifest, this.manifest, callback) )
+
+            for (var i = 0; i < chunks.length; i++) {
+                var chunk = chunks[i]
+                chunk.encryptChunk()
+                
+                //bind the function to this and keep the current index inside to function so it doesn't change when called
+                chunk.upload(_.bind(function(index, linkName){
+                    //save the response here
+                    this.manifest.setChunkLinkName(index, linkName)
+
+                    //async way of knowing when all the chunks have been uploaded, we go on to upload the chunks
+                    uploadManifest()
+
+                }, this, i))
+            };
         },
 
         //This will get the binary string from a specified chunknumber from the file
@@ -98,9 +129,7 @@ define(['tools/uploader'],function(Uploader){
             reader.readAsBinaryString(blob)
         },
 
-        getArrayBufferChunk:function(chunkNumber, callback){
-            var chunks = this.get('chunks');
-            var chunk = chunks[chunkNumber];
+        getArrayBufferChunk:function(start, end, callback){
 
             var reader = new FileReader();
             var file = this.get('file');
@@ -114,7 +143,7 @@ define(['tools/uploader'],function(Uploader){
             }, this)
 
             //get the right chunk
-            var blob = file.slice(chunk.start, chunk.end);
+            var blob = file.slice(start, end);
 
             //lets start reading
             reader.readAsArrayBuffer(blob)
@@ -271,6 +300,7 @@ define(['tools/uploader'],function(Uploader){
          *
          */
 
+        /*
         upload: function(){
             var chunks = this.split();
             var manifest = this.get('manifest');
@@ -305,6 +335,7 @@ define(['tools/uploader'],function(Uploader){
 
             }, this)
         }
+       */
 
 
     })
