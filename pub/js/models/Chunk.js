@@ -96,7 +96,7 @@ define(['tools/uploader'],function(Uploader){
                 result = result['return'];
                 callback(result.linkName)
             })
-        }
+        },
 
     })
 })
