@@ -93,8 +93,8 @@ define(['tools/uploader'],function(Uploader){
 
             Uploader.prototype.send(location, chunkData, linkName, function(response){
                 result = JSON.parse(response)
-                result = result['return'];
-                callback(result.linkName)
+                debugger
+                callback(result.return.filename)
             })
         },
 
