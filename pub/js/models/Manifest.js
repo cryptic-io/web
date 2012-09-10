@@ -37,10 +37,10 @@ define(["models/Chunk"],function(Chunk){
             this.set('chunks',manifestChunks)
         },
 
+        //The Callback will be supplied with an object containing linkName and IVKey
         uploadManifest: function(callback){
             var buffer = this.bufferManifest()
             manifestChunk = new Chunk({buffer:buffer})
-            debugger;
             manifestChunk.encryptChunk();
             var IVKey = manifestChunk.encodeIVKey()
             this.set('IVKey', IVKey)

@@ -21,6 +21,7 @@ define(["models/File"], function(FileModel){
         //might want to change this to get rid of jquery completely
         events: {
             "change #file-input" : "loadFile",
+            "click #uploadFile" : "uploadFile",
         },
 
         //read the file from the input
@@ -29,6 +30,13 @@ define(["models/File"], function(FileModel){
             this.model = new FileModel({file: fileObj});
             model = this.model;
             this.trigger('fileLoaded');
+        },
+
+        uploadFile: function(){
+            var model = this.model;
+            model.upload(function(linkData){
+                alert('linkName: '+linkData.linkName+'. Passcode:  '+linkData.IVKey)
+            })
         },
 
         fileLoaded: function(){

@@ -1,5 +1,5 @@
 //returns the file model
-define(['tools/uploader','models/Chunk','models/Manifest'],function(Uploader, Chunk, Manifest){ 
+define(['models/Chunk','models/Manifest'],function(Chunk, Manifest){ 
     return Backbone.Model.extend({
 
         defaults:{
@@ -22,7 +22,6 @@ define(['tools/uploader','models/Chunk','models/Manifest'],function(Uploader, Ch
                , fileSize:''
 
            }
-           , uploader: (new Uploader())
            , encryptor: sjcl.mode.betterCBC
 
         },
@@ -56,7 +55,7 @@ define(['tools/uploader','models/Chunk','models/Manifest'],function(Uploader, Ch
             if ( (file.size%chunkSize)%32 != 0 )  chunkCount++;
             
 
-            //if (this.has('chunks')) return callback(this.get('chunks'));
+            if (this.has('chunks')) return callback(this.get('chunks'));
 
             var counter = 0;
             var chunks = [];
@@ -112,6 +111,9 @@ define(['tools/uploader','models/Chunk','models/Manifest'],function(Uploader, Ch
         //Returns the linkName for the manifest and the key
         upload: function(callback){
             //this.split()
+            if (!this.has('chunks')){
+                return this.split(_.bind(this.upload,this,callback));
+            }
             var chunks = this.get('chunks');
             var file = this.get('file');
             var chunkSize = Chunk.prototype.defaults.chunkSize
