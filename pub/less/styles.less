@@ -1,0 +1,86 @@
+@color: #4d926F;
+@color-white: #FFFFFF;
+
+
+@background: #41A53A;
+@import url(http://fonts.googleapis.com/css?family=Monofett);
+
+@shadow: #322E34 0 1px 1px;
+
+@leftMargin: 25px;
+
+.vertical-gradient(@start: #000, @stop: #FFF) {
+    background: (@start + @stop) / 2;
+    background: -webkit-gradient(linear, left top, left bottom, from(@start), to(@stop));
+    background: -moz-linear-gradient(center top, @start 0%, @stop 100%);
+    background: -moz-gradient(center top, @start 0%, @stop 100%);
+}
+
+
+
+.rounded-corners (@radius: 5px) {
+  border-radius: @radius;
+  -webkit-border-radius: @radius;
+  -moz-border-radius: @radius;
+}
+
+
+#header {
+    //background-color: @background;
+
+    #title {
+        font-family: 'Monofett', sans-serif;
+        font-size: 80px;
+        color: #40343A;
+        text-shadow:@shadow;
+        margin-left: @leftMargin;
+
+    }
+
+}
+
+#container {
+    //.vertical-gradient(#B2DBD1, #7ACB37);
+    background: @color;
+    min-height: 400px;
+    text-shadow:@shadow;
+
+}
+
+#uploadBox{
+    .rounded-corners;
+    background: whitesmoke;
+    height: 300px;
+    width: 400px;
+    margin: 100px;
+    display:inline-block;
+    text-align:center;
+    box-shadow:@shadow;
+
+    #uploadForm{
+        float: left;
+        margin-top: 20px;
+        margin-left: 20px;
+    }
+    
+}
+
+#files{
+    .rounded-corners;
+    height: 300px;
+    width: 400px;
+    margin: 100px;
+    background: whitesmoke;
+    display:inline-block;
+    text-align:center;
+    box-shadow:@shadow
+}
+
+#body{
+    margin-left:@leftMargin;
+}
+
+
+body {
+    margin: 0px;
+}

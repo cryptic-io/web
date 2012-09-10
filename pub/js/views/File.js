@@ -1,5 +1,5 @@
 //returns the file view
-define(["models/File"], function(FileModel){ 
+define(["models/File","jade!templates/FileUpload"], function(FileModel, template){ 
     return Backbone.View.extend({
 
         tagName: "div",
@@ -10,7 +10,7 @@ define(["models/File"], function(FileModel){
             this.on("fileLoaded", this.fileLoaded);
         },
 
-        template: _.template($('#file-input-template').html()),
+        template: template,
 
         render: function(){
             this.$el.html(this.template());
