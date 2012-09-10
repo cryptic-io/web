@@ -1,4 +1,2 @@
-api/build/
 *.sw?
 *.vim
-*.pyc
