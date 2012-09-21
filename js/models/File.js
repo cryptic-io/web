@@ -1,5 +1,5 @@
 //returns the file model
-define(['models/Chunk','models/Manifest'],function(Chunk, Manifest){ 
+define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface'],function(Chunk, Manifest, ChunkWorkerInterface){ 
     return Backbone.Model.extend({
 
         defaults:{
@@ -81,7 +81,9 @@ define(['models/Chunk','models/Manifest'],function(Chunk, Manifest){
                 }
 
                 this.getArrayBufferChunk(start, end, function(buffer){
-                    chunks.push(new Chunk({buffer:buffer}));
+                    chunks.push(
+                        new ChunkWorkerInterface({buffer:buffer})
+                    )
                     saveChunks(chunks)
                 })
                 
@@ -99,7 +101,7 @@ define(['models/Chunk','models/Manifest'],function(Chunk, Manifest){
                             buffer2View[i] = buffer1View[i]
                         };
 
-                        chunks.push(new Chunk({buffer:paddedBuffer}));
+                        chunks.push(new ChunkWorkerInterface({buffer:paddedBuffer}));
                         saveChunks(chunks)
                     })
                 }
@@ -125,7 +127,7 @@ define(['models/Chunk','models/Manifest'],function(Chunk, Manifest){
 
             for (var i = 0; i < chunks.length; i++) {
                 var chunk = chunks[i]
-                chunk.encryptChunk()
+                //chunk.encryptChunk()
                 
                 //bind the function to this and keep the current index inside to function so it doesn't change when called
                 chunk.upload(_.bind(function(index, linkName){

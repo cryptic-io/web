@@ -4,7 +4,7 @@ define(['tools/uploader'],function(Uploader){
 
         defaults: {
            encryptor: sjcl.mode.betterCBC,
-           chunkSize: 1e6 //1 000 000 == 1MB
+           chunkSize: 1e6 //1 000 000  == 1MB
         },
 
         initialize:  function(options){
@@ -64,10 +64,10 @@ define(['tools/uploader'],function(Uploader){
 
         },
 
-        serializeChunk: function(){
+        serializeChunk: function(buffer){
             //Converts the array buffer into a string, where each char is = to two bytes
             string = ''
-            stringBuffer = new Uint16Array(this.get('buffer'))
+            stringBuffer = new Uint16Array(buffer)
             for (var i = 0; i < stringBuffer.length; i++) {
                 string += String.fromCharCode( stringBuffer[i] )
             };
@@ -87,13 +87,12 @@ define(['tools/uploader'],function(Uploader){
 
         //The callback will contain the linkName
         upload: function(callback){
-            var location = 'api/uploadFile'
+            var location = '/api/uploadFile'
             var linkName = Math.random().toString(36).substring(2);
-            var chunkData = this.serializeChunk()
+            var chunkData = this.serializeChunk(this.get('buffer'))
 
             Uploader.prototype.send(location, chunkData, linkName, function(response){
                 result = JSON.parse(response)
-                debugger
                 callback(result.return.filename)
             })
         },

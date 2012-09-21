@@ -56,8 +56,10 @@ dependencies, function(require){
     
 
     require( 
-    ['models/File','views/File','views/MusicPlayer','test/test','views/Home'],
-    function(FileModel, FileView, MusicPlayer, test, HomeView) {
+    ['models/File','views/File','views/MusicPlayer','test/test','views/Home','models/ChunkWorkerInterface'],
+    function(FileModel, FileView, MusicPlayer, test, HomeView, ChunkWorkerInterface) {
+
+        
 
         home = new HomeView({el:$('body')})
         home.render()
@@ -65,6 +67,16 @@ dependencies, function(require){
         var fileView = new FileView({el:$('#uploadForm')});
         fileView.render()
         ballz = test
+
+        wi = ChunkWorkerInterface;
+
+        worker = new ChunkWorkerInterface({buffer:test.buffer})
+
+        testUpload = function(){
+            test.upload(function(result){
+                console.log('finished uploading and the result was', result);
+            })
+        }
 
 
         playMusic = function(){
