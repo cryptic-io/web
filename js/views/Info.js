@@ -39,6 +39,10 @@ define(["jade!templates/Info"], function(InfoTemplate){
             setTimeout(function(){$('#square10').addClass('moveSquareRightUp')},25e3)
             setTimeout(function(){$('#square10').addClass('moveSquareRightUp')},35e3)
 
+
+            //Easter Egg!!!
+            setTimeout(function(){$('.skullGIF').addClass('moveSquareRightUp')},10*60e3)
+
         }
 
 
