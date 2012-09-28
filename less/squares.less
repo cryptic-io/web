@@ -1,0 +1,149 @@
+@-webkit-keyframes moveSquareTopRight {
+    to {
+        left: 100%;
+        top: 0px;
+    }
+}
+
+@-webkit-keyframes moveSquareTopSlightRight {
+    to {
+        left: 80%;
+        top: -100px;
+    }
+}
+
+@-webkit-keyframes moveSquareTopSlightRightMiddle {
+    to {
+        left: 62%;
+        top: -100px;
+    }
+}
+
+@-webkit-keyframes moveSquareRightUp {
+    to {
+        left: 100%;
+        top: 300px;
+    }
+}
+
+@-webkit-keyframes moveSquareMiddleUp {
+    to {
+        left: 50%;
+        top: -100px;
+    }
+}
+
+/*
+@basetime: 13s;
+@basetime2: 17s;
+*/
+
+@basetime: 23s;
+@basetime2: 37s;
+
+
+.moveSquareTopRight{
+    .animation(moveSquareTopRight @basetime*2 infinite ease);
+}
+.moveSquareTopSlightRight{
+    .animation(moveSquareTopSlightRight @basetime*3 infinite ease-out);
+}
+.moveSquareTopSlightRightMiddle{
+    .animation(moveSquareTopSlightRightMiddle @basetime*4 infinite ease-in-out);
+}
+.moveSquareRightUp{
+    .animation(moveSquareRightUp @basetime2*4 infinite ease-out);
+}
+
+.moveSquareRightUpBig{
+    .animation(moveSquareRightUp @basetime2*3 infinite ease-in);
+}
+
+.moveSquareMiddleUp{
+    .animation(moveSquareMiddleUp @basetime2*2 infinite ease);
+}
+
+.blur(@radius: 2px) {
+    -webkit-filter: blur(@radius);
+    -moz-filter: blur(@radius);
+}
+
+.randomSquare{
+    display:block;
+    border-radius:2px;
+    position: fixed;
+    top: 300px;
+    width:50px;
+    height:50px;
+    left: -20%;
+    background:@randomSquareColor;
+    .blur;
+}
+
+.smallSquare{
+    height:10px;
+    width:10px;
+}
+
+
+#square1{
+    width:80px;
+    height:80px;
+    top: 400px;
+}
+
+
+#square2{
+    .blur(4px);
+}
+
+#square3{
+    top: 500px;
+    height: 35px;
+    width: 35px;
+    .blur(4px);
+}
+
+/*This one is gonna be nice and big and sloooww*/
+#square4{
+    width:220px;
+    height:220px;
+    top: 400px;
+}
+
+#square5{
+    top: 200px;
+}
+
+#square6{
+    width:80px;
+    height:80px;
+    top: 400px;
+}
+
+#square7{
+    width:40px;
+    height:40px;
+    top: 500px;
+    .blur(4px);
+}
+
+#square8{
+    width:100px;
+    height:100px;
+    top: 900px;
+    .blur(6px);
+}
+
+#square9{
+    top: 400px;
+}
+
+#square10{
+    top: 800px;
+}
+
+#square11{
+    top: 600px;
+}
+

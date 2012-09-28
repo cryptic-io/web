@@ -56,13 +56,13 @@ dependencies, function(require){
     
 
     require( 
-    ['models/File','views/File','views/MusicPlayer','test/test','views/Home','models/ChunkWorkerInterface'],
-    function(FileModel, FileView, MusicPlayer, test, HomeView, ChunkWorkerInterface) {
+    ['models/File','views/File','views/MusicPlayer','test/test','routes/Home','models/ChunkWorkerInterface'],
+    function(FileModel, FileView, MusicPlayer, test, HomeRouter, ChunkWorkerInterface) {
 
         
-
-        home = new HomeView({el:$('body')})
-        home.render()
+        router = new HomeRouter();
+        Backbone.history.start()
+        router.navigate('home',{trigger:true})
 
         var fileView = new FileView({el:$('#uploadForm')});
         fileView.render()

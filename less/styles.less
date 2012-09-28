@@ -1,13 +1,31 @@
-@color: #4d926F;
+@green: #4d926F;
 @color-white: #FFFFFF;
+//@randomSquareColor: #A2B4AB;
+@randomSquareColor: #555;
+
 
 
 @background: #41A53A;
 @import url(http://fonts.googleapis.com/css?family=Monofett);
 
+
+@import '3L-mini';
+@import 'squares';
+
+
 @shadow: #322E34 0 1px 1px;
 
+@fadedGreen: #8EAC9D;
+
 @leftMargin: 25px;
+
+.keyframes-mixin (@name, @frames) {
+    @-webkit-keyframes @name {@frames}
+    @-moz-keyframes @name {@frames}
+    @-ms-keyframes @name {@frames}
+    @-o-keyframes @name {@frames}
+    @keyframes @name {@frames}
+}
 
 .vertical-gradient(@start: #000, @stop: #FFF) {
     background: (@start + @stop) / 2;
@@ -27,13 +45,19 @@
 
 #header {
     //background-color: @background;
+    display: block;
+    width: 700px;
+    height: 140px;
+    border-radius: 10px;
+    margin: 20px 20px;
+    
 
     #title {
         font-family: 'Monofett', sans-serif;
         font-size: 80px;
         color: #40343A;
         text-shadow:@shadow;
-        margin-left: @leftMargin;
+        text-align: center;
 
     }
 
@@ -41,8 +65,54 @@
 
 #container {
     //.vertical-gradient(#B2DBD1, #7ACB37);
-    text-shadow:@shadow;
+    //text-shadow:@shadow;
 
+}
+
+#break {
+    display:block;
+    width:80%;
+    height:10px;
+    background-color:rgba(200,200,200,0.5);
+    border-radius:5px;
+    margin: auto;
+}
+
+#title {
+    padding-top: 10px;
+    margin-left: 30px;
+    font-family:"Source Code Pro" , "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    text-align: center;
+}
+
+
+#info{
+    font-family:"Source Code Pro" , "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+
+    width: 80%;
+    margin: auto;
+    margin-top:20px;
+}
+
+#problem{
+}
+
+.TextHeader{
+    font-size: 20px;
+    font-weight: bold;
+}
+
+
+
+
+#background{
+    position: fixed;
+    z-index: -1;
+
+}
+#backgroundCanvas {
+    width:100%;
+    height:100%;
 }
 
 #uploadBox{
@@ -75,11 +145,17 @@
 }
 
 #body{
-    margin-left:@leftMargin;
+    display:block;
+    border-radius: 5px;
+    //background-color:rgba(200,200,200,0.5);
+    //width: 80%;
+    min-height: 200px;
+    
 }
 
 
 body {
     margin: 0px;
-    background:@color;
+    background:@fadedGreen;
+    background-image:url("/images/subtle2.png");
 }
