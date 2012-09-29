@@ -7,9 +7,11 @@ less = { env: 'development' };
 var dependencies = [
     "require"
     //"core/jquery"
+    /*
     , "core/zepto"
     , "core/underscore"
     , "core/backbone"
+    */
     /** crypt libraries **/
     //, "crypt/sjcl"
     //, "tools/uploader"
@@ -37,9 +39,10 @@ var dependencies = [
     , "crypt/core/bn"
     , "crypt/core/ecc"
     , "crypt/core/srp"
-    */
+
     , "crypt/sjcl"
     , "crypt/betterCBC"
+    */
 
 ]
 
@@ -56,67 +59,67 @@ dependencies, function(require){
     
 
     require( 
-    ['models/File','views/File','views/MusicPlayer','test/test','routes/Home','models/ChunkWorkerInterface'],
-    function(FileModel, FileView, MusicPlayer, test, HomeRouter, ChunkWorkerInterface) {
+        ['models/File','views/File','views/MusicPlayer','test/test','routes/Home','models/ChunkWorkerInterface'],
+        function(FileModel, FileView, MusicPlayer, test, HomeRouter, ChunkWorkerInterface) {
 
-        
-        router = new HomeRouter();
-        Backbone.history.start()
-        router.navigate('home',{trigger:true})
+            
+            router = new HomeRouter();
+            Backbone.history.start()
+            router.navigate('home',{trigger:true})
 
-        var fileView = new FileView({el:$('#uploadForm')});
-        fileView.render()
-        ballz = test
+            var fileView = new FileView({el:$('#uploadForm')});
+            fileView.render()
+            ballz = test
 
-        wi = ChunkWorkerInterface;
+            wi = ChunkWorkerInterface;
 
-        worker = new ChunkWorkerInterface({buffer:test.buffer})
+            worker = new ChunkWorkerInterface({buffer:test.buffer})
 
-        testUpload = function(){
-            test.upload(function(result){
-                console.log('finished uploading and the result was', result);
-            })
-        }
-
-
-        playMusic = function(){
-            fileView.model.getDataURL(function(data){
-                var musicPlayer = new MusicPlayer({dataURL : data})
-                $('#musicPlayer').append(musicPlayer.render());
-            })
-        }
-
-        psuedoSlice = function(start, end){
-            end = end || this.length;
-            output = [];
-            for (var i = start; i < end; i++){
-                output.push(this[i]);
+            testUpload = function(){
+                test.upload(function(result){
+                    console.log('finished uploading and the result was', result);
+                })
             }
-            return output;
-        }
 
-        Int16Array.prototype.slice = Int16Array.prototype.psuedoSlice
 
-        readData = function(d){
-            data = d;
-            console.log('done');
-        };
+            playMusic = function(){
+                fileView.model.getDataURL(function(data){
+                    var musicPlayer = new MusicPlayer({dataURL : data})
+                    $('#musicPlayer').append(musicPlayer.render());
+                })
+            }
 
-        timeAndReadData = function(){
-            var startTime = +(new Date());
+            psuedoSlice = function(start, end){
+                end = end || this.length;
+                output = [];
+                for (var i = start; i < end; i++){
+                    output.push(this[i]);
+                }
+                return output;
+            }
 
-            return function(d){
-                var endTime = +(new Date());
+            Int16Array.prototype.slice = Int16Array.prototype.psuedoSlice
 
-                delta = (endTime - startTime)/1e3;
-
-                console.log('done. Time taken',delta);
+            readData = function(d){
                 data = d;
+                console.log('done');
+            };
 
-            }
-        };
+            timeAndReadData = function(){
+                var startTime = +(new Date());
+
+                return function(d){
+                    var endTime = +(new Date());
+
+                    delta = (endTime - startTime)/1e3;
+
+                    console.log('done. Time taken',delta);
+                    data = d;
+
+                }
+            };
 
 
-    })
+        })
 })
 
