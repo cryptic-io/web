@@ -1,4 +1,4 @@
-define(["models/Chunk"],function(Chunk){ 
+define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){ 
 
     return Backbone.Model.extend({
 
@@ -56,9 +56,10 @@ define(["models/Chunk"],function(Chunk){
 
         //The Callback will be supplied with an object containing linkName and IVKey
         uploadManifest: function(callback){
-            var buffer = this.bufferManifest()
+            var buffer = this.manifestToBuffer()
             manifestChunk = new Chunk({buffer:buffer})
             manifestChunk.encryptChunk();
+            debugger;
             var IVKey = manifestChunk.encodeIVKey()
             this.set('IVKey', IVKey)
             manifestChunk.upload(
@@ -71,19 +72,55 @@ define(["models/Chunk"],function(Chunk){
             );
         },
 
-        bufferManifest: function(){
+        downloadManifest: function(linkName, passcode, callback){
+            var manifestChunk = new Chunk();
+            Downloader.prototype.getKeyAndDownload(linkName, _.bind(function(serializedData){
+                manifestChunk.deserializeChunk(serializedData);
+                manifestChunk.decodeIVKey(passcode)
+                debugger;
+                //manifestChunk.decryptChunk()
+                debugger;
+
+                this.bufferToManifest(manifestChunk.get('buffer'));
+
+                if (callback) callbacK()
+
+            },this))
+        },
+
+        manifestToBuffer: function(){
             var manifestData = JSON.stringify(this.toJSON())
 
             //padding for encryption
-            buffer = new ArrayBuffer(manifestData.length+32-manifestData.length%32)
-
-            var stringBuffer = new Uint8Array(buffer)
+            //
             
-            for (charIndex in this.unEncryptedData){
-                stringBuffer[charIndex] = manifestData.charCodeAt(charIndex);
+            //it has to be divisible by 4 and 32 to be prorperly decrypted/encrypted
+            var paddedLength = manifestData.length*2 + ( (16) - (manifestData.length*2)%(16) )
+            var buffer = new ArrayBuffer(paddedLength)
+
+            var stringBuffer = new Uint16Array(buffer)
+
+            
+            for (charIndex=0; charIndex<paddedLength; charIndex++){
+                if (charIndex >= manifestData.length){
+                    stringBuffer[charIndex] = 32 // 32 is the space character
+                }else{
+                    stringBuffer[charIndex] = manifestData.charCodeAt(charIndex);
+                }
             }
 
+            debugger;
+
             return buffer
+        },
+
+        bufferToManifest: function(buffer){
+            var stringBufferView = new Uint16Array(buffer)
+            var manifestJSON = String.fromCharCode.apply(this,stringBufferView)
+
+            console.log(manifestJSON);
+            this.set( JSON.parse(manifestJSON) ) 
+
         },
 
         initialize:  function(){

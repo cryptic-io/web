@@ -13,15 +13,6 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface'],function
 
            chunkSize : 1e6 // 10 MB
            , uploadURL: 'api/uploadFile'
-           , manifest: {
-               fileName:''
-               , chunks:[] //array of objects containing the chunkNumber and chunk location
-               , chunkSize:0
-               , secretKey:''
-               , "content-type":''
-               , fileSize:''
-
-           }
            , encryptor: sjcl.mode.betterCBC
 
         },
@@ -29,10 +20,6 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface'],function
         manifest: new Manifest(),
 
         initialize: function(){
-            this.set('reader',new FileReader());
-
-            var file = this.get('file');
-
 
             //Unfortunately somethings have vendor prefixes so we'll get that sorted right here and now
             File.prototype.slice = File.prototype.webkitSlice ? File.prototype.webkitSlice : File.prototype.mozSlice;
@@ -74,8 +61,9 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface'],function
                 counter += chunkSize;
                 var end = counter < file.size ? counter : file.size;
 
-                if ( (end - start)%32 != 0){
-                    leftover = (end - start)%32
+                //It has to fit withing 32*4 because 32 bits is the int size used in data encryption and 4 because AES operates on 4 ints at a time for decryption
+                if ( (end - start)%(16) != 0){
+                    leftover = (end - start)%(16)
                     padding = true;
                     end -= leftover;
                 }
@@ -139,6 +127,13 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface'],function
 
                 }, this, i))
             };
+        },
+
+        download: function(linkName, passcode, callback){
+
+            this.manifest.downloadManifest(linkName, passcode, _.bind(function(){
+                console.log('we got the manifest!');
+            },this))
         },
 
         getArrayBufferChunk:function(start, end, callback){

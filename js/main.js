@@ -59,13 +59,16 @@ dependencies, function(require){
     
 
     require( 
-        ['models/File','views/File','views/MusicPlayer','test/test','routes/Home','models/ChunkWorkerInterface'],
-        function(FileModel, FileView, MusicPlayer, test, HomeRouter, ChunkWorkerInterface) {
+        ['models/File','views/File','views/MusicPlayer','test/test','routes/Home','models/ChunkWorkerInterface','tools/downloader'],
+        function(FileModel, FileView, MusicPlayer, test, HomeRouter, ChunkWorkerInterface, Downloader) {
+            dler = new Downloader()
 
             
             router = new HomeRouter();
-            Backbone.history.start()
-            router.navigate('home',{trigger:true})
+            var givenPage = Backbone.history.start()
+            if (!givenPage){
+                router.navigate('home',{trigger:true})
+            }
 
             var fileView = new FileView({el:$('#uploadForm')});
             fileView.render()
@@ -114,7 +117,7 @@ dependencies, function(require){
                     delta = (endTime - startTime)/1e3;
 
                     console.log('done. Time taken',delta);
-                    data = d;
+                   data = d;
 
                 }
             };

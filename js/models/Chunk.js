@@ -1,4 +1,4 @@
-define(['tools/uploader'],function(Uploader){ 
+define(['tools/uploader','tools/downloader'],function(Uploader, Downloader){ 
 
     return Backbone.Model.extend({
 
@@ -31,7 +31,7 @@ define(['tools/uploader'],function(Uploader){
          * The last four is the key
          */
         decodeIVKey: function(encodedKey){
-            var ivKey = sjcl.code.base64.toBits(key);
+            var ivKey = sjcl.codec.base64.toBits(encodedKey);
 
             this.set('iv',ivKey.slice(0,4))
             this.set('key' , ivKey.slice(4))
@@ -40,7 +40,7 @@ define(['tools/uploader'],function(Uploader){
         },
 
         encryptChunk:function(){
-            e = sjcl.mode.betterCBC.encryptChunk( {
+            var e = sjcl.mode.betterCBC.encryptChunk( {
                 buffer: this.get('buffer')
                 , iv: this.get('iv')
                 , key: this.get('key')
@@ -52,7 +52,7 @@ define(['tools/uploader'],function(Uploader){
         },
 
         decryptChunk:function(){
-            d = sjcl.mode.betterCBC.decryptChunk( {
+            var d = sjcl.mode.betterCBC.decryptChunk( {
                 buffer: this.get('buffer')
                 , iv: this.get('iv')
                 , key: this.get('key')
@@ -83,6 +83,7 @@ define(['tools/uploader'],function(Uploader){
             };
 
             this.set('buffer',buf)
+            return buf;
         },
 
         //The callback will contain the linkName
@@ -93,8 +94,26 @@ define(['tools/uploader'],function(Uploader){
 
             Uploader.prototype.send(location, chunkData, linkName, function(response){
                 result = JSON.parse(response)
-                callback(result.return.filename)
+                callback(result.return)
             })
+        },
+
+        //callback will return the binary data 
+        download: function(callback){
+            if ( !this.has('linkName') || !this.has('linkKey') )
+            {
+                console.error('link name or link key is not set');
+            }
+
+            Downloader.prototype.downloadFile(this.get('linkName'), this.get('linkKey'), callback)
+        },
+
+        readData: function(){
+            var stringBufferView = new Uint8Array(this.get('buffer'))
+            var data = String.fromCharCode.apply(this,stringBufferView)
+
+            console.log(data);
+            return data;
         },
 
     })

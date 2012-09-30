@@ -1,10 +1,11 @@
 //returns routes that will be used in the Home page (so most pages)
 
-define(["views/Home","views/Info"],function(HomeView, InfoView){ 
+define(["views/Home","views/Info", "views/File" ],function(HomeView, InfoView, FileView){ 
     return Backbone.Router.extend({
         routes: {
               "info" : "info"
             , "home" : "home"
+            , "download/*linkNameAndPasscode" : "download"
         },
 
         home: function() {
@@ -17,6 +18,15 @@ define(["views/Home","views/Info"],function(HomeView, InfoView){
             info = new InfoView({el:$('body')})
             info.render()
         },
+
+        download: function(linkNameAndPasscode){
+            var linkName = linkNameAndPasscode.split('|')[0]
+            var passcode = linkNameAndPasscode.split('|')[1]
+            file = new FileView(); 
+            file.downloadFile(linkName, passcode);
+
+
+        }
 
 
         

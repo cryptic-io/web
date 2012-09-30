@@ -124,7 +124,7 @@ OutputStruct.prototype.setSubArray = function(array, startIndex){
 
 /*
  * Data structure for a very commonly used temp array
- * Used alot in the chaining methods so it needs to be fast
+ * Used a lot in the chaining methods so it needs to be fast
  */
 
 var TempChainingStruct = function(){
