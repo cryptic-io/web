@@ -116,6 +116,18 @@ define(['tools/uploader','tools/downloader'],function(Uploader, Downloader){
             return data;
         },
 
+        hexDump: function(){
+            var stringBufferView = new Uint16Array(this.get('buffer'))
+            var string = ''
+
+            for (var i = 0; i < stringBufferView.length; i+=1) {
+                if (i%16 == 0) string += ('\n'+(i).toString(16)+'\t')
+                string += ( stringBufferView[i].toString(16) + ' ')
+            }
+            console.log(string.toUpperCase())
+
+        },
+
     })
 })
 

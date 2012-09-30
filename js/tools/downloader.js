@@ -20,15 +20,18 @@ Downloader.prototype = {
     },
 
     downloadFile: function(linkname, key, callback){
-        var request = {command:"downloadFile",filename:linkname,key:key,"meta":{"http":true}}
+        request = {command:"downloadFile",filename:linkname,key:key,"meta":{"http":true}}
 
         var xhr = new XMLHttpRequest();
         var nemo = debug ? "http://localhost:8888/" : "http://crypticcandy.com:8888";
         xhr.open('POST', nemo, true);
 
         xhr.responseType = 'text';
-        //xhr.setRequestHeader('Content-Type','text/plain')
-        xhr.setRequestHeader('Content-Type','application/octet-stream')
+        xhr.setRequestHeader('Content-Type','text/plain')
+        //xhr.setRequestHeader('Content-Type','application/octet-stream')
+        //xhr.setRequestHeader('Content-Type','multipart/mixed')
+        
+        console.log(request)
 
         xhr.onload = function(e) {
           if (this.status == 200) {
