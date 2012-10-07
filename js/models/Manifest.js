@@ -1,4 +1,5 @@
 define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){ 
+    var debug = true;
 
     return Backbone.Model.extend({
 
@@ -59,15 +60,22 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
             var buffer = this.manifestToBuffer()
             manifestChunk = new Chunk({buffer:buffer})
             manifestChunk.encryptChunk();
-            debugger;
+            if(debug){
+                manifestChunk.hexDump()
+            }
             var IVKey = manifestChunk.encodeIVKey()
             this.set('IVKey', IVKey)
+            var t=this;
             manifestChunk.upload(
                 function(linkName){
                     callback({
                         linkName: linkName,
                         IVKey: IVKey
                     })
+                    if (debug){
+                        console.log('uploaded')
+                        console.log(window.location.origin+('#download/'+linkName+'|'+IVKey))
+                    }
                 }
             );
         },
@@ -77,11 +85,24 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
             Downloader.prototype.getKeyAndDownload(linkName, _.bind(function(serializedData){
                 manifestChunk.deserializeChunk(serializedData);
                 manifestChunk.decodeIVKey(passcode)
-                debugger;
-                //manifestChunk.decryptChunk()
-                debugger;
+                if(debug){
+                    console.log('downloaded, dumping hex')
+                    manifestChunk.hexDump()
+                }
 
-                this.bufferToManifest(manifestChunk.get('buffer'));
+                try{
+                    manifestChunk.decryptChunk()
+                }catch(err){
+                    console.log('decryption failed')
+                    return;
+                }
+
+                try{
+                    this.bufferToManifest(manifestChunk.get('buffer'));
+                }catch(error){
+                    console.error("couldn't parse text");
+                    return
+                }
 
                 if (callback) callbacK()
 
@@ -109,7 +130,6 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
                 }
             }
 
-            debugger;
 
             return buffer
         },

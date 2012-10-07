@@ -94,6 +94,7 @@ define(["test/data","models/Chunk", "models/Manifest","models/ChunkWorkerInterfa
         download: function(link, passcode, callback) {
             this.manifest.downloadManifest(linkName, passcode, _.bind(function(){
                 console.log('we got the manifest!');
+                callback();
             },this))
         },
     }

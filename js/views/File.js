@@ -39,9 +39,9 @@ define(["models/File","jade!templates/FileUpload"], function(FileModel, template
             })
         },
 
-        downloadFile: function(linkName, passcode){
+        downloadFile: function(linkName, passcode, callback){
             this.model = new FileModel();
-            this.model.download(linkName, passcode);
+            this.model.download(linkName, passcode, callback);
         },
 
         fileLoaded: function(){

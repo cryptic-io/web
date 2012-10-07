@@ -5,6 +5,7 @@ define(["views/Home","views/Info", "views/File" ],function(HomeView, InfoView, F
         routes: {
               "info" : "info"
             , "home" : "home"
+            , "test" : "test"
             , "download/*linkNameAndPasscode" : "download"
         },
 
@@ -24,9 +25,13 @@ define(["views/Home","views/Info", "views/File" ],function(HomeView, InfoView, F
             var passcode = linkNameAndPasscode.split('|')[1]
             file = new FileView(); 
             file.downloadFile(linkName, passcode);
+        },
 
+        test: function(){
+            console.log('starting test')
 
-        }
+            jas = require(['test/jasmine'])
+        },
 
 
         

@@ -62,7 +62,6 @@ dependencies, function(require){
         ['models/File','views/File','views/MusicPlayer','test/test','routes/Home','models/ChunkWorkerInterface','tools/downloader'],
         function(FileModel, FileView, MusicPlayer, test, HomeRouter, ChunkWorkerInterface, Downloader) {
             dler = new Downloader()
-
             
             router = new HomeRouter();
             var givenPage = Backbone.history.start()
@@ -73,7 +72,7 @@ dependencies, function(require){
             var fileView = new FileView({el:$('#uploadForm')});
             fileView.render()
             ballz = test
-
+            
             wi = ChunkWorkerInterface;
 
             worker = new ChunkWorkerInterface({buffer:test.buffer})

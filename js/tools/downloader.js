@@ -13,7 +13,14 @@ Downloader.prototype = {
         xhr.onload = function(e) {
           if (this.status == 200) {
             console.log(this.response);
-            if (callback) callback(JSON.parse(this.response).return)
+            try {
+                if (callback) callback(JSON.parse(this.response).return)
+            }catch(err){
+                //debugger;
+                //I really shouldn't have to this so often, so call stack should be fine
+                Downloader.prototype.getFileKeys(linknames, callback);
+                return;
+            }
           }
         };
         xhr.send(JSON.stringify(request));
