@@ -131,9 +131,17 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface'],function
 
         download: function(linkName, passcode, callback){
 
-            this.manifest.downloadManifest(linkName, passcode, _.bind(function(){
+            this.manifest.downloadManifest(linkName, passcode, _.bind(function(manifest){
                 console.log('we got the manifest!');
+                this.manifest=manifest
+                callback();
             },this))
+        },
+
+        createChunksFromManifest: function(){
+        },
+
+        downloadChunks: function(){
         },
 
         getArrayBufferChunk:function(start, end, callback){

@@ -73,6 +73,21 @@ define(['models/Chunk'],function(Chunk){
 
         },
 
+        download: function(callback){
+            var command = "download"
+
+
+            this.worker.postMessage({
+                "command":command
+            })
+
+            //We listen in for the event that will be triggered when the worker is done
+            this.bindSuccess(command,callback)
+
+            //If we wanted to account for an error we could do
+            this.bindError(command,function(result){ console.error('There was an error with the worker',result)})
+        },
+
 
         callbackHandler: function(event){
             if (event.data.command){

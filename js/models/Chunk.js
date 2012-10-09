@@ -92,7 +92,7 @@ define(['tools/uploader','tools/downloader'],function(Uploader, Downloader){
             var linkName = Math.random().toString(36).substring(2);
             var chunkData = this.serializeChunk(this.get('buffer'))
 
-            Uploader.prototype.send(location, chunkData, linkName, function(response){
+            Uploader.prototype.send(location, this.get('buffer'), linkName, function(response){
                 result = JSON.parse(response)
                 callback(result.return)
             })
@@ -105,7 +105,17 @@ define(['tools/uploader','tools/downloader'],function(Uploader, Downloader){
                 console.error('link name or link key is not set');
             }
 
-            Downloader.prototype.downloadFile(this.get('linkName'), this.get('linkKey'), callback)
+            Downloader.prototype.downloadFile(
+                this.get('linkName'),
+                this.get('linkKey'), 
+                _.bind(function(arraybuffer){
+                    this.set('buffer',arraybuffer)
+                    //we are also going to decrypt here to save another worker message
+                    this.decryptChunk()
+                    //passing the data back just to test
+                    if (callback) callback(this.readData())
+                },this)
+            )
         },
 
         readData: function(){

@@ -15,6 +15,7 @@ require({
 
         var command = {
             initializeChunk: function(args){
+                //No need to serialize buffer; there should be a way to pass in an arraybuffer
                 var serializedBuffer = args.arrayBuffer;
                 var entropy = args.entropy;
                 sjcl.random.addEntropy(entropy,256)
@@ -34,6 +35,18 @@ require({
                         command:"upload",
                         status:"success",
                         result:linkName
+                    })
+                })
+            },
+
+            download: function(args){
+                this.chunk = new Chunk({'linkName':args.linkName, 'linkKey':args.linkKey})
+                this.chunk.decodeIVKey(args.IVKey)
+                this.chunk.download(function(data){
+                    this.postMessage({
+                        command:"upload",
+                        status:"success",
+                        result:data
                     })
                 })
             },

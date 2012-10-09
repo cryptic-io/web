@@ -19,12 +19,6 @@ define(['test/test','models/File','js/test/jasmine/lib/jasmine.js','js/test/jasm
         })
     })
 
-    describe('this is another suite, it should fail', function(){
-        it('should do nothing of real value', function(){
-            expect(true).toBe(true);
-        })
-    })
-
     //This will be async hence the need for the runs and waitsFor
     describe('this should upload and download the file', function(){
         var encryptedLink = undefined;
@@ -63,7 +57,7 @@ define(['test/test','models/File','js/test/jasmine/lib/jasmine.js','js/test/jasm
 
             waitsFor(function(){
                 return downloaded;
-            },'Failed to download File',2e3)
+            },'the file to download',4e3)
 
             runs(function(){
                 expect(downloaded).toBe(true)

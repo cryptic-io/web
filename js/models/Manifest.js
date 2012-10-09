@@ -81,9 +81,8 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
         },
 
         downloadManifest: function(linkName, passcode, callback){
-            var manifestChunk = new Chunk();
-            Downloader.prototype.getKeyAndDownload(linkName, _.bind(function(serializedData){
-                manifestChunk.deserializeChunk(serializedData);
+            Downloader.prototype.getKeyAndDownload(linkName, _.bind(function(buffer){
+                var manifestChunk = new Chunk({buffer:buffer});
                 manifestChunk.decodeIVKey(passcode)
                 if(debug){
                     console.log('downloaded, dumping hex')
@@ -104,7 +103,7 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
                     return
                 }
 
-                if (callback) callbacK()
+                if (callback) callback(this)
 
             },this))
         },
