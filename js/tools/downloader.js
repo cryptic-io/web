@@ -1,5 +1,5 @@
 //helper tool to download
-var debug = true;
+var debug = false;
 var Downloader = function() {
 };
 
