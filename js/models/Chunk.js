@@ -102,7 +102,7 @@ define(['tools/uploader','tools/downloader'],function(Uploader, Downloader){
         download: function(callback){
             if ( !this.has('linkName') || !this.has('linkKey') )
             {
-                console.error('link name or link key is not set');
+                //console.error('link name or link key is not set');
             }
 
             Downloader.prototype.downloadFile(
@@ -113,7 +113,7 @@ define(['tools/uploader','tools/downloader'],function(Uploader, Downloader){
                     //we are also going to decrypt here to save another worker message
                     this.decryptChunk()
                     //passing the data back just to test
-                    if (callback) callback(this.readData())
+                    if (callback) callback()
                 },this)
             )
         },
@@ -122,7 +122,6 @@ define(['tools/uploader','tools/downloader'],function(Uploader, Downloader){
             var stringBufferView = new Uint8Array(this.get('buffer'))
             var data = String.fromCharCode.apply(this,stringBufferView)
 
-            console.log(data);
             return data;
         },
 
