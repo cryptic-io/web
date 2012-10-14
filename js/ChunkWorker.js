@@ -80,6 +80,24 @@ require({
                 })
 
             },
+
+            writeToFile: function(ars){
+                this.chunk.writeToFile(args.fs, args.manifest
+                   //successCallback
+                   , function(){
+                        this.postMessage({
+                            command:"writeToFile"
+                            , status: "success"
+                        })
+                   }
+                   //failureCallback
+                   , function(){
+                        this.postMessage({
+                            command:"writeToFile"
+                            , status: "error" })
+                   }
+              )
+            },
         }
 
 

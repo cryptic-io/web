@@ -1,4 +1,4 @@
-define(['tools/uploader','tools/downloader'],function(Uploader, Downloader){ 
+define(['tools/uploader','tools/downloader','tools/FileSystemHandler'],function(Uploader, Downloader){ 
 
     return Backbone.Model.extend({
 
@@ -116,6 +116,19 @@ define(['tools/uploader','tools/downloader'],function(Uploader, Downloader){
                     if (callback) callback(this.readData())
                 },this)
             )
+        },
+
+        writeToFile: function(fs, manifest, callback, errCallback){
+            FileSystemHandler.appendToFile({
+                { 
+                  successCallback: callback
+                  , errorCallback: errCallback
+                  , name: manifest.name
+                  , fs: fs
+                  , data: this.get('buffer')
+                  , type: manifest.type
+                }
+            })
         },
 
         readData: function(){

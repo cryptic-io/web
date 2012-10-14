@@ -10,8 +10,42 @@
 
 
 
-FSHandler = {
-    requestFS:function(options){
+FileSystemHandler = {
+
+    defaultErrHandler: function(){
+        var msg = '';
+
+        switch (e.code) {
+          case FileError.QUOTA_EXCEEDED_ERR:
+            msg = 'QUOTA_EXCEEDED_ERR';
+            break;
+          case FileError.NOT_FOUND_ERR:
+            msg = 'NOT_FOUND_ERR';
+            break;
+          case FileError.SECURITY_ERR:
+            msg = 'SECURITY_ERR';
+            break;
+          case FileError.INVALID_MODIFICATION_ERR:
+            msg = 'INVALID_MODIFICATION_ERR';
+            break;
+          case FileError.INVALID_STATE_ERR:
+            msg = 'INVALID_STATE_ERR';
+            break;
+          default:
+            msg = 'Unknown Error';
+            break;
+        };
+        console.error('Error: ' + msg);
+    },
+
+
+    /** 
+     *  Fetches the FileSystem if it hasn't been given
+     *  
+     */
+
+    fetchFS: function(options, callback){
+
     },
 
 
@@ -28,6 +62,8 @@ FSHandler = {
     createFile: function(options){
         var fs = options.fs;
         , name = options.name;
+        
+        options.errorCallback = options.errorCallback || this.defaultErrHandler
 
         fs.root.getFile(name, {create:true, exclusive:true}, options.successCallback, 
             //Error Function, the file might already exist, so we need to delete it
@@ -60,6 +96,8 @@ FSHandler = {
         var fs = options.fs;
         , name = options.name;
 
+        options.errorCallback = options.errorCallback || this.defaultErrHandler
+
         fs.root.getFile(name, {create:false}, function(fileEntry){
             fileEntry.createWriter(function(fileWriter) {
                 fileWriter.seek(fileWriter.length)
@@ -74,4 +112,4 @@ FSHandler = {
 }
     
 //define for requirejs
-define(function(){return FSHandler});
+define(function(){return FileSystemHandler});

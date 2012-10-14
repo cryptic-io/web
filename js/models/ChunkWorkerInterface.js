@@ -70,7 +70,6 @@ define(['models/Chunk'],function(Chunk){
             //If we wanted to account for an error we could do
             this.bindError(command,function(result){ console.error('There was an error with the worker',result)})
 
-
         },
 
         download: function(callback){
@@ -79,6 +78,22 @@ define(['models/Chunk'],function(Chunk){
 
             this.worker.postMessage({
                 "command":command
+            })
+
+            //We listen in for the event that will be triggered when the worker is done
+            this.bindSuccess(command,callback)
+
+            //If we wanted to account for an error we could do
+            this.bindError(command,function(result){ console.error('There was an error with the worker',result)})
+        },
+
+        writToFile: function(fs, manifestObj, callback){
+            this.command = 'writeToFile'
+
+            this.worker.postMessage({
+                "command":command
+                , manifest: manifestObj
+                , fs: fs
             })
 
             //We listen in for the event that will be triggered when the worker is done
