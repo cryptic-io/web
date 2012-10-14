@@ -10,7 +10,7 @@
 
 
 
-FSHelper = {
+FSHandler = {
     requestFS:function(options){
     },
 
@@ -74,4 +74,4 @@ FSHelper = {
 }
     
 //define for requirejs
-define(function(){return FSHelper});
+define(function(){return FSHandler});
