@@ -1,5 +1,5 @@
 //helper tool to download
-var debug = true;
+var debug = false;
 var Downloader = function() {
 };
 
@@ -14,10 +14,13 @@ Downloader.prototype = {
           if (this.status == 200) {
             console.log(this.response);
             try {
-                if (callback) callback(JSON.parse(this.response).return)
+                var fileKeys = JSON.parse(this.response).return
+                var fileKeysObj = {}
+                fileKeys.forEach(function(fileKey){ fileKeysObj[fileKey.filename] = fileKey.key })
+                if (typeof callback != 'undefined') callback(fileKeysObj)
             }catch(err){
-                //debugger;
                 //I really shouldn't have to this so often, so call stack should be fine
+                console.error('There was an error',err)
                 Downloader.prototype.getFileKeys(linknames, callback);
                 return;
             }
@@ -30,7 +33,7 @@ Downloader.prototype = {
         request = {command:"downloadFile",filename:linkname,key:key,"meta":{"http":true}}
 
         var xhr = new XMLHttpRequest();
-        var nemo = debug ? "http://localhost:8888" : "http://localhost:8888";
+        var nemo = debug ? "http://localhost:8888" : "http://crypticcandy.com:8888";
         xhr.open('POST', nemo, true);
 
         xhr.responseType = 'arraybuffer';
@@ -38,7 +41,7 @@ Downloader.prototype = {
 
         xhr.onload = function(e) {
           if (this.status == 200) {
-            console.log(this.response);
+            //console.log(this.response);
             if (callback) callback(this.response)
           }
         };
@@ -50,8 +53,8 @@ Downloader.prototype = {
 
     //a helper function
     getKeyAndDownload: function(linkname, callback){
-        this.getFileKeys([linkname], _.bind(function(response){
-            var key = response[0].key
+        this.getFileKeys([linkname], _.bind(function(fileKeyObj){
+            var key = _.values(fileKeyObj)[0]
             this.downloadFile(linkname,key, callback)
         },this))
     }

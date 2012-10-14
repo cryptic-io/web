@@ -133,15 +133,56 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface'],function
 
             this.manifest.downloadManifest(linkName, passcode, _.bind(function(manifest){
                 console.log('we got the manifest!');
-                this.manifest=manifest
-                callback();
+                this.manifest = manifest
+                this.createChunksFromManifest()
+                this.downloadChunks(null,callback)
             },this))
         },
 
-        createChunksFromManifest: function(){
+        //mainly for testing, ouputs text
+        readFile: function(){
+            fileData = _.map(this.get('chunks'), function(chunk){
+                return chunk.readData()
+            })
+            return fileData.join('')
         },
 
-        downloadChunks: function(){
+        createChunksFromManifest: function(){
+            var chunks = _.clone(this.manifest.get('chunks'));
+            //convert the chunks obj into an array 
+            chunks = _.values(chunks)
+            //Sort the array 
+            chunks = _.sortBy(chunks, function(chunk){ return chunk.part } )
+
+            //create the chunk workers
+            chunks = _.map(chunks, function(chunk){ return (new ChunkWorkerInterface({chunkInfo:chunk})) } )
+            this.set('chunks',chunks)
+
+            //now the chunk workers are ready for some downloading action
+
+        },
+
+        //Speciy which chunk you want. if unspecified will default to all
+        downloadChunks: function(whichChunks, callback){
+            //get all the chunks if whichChunks haven't been specified
+            var chunks = (whichChunks === null) ? this.get('chunks') : whichChunks
+
+            //only execute the callback after all the chunks have downloaded
+            asyncExecuteCallback = _.after(chunks.length, callback)
+
+            //we need to get the fileKeys
+            this.manifest.fetchChunkKeys(_.bind(function(chunkKeys){
+                //download each chunk
+                _.each(chunks, function(chunk){
+                    chunk.download({
+                        linkName: chunk.get('chunkInfo')['linkName']
+                        , linkKey: chunkKeys[chunk.get('chunkInfo')['linkName']]
+                        , IVKey: chunk.get('chunkInfo')['IVKey']
+                    }, asyncExecuteCallback )
+                })
+
+            },this))
+
         },
 
         getArrayBufferChunk:function(start, end, callback){

@@ -108,6 +108,12 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
             },this))
         },
 
+        fetchChunkKeys: function(callback){
+            var chunks = _.values(this.get('chunks'))
+            chunks = _.map(chunks, function(chunk) { return chunk.linkName } )
+            Downloader.prototype.getFileKeys(chunks, callback)
+        },
+
         manifestToBuffer: function(){
             var manifestData = JSON.stringify(this.toJSON())
 

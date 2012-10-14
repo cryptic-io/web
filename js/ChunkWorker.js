@@ -15,15 +15,23 @@ require({
 
         var command = {
             initializeChunk: function(args){
-                //No need to serialize buffer; there should be a way to pass in an arraybuffer
-                var serializedBuffer = args.arrayBuffer;
                 var entropy = args.entropy;
                 sjcl.random.addEntropy(entropy,256)
-                this.chunk = new Chunk() 
-                this.chunk.deserializeChunk(serializedBuffer);
+                this.chunk = new Chunk({buffer:args.arrayBuffer}) 
                 this.postMessage({
                     command:"initializeChunk",
                     status:"success"
+                })
+            },
+
+            newEmptyChunk: function(){
+                var entropy = args.entropy;
+                sjcl.random.addEntropy(entropy,256)
+
+                this.chunk = new Chunk() 
+                this.postMessage({
+                    command:"newEmptyChunk"
+                    , status:"success"
                 })
             },
 
@@ -40,13 +48,15 @@ require({
             },
 
             download: function(args){
-                this.chunk = new Chunk({'linkName':args.linkName, 'linkKey':args.linkKey})
+                this.chunk.set({'linkName':args.linkName, 'linkKey':args.linkKey})
                 this.chunk.decodeIVKey(args.IVKey)
-                this.chunk.download(function(data){
+
+                this.chunk.download(function(){
+                var buffer = this.chunk.get('buffer')
                     this.postMessage({
-                        command:"upload",
+                        command:"download",
                         status:"success",
-                        result:data
+                        result:buffer
                     })
                 })
             },

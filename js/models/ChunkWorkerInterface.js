@@ -8,15 +8,15 @@ define(['models/Chunk'],function(Chunk){
         //setup a new worker
         initialize: function(){
             this.worker = new Worker(this.get('workerScript'))
-            var serialized = Chunk.prototype.serializeChunk(this.get('buffer'))
             this.worker.postMessage({
                 command:"initializeChunk"
-                , arrayBuffer:serialized
+                , arrayBuffer:this.get('buffer')
                 , entropy: sjcl.random.randomWords(8)
             })
 
             this.worker.onmessage = _.bind(this.callbackHandler,this)
         },
+
 
         bindSuccess: function(command, callback){
             //Only want this to happen once
@@ -72,16 +72,21 @@ define(['models/Chunk'],function(Chunk){
 
         },
 
-        download: function(callback){
+        download: function(args, callback){
             var command = "download"
-
 
             this.worker.postMessage({
                 "command":command
+                , linkName: args.linkName
+                , linkKey: args.linkKey
+                , IVKey: args.IVKey
             })
 
             //We listen in for the event that will be triggered when the worker is done
-            this.bindSuccess(command,callback)
+            this.bindSuccess(command,_.bind(function(arrayBuffer){
+                this.set('buffer',arrayBuffer)
+                if(callback) callback()
+            },this))
 
             //If we wanted to account for an error we could do
             this.bindError(command,function(result){ console.error('There was an error with the worker',result)})
@@ -101,6 +106,13 @@ define(['models/Chunk'],function(Chunk){
 
             //If we wanted to account for an error we could do
             this.bindError(command,function(result){ console.error('There was an error with the worker',result)})
+        },
+
+        readData: function(){
+            var stringBufferView = new Uint8Array(this.get('buffer'))
+            var data = String.fromCharCode.apply(this,stringBufferView)
+
+            return data;
         },
 
 

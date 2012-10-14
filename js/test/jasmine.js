@@ -44,7 +44,6 @@ define(['test/test','models/File','js/test/jasmine/lib/jasmine.js','js/test/jasm
         it ('should download and decrypt the file', function(){
 
             var downloaded = false;
-            var callback = function(){console.log('woohoo downloaded the file!'); downloaded = true;}
 
             //spyOn(callback)
 
@@ -55,9 +54,17 @@ define(['test/test','models/File','js/test/jasmine/lib/jasmine.js','js/test/jasm
                 file.download(testlinkData.linkName, testlinkData.IVKey, callback);
             })
 
+            var callback = function(){
+                console.log('woohoo downloaded the file!');
+                downloaded = true;
+                fileData = file.readFile()
+                console.log(fileData);
+                
+            }
+
             waitsFor(function(){
                 return downloaded;
-            },'the file to download',4e3)
+            },'the file to download',5e3)
 
             runs(function(){
                 expect(downloaded).toBe(true)
