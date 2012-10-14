@@ -60,7 +60,7 @@ FileSystemHandler = {
      *  }
      */
     createFile: function(options){
-        var fs = options.fs;
+        var fs = options.fs
         , name = options.name;
         
         options.errorCallback = options.errorCallback || this.defaultErrHandler
@@ -93,7 +93,7 @@ FileSystemHandler = {
      *
      */
     appendToFile: function(options){
-        var fs = options.fs;
+        var fs = options.fs
         , name = options.name;
 
         options.errorCallback = options.errorCallback || this.defaultErrHandler
@@ -101,7 +101,7 @@ FileSystemHandler = {
         fs.root.getFile(name, {create:false}, function(fileEntry){
             fileEntry.createWriter(function(fileWriter) {
                 fileWriter.seek(fileWriter.length)
-                var blob = new Blob([options.data], {type: options:type})
+                var blob = new Blob([options.data], {type: options.type})
 
                 fileWriter.write(blob)
 

@@ -119,7 +119,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler'],function(
         },
 
         writeToFile: function(fs, manifest, callback, errCallback){
-            FileSystemHandler.appendToFile({
+            FileSystemHandler.appendToFile(
                 { 
                   successCallback: callback
                   , errorCallback: errCallback
@@ -128,7 +128,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler'],function(
                   , data: this.get('buffer')
                   , type: manifest.type
                 }
-            })
+            )
         },
 
         readData: function(){
