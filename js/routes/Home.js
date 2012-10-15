@@ -25,8 +25,9 @@ define(["views/Home","views/Info", "views/File" ],function(HomeView, InfoView, F
             var passcode = linkNameAndPasscode.split('|')[1]
             file = new FileView(); 
             file.downloadFile(linkName, passcode, function(){
-                fileData = file.model.readFile();
-                console.log(fileData);
+                debugger;
+                console.log('woohoo downloaded the file!');
+                file.createDownloadLink();
             });
         },
 

@@ -46,6 +46,17 @@ define(["models/File","jade!templates/FileUpload"], function(FileModel, template
 
         fileLoaded: function(){
             console.log('file has been loaded!');
+        },
+
+        createDownloadLink: function(){
+            this.model.getFileEntry(_.bind(function(fileEntry){
+                var a = document.createElement('a')
+                a.download = this.manifest.get('name')
+                a.href = fileEntry.toURL();
+                a.innerText='DOWNLOAD FILE'
+                document.body.appendChild(a)
+            },this.model))
+
         }
 
 

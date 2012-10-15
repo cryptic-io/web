@@ -69,7 +69,7 @@ dependencies, function(require){
                 router.navigate('home',{trigger:true})
             }
 
-            var fileView = new FileView({el:$('#uploadForm')});
+            fileView = new FileView({el:$('#uploadForm')});
             fileView.render()
             ballz = test
             

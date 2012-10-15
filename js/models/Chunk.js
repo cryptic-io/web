@@ -1,10 +1,10 @@
-define(['tools/uploader','tools/downloader','tools/FileSystemHandler'],function(Uploader, Downloader){ 
+define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/FileSystem'],function(Uploader, Downloader, FileSystemHandler, FileSystem){ 
 
     return Backbone.Model.extend({
 
         defaults: {
            encryptor: sjcl.mode.betterCBC,
-           chunkSize: 1e6 //1 000 000  == 1MB
+           chunkSize: 1e7 //1 0 000 000  == 10MB
         },
 
         initialize:  function(options){
@@ -118,17 +118,29 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler'],function(
             )
         },
 
-        writeToFile: function(fs, manifest, callback, errCallback){
+        writeToFile: function(fileSystem, manifest, callback, errCallback){
+            debugger;
+            var buffer = this.get('buffer')
+            var chunkCount = _.keys(manifest.chunks).length -1 //zero indexed
+            //if this is the last chunk only write the amount needed to the file
+            if ( this.get('chunkInfo').part == chunkCount){
+                var lastChunkSize =  manifest.size - (chunkCount*this.get('chunkSize'))
+
+                buffer = buffer.slice(0, lastChunkSize)
+            }
+
+            var fileSystem = new FileSystem()
             FileSystemHandler.appendToFile(
                 { 
                   successCallback: callback
                   , errorCallback: errCallback
                   , name: manifest.name
-                  , fs: fs
-                  , data: this.get('buffer')
+                  , fileSystem: fileSystem
+                  , data: buffer
                   , type: manifest.type
                 }
             )
+
         },
 
         readData: function(){

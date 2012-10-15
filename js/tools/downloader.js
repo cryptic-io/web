@@ -1,5 +1,5 @@
 //helper tool to download
-var debug = false;
+var debug = true;
 var Downloader = function() {
 };
 
@@ -17,13 +17,13 @@ Downloader.prototype = {
                 var fileKeys = JSON.parse(this.response).return
                 var fileKeysObj = {}
                 fileKeys.forEach(function(fileKey){ fileKeysObj[fileKey.filename] = fileKey.key })
-                if (typeof callback != 'undefined') callback(fileKeysObj)
             }catch(err){
                 //I really shouldn't have to this so often, so call stack should be fine
                 console.error('There was an error',err)
                 Downloader.prototype.getFileKeys(linknames, callback);
                 return;
             }
+            if (typeof callback != 'undefined') callback(fileKeysObj)
           }
         };
         xhr.send(JSON.stringify(request));

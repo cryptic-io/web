@@ -6,6 +6,12 @@ define(["test/data","models/Chunk", "models/Manifest","models/ChunkWorkerInterfa
 
         //preserve the actual length of the data
         dataLength: unEncryptedData.length,
+
+        //the type of the file
+        type: 'text/plain',
+
+        //original filename
+        name: 'test.txt',
         
         //We need to pad it so it is divisble by 32
         buffer : new ArrayBuffer( ( unEncryptedData.length + (32-(unEncryptedData.length%32) ) ) ) ,
@@ -13,7 +19,7 @@ define(["test/data","models/Chunk", "models/Manifest","models/ChunkWorkerInterfa
         //This isn't necessary, but provides access to the Chunk model from command line
         Chunk: Chunk,
         
-        manifest: new Manifest(),
+        manifest: new Manifest({ type:'text/plain', name:'test.txt', size:unEncryptedData.length }),
 
         //read the file from the input
         loadFile: function(){

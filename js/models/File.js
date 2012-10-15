@@ -1,5 +1,5 @@
 //returns the file model
-define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface'],function(Chunk, Manifest, ChunkWorkerInterface){ 
+define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/FileSystem', 'tools/FileSystemHandler'],function(Chunk, Manifest, ChunkWorkerInterface, FileSystem, FileSystemHandler){ 
     return Backbone.Model.extend({
 
         defaults:{
@@ -11,18 +11,25 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface'],function
              *
             */
 
-           chunkSize : 1e6 // 10 MB
+           chunkSize : 1e6 // 1 MB
            , uploadURL: 'api/uploadFile'
            , encryptor: sjcl.mode.betterCBC
+           , webworkers: true
 
         },
 
-        manifest: new Manifest(),
+        fileSystem: new FileSystem(),
 
         initialize: function(){
 
             //Unfortunately somethings have vendor prefixes so we'll get that sorted right here and now
             File.prototype.slice = File.prototype.webkitSlice ? File.prototype.webkitSlice : File.prototype.mozSlice;
+
+            if (this.has('file')){
+                this.manifest = new Manifest( _.pick( this.get('file'), 'name', 'type', 'size' ) );
+            }else{
+                this.manifest = new Manifest();
+            }
         },
 
         //splits the file into several chunks of size specified by the argument ( in bytes )
@@ -39,7 +46,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface'],function
             //see if we need padding
             //32 is becasue the encryption works on a 32 bit array
             //we add one more chunk for padding sake
-            if ( (file.size%chunkSize)%32 != 0 )  chunkCount++;
+            //if ( (file.size%chunkSize)%32 != 0 )  chunkCount++;
             
 
             if (this.has('chunks')) return callback(this.get('chunks'));
@@ -62,37 +69,36 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface'],function
                 var end = counter < file.size ? counter : file.size;
 
                 //It has to fit withing 32*4 because 32 bits is the int size used in data encryption and 4 because AES operates on 4 ints at a time for decryption
+                //Then it has to divide by 8 because 8 bits in a byte
+                //so 2^5 * 2^2 / 2^3  == 16
                 if ( (end - start)%(16) != 0){
                     leftover = (end - start)%(16)
+                    paddedSize  = (16 - leftover) + (end-start)
+                    
+
+
+                    console.log('padding is necessary')
+
                     padding = true;
-                    end -= leftover;
+                    //end -= leftover;
+
                 }
 
                 this.getArrayBufferChunk(start, end, function(buffer){
+
+                    if (padding){
+                        var copierDest = new Uint8Array(paddedSize)
+                        var copierSource = new Uint8Array(buffer)
+                        _.each(copierSource, function(byte, index){ copierDest[index] = byte })
+                        buffer = copierDest.buffer;
+                    }
+
                     chunks.push(
                         new ChunkWorkerInterface({buffer:buffer})
                     )
                     saveChunks(chunks)
                 })
                 
-                //We need to created a padded chunk that contains the last couple of bytes of information
-                if (padding){
-                    start = end;
-                    end = file.size + 32-leftover
-                    counter += chunkSize;
-                    this.getArrayBufferChunk(start, end, function(buffer){
-                        paddedBuffer = new ArrayBuffer(32)
-
-                        buffer1View = new Int8Array(buffer)
-                        buffer2View = new Int8Array(paddedBuffer)
-                        for (var i = 0; i < buffer1View.length; i++) {
-                            buffer2View[i] = buffer1View[i]
-                        };
-
-                        chunks.push(new ChunkWorkerInterface({buffer:paddedBuffer}));
-                        saveChunks(chunks)
-                    })
-                }
 
             }
 
@@ -135,16 +141,8 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface'],function
                 console.log('we got the manifest!');
                 this.manifest = manifest
                 this.createChunksFromManifest()
-                this.downloadChunks(null,callback)
+                this.downloadChunks(callback)
             },this))
-        },
-
-        //mainly for testing, ouputs text
-        readFile: function(){
-            fileData = _.map(this.get('chunks'), function(chunk){
-                return chunk.readData()
-            })
-            return fileData.join('')
         },
 
         createChunksFromManifest: function(){
@@ -155,7 +153,12 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface'],function
             chunks = _.sortBy(chunks, function(chunk){ return chunk.part } )
 
             //create the chunk workers
-            chunks = _.map(chunks, function(chunk){ return (new ChunkWorkerInterface({chunkInfo:chunk})) } )
+            if (this.get('webworkers')){
+                chunks = _.map(chunks, function(chunk){ return (new ChunkWorkerInterface({chunkInfo:chunk})) } )
+            }else{
+                chunks = _.map(chunks, function(chunk){ return (new Chunk({chunkInfo:chunk})) } )
+            }
+
             this.set('chunks',chunks)
 
             //now the chunk workers are ready for some downloading action
@@ -163,27 +166,110 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface'],function
         },
 
         //Speciy which chunk you want. if unspecified will default to all
-        downloadChunks: function(whichChunks, callback){
+        downloadChunks: function(callback){
             //get all the chunks if whichChunks haven't been specified
-            var chunks = (whichChunks === null) ? this.get('chunks') : whichChunks
+            var chunks = this.get('chunks')
 
-            //only execute the callback after all the chunks have downloaded
-            asyncExecuteCallback = _.after(chunks.length, callback)
+            //get more space for the new file
+            this.fileSystem.requestMoreSpace(this.manifest.get('size')+1024*1024, _.bind(function(fs){
 
-            //we need to get the fileKeys
-            this.manifest.fetchChunkKeys(_.bind(function(chunkKeys){
-                //download each chunk
-                _.each(chunks, function(chunk){
-                    chunk.download({
-                        linkName: chunk.get('chunkInfo')['linkName']
-                        , linkKey: chunkKeys[chunk.get('chunkInfo')['linkName']]
-                        , IVKey: chunk.get('chunkInfo')['IVKey']
-                    }, asyncExecuteCallback )
+                //create the file and delete it if it already exists
+                FileSystemHandler.createFile({
+                    successCallback: _.bind(function(){
+
+                        //callback after all the chunks have been written
+                        var asyncCallback = _.after(chunks.length, callback)
+
+                        //we need to get the fileKeys
+                        this.manifest.fetchChunkKeys(_.bind(function(chunkKeys){
+                            //download each chunk
+                            var chunk = chunks[0];
+
+                            this.downloadChunk(chunk, chunkKeys, asyncCallback)
+
+                        },this))
+
+                    },this)
+                    , name: this.manifest.get('name')
+                    , fileSystem: this.fileSystem
                 })
 
+
+            }, this))
+
+        },
+
+        downloadChunk: function(chunk, chunkKeys, callback){
+
+            if ( !this.get('webworkers') ){
+                var args = {
+                    linkName: chunk.get('chunkInfo')['linkName']
+                    , linkKey: chunkKeys[chunk.get('chunkInfo')['linkName']]
+                    , IVKey: chunk.get('chunkInfo')['IVKey']
+                }
+                chunk.set({'linkName':args.linkName, 'linkKey':args.linkKey})
+                chunk.decodeIVKey(args.IVKey)
+
+                chunk.download(_.bind(function(){
+
+                    var chunks = this.get('chunks')
+
+                    this.writeChunk(chunk,chunkKeys, callback);
+                },this) )
+
+            }else{
+
+
+                chunk.download({
+                    linkName: chunk.get('chunkInfo')['linkName']
+                    , linkKey: chunkKeys[chunk.get('chunkInfo')['linkName']]
+                    , IVKey: chunk.get('chunkInfo')['IVKey']
+                }, _.bind(function(){
+                    this.writeChunk(chunk, chunkKeys, callback);
+                },this) )
+            }
+
+        },
+
+        writeChunk: function(chunk, chunkKeys, callback){
+            chunk.writeToFile(this.fileSystem, this.manifest.toJSON(), _.bind(function(){
+
+                var chunks = this.get('chunks')
+                if (chunk.get( 'chunkInfo' )['part']+1 < chunks.length){
+                    var nextChunk = chunks[chunk.get( 'chunkInfo' )['part']+1]
+                    //chunk.terminate();
+                    this.downloadChunk(nextChunk, chunkKeys, callback)
+                    
+                }
+
+                callback()
             },this))
 
         },
+
+        getFileEntry: function(callback){
+            var name = this.manifest.get('name')
+            this.fileSystem.getFileSystem(function(fs){
+                fs.root.getFile(name, {}, callback)
+            })
+        },
+
+
+        //mainly for testing, ouputs text
+        readFile: function(callback){
+            this.getFileEntry(function(fileEntry){
+                fileEntry.file(function(file){
+                    var reader = new FileReader();
+                    reader.onloadend = function(e){
+                        callback(this.result)
+                    }
+                    reader.readAsText(file)
+                })
+            })
+        },
+
+
+
 
         getArrayBufferChunk:function(start, end, callback){
 

@@ -57,8 +57,19 @@ define(['test/test','models/File','js/test/jasmine/lib/jasmine.js','js/test/jasm
             var callback = function(){
                 console.log('woohoo downloaded the file!');
                 downloaded = true;
-                fileData = file.readFile()
-                console.log(fileData);
+                file.readFile(function(fileData){
+                    console.log(fileData);
+                });
+
+                file.getFileEntry(function(fileEntry){
+                    var a = document.createElement('a')
+                    a.download = file.manifest.get('name')
+                    a.href = fileEntry.toURL();
+                    a.innerText='DOWNLOAD FILE'
+                    document.body.appendChild(a)
+                    debugger;
+                })
+
                 
             }
 

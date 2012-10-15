@@ -83,22 +83,20 @@ define(['models/Chunk'],function(Chunk){
             })
 
             //We listen in for the event that will be triggered when the worker is done
-            this.bindSuccess(command,_.bind(function(arrayBuffer){
-                this.set('buffer',arrayBuffer)
-                if(callback) callback()
-            },this))
+            this.bindSuccess(command,callback)
 
             //If we wanted to account for an error we could do
             this.bindError(command,function(result){ console.error('There was an error with the worker',result)})
         },
 
-        writToFile: function(fs, manifestObj, callback){
-            this.command = 'writeToFile'
+        writeToFile: function(fileSystem, manifestObj, callback){
+            var command = 'writeToFile'
 
             this.worker.postMessage({
                 "command":command
                 , manifest: manifestObj
-                , fs: fs
+                , fileSystem: fileSystem
+                , chunkInfo: this.get('chunkInfo')
             })
 
             //We listen in for the event that will be triggered when the worker is done
@@ -124,6 +122,10 @@ define(['models/Chunk'],function(Chunk){
             }else{
                 console.log('From worker',event.data)
             }
+        },
+
+        terminate: function(){
+            this.worker.terminate();
         }
     })
 })

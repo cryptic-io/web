@@ -5,8 +5,8 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
 
         defaults: {
         /** These are what the manifest object would look like
-           filename: coolFileBro.txt
-           type: 'test/plain'
+           name: coolFileBro.txt
+           type: 'text/plain'
            size: 1e6 //1 MB
            linkName: 'jeJDxkie'
            chunks: {

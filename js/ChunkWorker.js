@@ -52,11 +52,9 @@ require({
                 this.chunk.decodeIVKey(args.IVKey)
 
                 this.chunk.download(function(){
-                var buffer = this.chunk.get('buffer')
                     this.postMessage({
                         command:"download",
                         status:"success",
-                        result:buffer
                     })
                 })
             },
@@ -91,21 +89,22 @@ require({
 
             },
 
-            writeToFile: function(ars){
-                this.chunk.writeToFile(args.fs, args.manifest
+            writeToFile: function(args){
+                this.chunk.set('chunkInfo',args.chunkInfo)
+                this.chunk.writeToFile(args.fileSystem, args.manifest
                    //successCallback
-                   , function(){
+                   , _.bind(function(){
                         this.postMessage({
                             command:"writeToFile"
                             , status: "success"
                         })
-                   }
+                   },this)
                    //failureCallback
-                   , function(){
+                   , _.bind(function(){
                         this.postMessage({
                             command:"writeToFile"
                             , status: "error" })
-                   }
+                   },this)
               )
             },
         }
