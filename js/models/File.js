@@ -11,7 +11,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
              *
             */
 
-           webworkers: false
+           webworkers: true
 
         },
 
@@ -239,13 +239,11 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
         },
 
         writeChunk: function(chunk, chunkKeys, callback){
-            console.log('chunk says',chunk.readData(), 'with array of', new Uint8Array(chunk.get('buffer')) )
             chunk.writeToFile(this.fileSystem, this.manifest.toJSON(), _.bind(function(){
 
                 var chunks = this.get('chunks')
                 if (chunk.get( 'chunkInfo' )['part']+1 < chunks.length){
                     var nextChunk = chunks[chunk.get( 'chunkInfo' )['part']+1]
-                    debugger;
                     if (this.get('webworkers')) chunk.terminate();
                     this.downloadChunk(nextChunk, chunkKeys, callback)
                     

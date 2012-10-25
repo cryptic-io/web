@@ -6,7 +6,8 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         defaults: {
            encryptor: sjcl.mode.betterCBC,
 
-           chunkSize: 16 //Specify how big the chunk should be. ******  THIS HAS TO BE DIVISBLE BY 16 ****** (the reason so that we only need pad the last chunk)
+           chunkSize: 1e6  //Specify how big the chunk should be. ******  THIS HAS TO BE DIVISBLE BY 16 ****** (the reason so that we only need pad the last chunk)
+           //chunksize is 1MB
         },
 
         initialize:  function(options){
@@ -56,7 +57,6 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         },
 
         decryptChunk:function(){
-            debugger;
             var d = sjcl.mode.betterCBC.decryptChunk( {
                 buffer: this.get('buffer')
                 , iv: this.get('iv')
