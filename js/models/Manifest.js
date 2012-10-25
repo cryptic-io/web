@@ -55,7 +55,6 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
         uploadManifest: function(callback){
             var buffer = this.manifestToBuffer()
             manifestChunk = new Chunk({buffer:buffer})
-            manifestChunk.encryptChunk();
             if(debug){
                 manifestChunk.hexDump()
             }
@@ -95,7 +94,7 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
                 try{
                     this.bufferToManifest(manifestChunk.get('buffer'));
                 }catch(error){
-                    console.error("couldn't parse text");
+                    console.error("Couldn't parse the manifest");
                     return
                 }
 

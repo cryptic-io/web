@@ -5,7 +5,8 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
         defaults: {
            encryptor: sjcl.mode.betterCBC,
-           chunkSize: 8 //1 000 000  == 1MB
+
+           chunkSize: 16 //Specify how big the chunk should be. ******  THIS HAS TO BE DIVISBLE BY 16 ****** (the reason so that we only need pad the last chunk)
         },
 
         initialize:  function(options){
@@ -55,6 +56,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         },
 
         decryptChunk:function(){
+            debugger;
             var d = sjcl.mode.betterCBC.decryptChunk( {
                 buffer: this.get('buffer')
                 , iv: this.get('iv')
@@ -96,6 +98,9 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
             var chunkData = this.serializeChunk(this.get('buffer'))
 
             var uploader = new Uploader();
+
+            this.encryptChunk();
+
             uploader.send(location, this.get('buffer'), linkName, function(response){
                 result = JSON.parse(response)
                 callback(result.return)
@@ -128,7 +133,6 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
             //if this is the last chunk only write the amount needed to the file
             if ( this.get('chunkInfo').part == chunkCount){
                 var lastChunkSize =  manifest.size - (chunkCount*this.get('chunkSize'))
-                debugger;
 
                 buffer = buffer.slice(0, lastChunkSize)
             }

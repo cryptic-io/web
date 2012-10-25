@@ -37,7 +37,6 @@ require({
 
             upload: function(){
                 //the callback returns the linkName
-                this.chunk.encryptChunk()
                 this.chunk.upload(function(linkName){
                     this.postMessage({
                         command:"upload",
@@ -60,7 +59,7 @@ require({
             },
 
             encryptChunk:function(){
-                this.chunk.encrypt()
+                this.chunk.encryptChunk()
                 this.postMessage({
                     command:"encryptChunk",
                     status:"success"
@@ -69,7 +68,6 @@ require({
 
             decryptChunk: function(){
                 var buffer = this.chunk.decrypt().buffer
-                var serializedBuffer = Chunk.prototype.serializedBuffer(buffer)
 
                 this.postMessage({
                     command:"decryptChunk",

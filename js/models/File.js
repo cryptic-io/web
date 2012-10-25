@@ -125,11 +125,9 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
             for (var i = 0; i < chunks.length; i++) {
                 var chunk = chunks[i]
-                debugger;
                 
                 //bind the function to this and keep the current index inside to function so it doesn't change when called
                 chunk.upload(_.bind(function(index, linkName){
-                    debugger;
                     //save the response here
                     console.log('hello world')
 
@@ -192,7 +190,6 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                             //download each chunk
                             var chunk = chunks[0];
                             this.downloadChunk(chunk, chunkKeys, asyncCallback)
-                            debugger;
 
                         },this))
 
@@ -223,12 +220,12 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
                     var chunks = this.get('chunks')
 
-                    this.writeChunk(chunk,chunkKeys, callback);
+                    this.writeChunk(chunk, chunkKeys, callback);
                 },this) )
 
             }else{
 
-
+                console.log('USING WEBWORKERS')
                 //If there are web workers do this
                 chunk.download({
                     linkName: chunk.get('chunkInfo')['linkName']
@@ -242,11 +239,13 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
         },
 
         writeChunk: function(chunk, chunkKeys, callback){
+            console.log('chunk says',chunk.readData(), 'with array of', new Uint8Array(chunk.get('buffer')) )
             chunk.writeToFile(this.fileSystem, this.manifest.toJSON(), _.bind(function(){
 
                 var chunks = this.get('chunks')
                 if (chunk.get( 'chunkInfo' )['part']+1 < chunks.length){
                     var nextChunk = chunks[chunk.get( 'chunkInfo' )['part']+1]
+                    debugger;
                     if (this.get('webworkers')) chunk.terminate();
                     this.downloadChunk(nextChunk, chunkKeys, callback)
                     
