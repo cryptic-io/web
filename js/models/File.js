@@ -11,10 +11,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
              *
             */
 
-           chunkSize : 1e6 // 1 MB
-           , uploadURL: 'api/uploadFile'
-           , encryptor: sjcl.mode.betterCBC
-           , webworkers: true
+           webworkers: true
 
         },
 
@@ -57,8 +54,9 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
             //async call to save chunks
             var saveChunks = _.after(chunkCount, _.bind(function(chunks){ 
                 this.set('chunks', chunks);
-                this.manifest.setChunks(chunks)
-                callback(chunks)
+                this.manifest.setChunks(chunks, function(){
+                    if (callback) callback(chunks)
+                })
             },this) )
 
 
@@ -84,7 +82,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
                 }
 
-                this.getArrayBufferChunk(start, end, function(buffer){
+                this.getArrayBufferChunk(start, end, _.bind(function(buffer){
 
                     if (padding){
                         var copierDest = new Uint8Array(paddedSize)
@@ -93,11 +91,17 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                         buffer = copierDest.buffer;
                     }
 
-                    chunks.push(
-                        new ChunkWorkerInterface({buffer:buffer})
-                    )
+                    if (this.get('webworkers')){
+                        chunks.push(
+                            new ChunkWorkerInterface({buffer:buffer})
+                        )
+                    }else{
+                        chunks.push(
+                            new Chunk({buffer:buffer})
+                        )
+                    }
                     saveChunks(chunks)
-                })
+                },this))
                 
 
             }
@@ -121,15 +125,18 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
             for (var i = 0; i < chunks.length; i++) {
                 var chunk = chunks[i]
-                //chunk.encryptChunk()
+                debugger;
                 
                 //bind the function to this and keep the current index inside to function so it doesn't change when called
                 chunk.upload(_.bind(function(index, linkName){
+                    debugger;
                     //save the response here
-                    this.manifest.setChunkLinkName(index, linkName)
+                    console.log('hello world')
 
-                    //async way of knowing when all the chunks have been uploaded, we go on to upload the chunks
-                    uploadManifest()
+                    this.manifest.setChunkLinkName(index, linkName, function(){
+                        //async way of knowing when all the chunks have been uploaded, we go on to upload the chunks
+                        uploadManifest()
+                    })
 
                 }, this, i))
             };
@@ -183,9 +190,10 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                         //we need to get the fileKeys
                         this.manifest.fetchChunkKeys(_.bind(function(chunkKeys){
                             //download each chunk
-                            var chunk = chunks[0];
-
-                            this.downloadChunk(chunk, chunkKeys, asyncCallback)
+                            //var chunk = chunks[0];
+                            _.each(chunks, _.bind(function(chunk){
+                                this.downloadChunk(chunk, chunkKeys, asyncCallback)
+                            },this))
 
                         },this))
 
@@ -202,6 +210,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
         downloadChunk: function(chunk, chunkKeys, callback){
 
             if ( !this.get('webworkers') ){
+
                 var args = {
                     linkName: chunk.get('chunkInfo')['linkName']
                     , linkKey: chunkKeys[chunk.get('chunkInfo')['linkName']]
@@ -237,8 +246,8 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                 var chunks = this.get('chunks')
                 if (chunk.get( 'chunkInfo' )['part']+1 < chunks.length){
                     var nextChunk = chunks[chunk.get( 'chunkInfo' )['part']+1]
-                    //chunk.terminate();
-                    this.downloadChunk(nextChunk, chunkKeys, callback)
+                    if (this.get('webworkers')) chunk.terminate();
+                    //this.downloadChunk(nextChunk, chunkKeys, callback)
                     
                 }
 

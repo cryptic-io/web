@@ -1,10 +1,11 @@
+//Define the chunk model
 define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/FileSystem'],function(Uploader, Downloader, FileSystemHandler, FileSystem){ 
 
     return Backbone.Model.extend({
 
         defaults: {
            encryptor: sjcl.mode.betterCBC,
-           chunkSize: 1e7 //1 0 000 000  == 10MB
+           chunkSize: 8 //1 000 000  == 1MB
         },
 
         initialize:  function(options){
@@ -22,8 +23,10 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
          * Encodes the key along with the iv
          * The first for items in the array are the iv
          */
-        encodeIVKey: function(){
-            return sjcl.codec.base64.fromBits(this.get('iv').concat(this.get('key')))
+        encodeIVKey: function(callback){
+            var ivKey = sjcl.codec.base64.fromBits(this.get('iv').concat(this.get('key')))
+            if (callback) callback(ivKey)
+            return ivKey
         },
 
         /* Sets the internal iv and returns the decoded key
@@ -40,6 +43,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         },
 
         encryptChunk:function(){
+            return;
             var e = sjcl.mode.betterCBC.encryptChunk( {
                 buffer: this.get('buffer')
                 , iv: this.get('iv')
@@ -92,7 +96,8 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
             var linkName = Math.random().toString(36).substring(2);
             var chunkData = this.serializeChunk(this.get('buffer'))
 
-            Uploader.prototype.send(location, this.get('buffer'), linkName, function(response){
+            var uploader = new Uploader();
+            uploader.send(location, this.get('buffer'), linkName, function(response){
                 result = JSON.parse(response)
                 callback(result.return)
             })
@@ -119,7 +124,6 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         },
 
         writeToFile: function(fileSystem, manifest, callback, errCallback){
-            debugger;
             var buffer = this.get('buffer')
             var chunkCount = _.keys(manifest.chunks).length -1 //zero indexed
             //if this is the last chunk only write the amount needed to the file
@@ -128,6 +132,12 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
                 buffer = buffer.slice(0, lastChunkSize)
             }
+
+            console.log('type',manifest.type)
+
+
+            //specify where in the file this chunk starts
+            var start = this.get('chunkInfo').part*this.get('chunkSize')
 
             var fileSystem = new FileSystem()
             FileSystemHandler.appendToFile(
@@ -138,6 +148,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
                   , fileSystem: fileSystem
                   , data: buffer
                   , type: manifest.type
+                  , start: start
                 }
             )
 

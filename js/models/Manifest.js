@@ -22,11 +22,6 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
         },
 
         setChunkLinkName: function(chunkIndex, linkName, callback){
-            if (this.get('manifestLock')) {
-                setTimeout(_.bind(this.setChunkLinkName,this,chunkIndex,linkName), 1e3);
-                console.log("Manifest isn't ready yet")
-                return;
-            }
             var chunks = this.get('chunks');
             chunks[chunkIndex].linkName = linkName
             this.set('chunks',chunks)
@@ -34,12 +29,13 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
             if (callback) callback();
         },
 
-        setChunks: function(chunks){
+        setChunks: function(chunks, callback){
             var manifestChunks = {}
-            //prevent anything from being uploaded while the manifest has this locked
-            this.set('manifestLock',true)
             //After all the async calls to get the chunk's IVkeys have been executed, lets save the chunks in the manifest
-            var saveChunks = _.after(chunks.length, _.bind(function(){this.set('chunks',manifestChunks); this.set('manifestLock',false)},this))
+            var saveChunks = _.after(chunks.length, _.bind(function(){
+                this.set('chunks',manifestChunks);
+                callback();
+            },this))
             for (var i = 0; i < chunks.length; i++) {
                 chunks[i].encodeIVKey(_.bind(
                     function(i,ivKey){

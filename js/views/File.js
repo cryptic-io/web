@@ -35,7 +35,8 @@ define(["models/File","jade!templates/FileUpload"], function(FileModel, template
         uploadFile: function(){
             var model = this.model;
             model.upload(function(linkData){
-                alert('#download/'+linkData.linkName+'|'+linkData.IVKey)
+                //alert('#download/'+linkData.linkName+'|'+linkData.IVKey)
+                console.log('an alert would have happened here','#download/'+linkData.linkName+'|'+linkData.IVKey)
             })
         },
 

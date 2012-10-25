@@ -80,6 +80,7 @@ var FileSystemHandler = {
      *    fs: //the filesystem reference
      *    data: an array buffer
      *    type: the type of the original file
+     *    start: //byte postion to start writing
      *  }
      *
      *
@@ -93,7 +94,7 @@ var FileSystemHandler = {
         fileSystem.getFileSystem(function(fs){
             fs.root.getFile(name, {create:false}, function(fileEntry){
                 fileEntry.createWriter(function(fileWriter) {
-                    fileWriter.seek(fileWriter.length)
+                    fileWriter.seek(options.start)
                     var blob = new Blob([options.data], {type: options.type})
 
                     fileWriter.write(blob)
