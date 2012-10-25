@@ -11,7 +11,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
              *
             */
 
-           webworkers: true
+           webworkers: false
 
         },
 
@@ -178,7 +178,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
             var chunks = this.get('chunks')
 
             //get more space for the new file
-            this.fileSystem.requestMoreSpace(this.manifest.get('size')+1024*1024, _.bind(function(fs){
+            this.fileSystem.requestMoreSpace(this.manifest.get('size'), _.bind(function(fs){
 
                 //create the file and delete it if it already exists
                 FileSystemHandler.createFile({
@@ -190,10 +190,9 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                         //we need to get the fileKeys
                         this.manifest.fetchChunkKeys(_.bind(function(chunkKeys){
                             //download each chunk
-                            //var chunk = chunks[0];
-                            _.each(chunks, _.bind(function(chunk){
-                                this.downloadChunk(chunk, chunkKeys, asyncCallback)
-                            },this))
+                            var chunk = chunks[0];
+                            this.downloadChunk(chunk, chunkKeys, asyncCallback)
+                            debugger;
 
                         },this))
 
@@ -211,6 +210,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
             if ( !this.get('webworkers') ){
 
+                //If there are no web workers go here
                 var args = {
                     linkName: chunk.get('chunkInfo')['linkName']
                     , linkKey: chunkKeys[chunk.get('chunkInfo')['linkName']]
@@ -229,6 +229,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
             }else{
 
 
+                //If there are web workers do this
                 chunk.download({
                     linkName: chunk.get('chunkInfo')['linkName']
                     , linkKey: chunkKeys[chunk.get('chunkInfo')['linkName']]
@@ -247,7 +248,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                 if (chunk.get( 'chunkInfo' )['part']+1 < chunks.length){
                     var nextChunk = chunks[chunk.get( 'chunkInfo' )['part']+1]
                     if (this.get('webworkers')) chunk.terminate();
-                    //this.downloadChunk(nextChunk, chunkKeys, callback)
+                    this.downloadChunk(nextChunk, chunkKeys, callback)
                     
                 }
 

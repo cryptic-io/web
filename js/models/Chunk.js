@@ -43,7 +43,6 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         },
 
         encryptChunk:function(){
-            return;
             var e = sjcl.mode.betterCBC.encryptChunk( {
                 buffer: this.get('buffer')
                 , iv: this.get('iv')
@@ -129,11 +128,10 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
             //if this is the last chunk only write the amount needed to the file
             if ( this.get('chunkInfo').part == chunkCount){
                 var lastChunkSize =  manifest.size - (chunkCount*this.get('chunkSize'))
+                debugger;
 
                 buffer = buffer.slice(0, lastChunkSize)
             }
-
-            console.log('type',manifest.type)
 
 
             //specify where in the file this chunk starts

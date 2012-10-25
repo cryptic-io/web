@@ -60,6 +60,7 @@ var FileSystemHandler = {
                 //Error Function, the file might already exist, so we need to delete it
                 function(){
                     fs.root.getFile(name, {create:false}, function(fileEntry){
+                        debugger;
                         //lets remove the existing file
                         fileEntry.remove(function(){
                             //now that the file is removed lets create it
@@ -95,6 +96,7 @@ var FileSystemHandler = {
             fs.root.getFile(name, {create:false}, function(fileEntry){
                 fileEntry.createWriter(function(fileWriter) {
                     fileWriter.seek(options.start)
+                    debugger;
                     var blob = new Blob([options.data], {type: options.type})
 
                     fileWriter.write(blob)
