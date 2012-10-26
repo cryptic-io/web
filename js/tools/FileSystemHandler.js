@@ -95,6 +95,7 @@ var FileSystemHandler = {
             fs.root.getFile(name, {create:false}, function(fileEntry){
                 fileEntry.createWriter(function(fileWriter) {
                     fileWriter.seek(options.start)
+                    //console.log('starting at', options.start)
                     var blob = new Blob([options.data], {type: options.type})
 
                     fileWriter.write(blob)
@@ -102,7 +103,33 @@ var FileSystemHandler = {
 
                 }, options.errorCallback)
             }, options.errorCallback)
-        })
+        }, options.errorCallback, options.size)
+    },
+
+    readFile: function(fileName, size){
+        var errorHandler = this.defaultErrHandler;
+        var onInitFs = function (fs) {
+
+            fs.root.getFile(fileName, {}, function(fileEntry) {
+
+                // Get a File object representing the file,
+                // then use FileReader to read its contents.
+                fileEntry.file(function(file) {
+                    var reader = new FileReader();
+
+                    reader.onloadend = function(e) {
+                     console.log("File contents:")
+                     console.log(this.result)
+                    };
+
+                    reader.readAsText(file);
+                }, errorHandler);
+
+            }, errorHandler);
+
+        }
+
+        window.requestFileSystem(window.TEMPORARY, size, onInitFs, this.defaultErrHandler);
     },
 
 }

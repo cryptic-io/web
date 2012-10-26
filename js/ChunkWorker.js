@@ -50,10 +50,11 @@ require({
                 this.chunk.set({'linkName':args.linkName, 'linkKey':args.linkKey})
                 this.chunk.decodeIVKey(args.IVKey)
 
-                this.chunk.download(function(){
+                this.chunk.download(function(decryptedBuffer){
                     this.postMessage({
-                        command:"download",
-                        status:"success",
+                        command:"download"
+                        , status:"success"
+                        , result:decryptedBuffer
                     })
                 })
             },

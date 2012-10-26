@@ -6,7 +6,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         defaults: {
            encryptor: sjcl.mode.betterCBC,
 
-           chunkSize: 1e6  //Specify how big the chunk should be. ******  THIS HAS TO BE DIVISBLE BY 16 ****** (the reason so that we only need pad the last chunk)
+           chunkSize: 64  //Specify how big the chunk should be. ******  THIS HAS TO BE DIVISBLE BY 16 ****** (the reason so that we only need pad the last chunk)
            //chunksize is 1MB
         },
 
@@ -45,6 +45,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         },
 
         encryptChunk:function(){
+
             var e = sjcl.mode.betterCBC.encryptChunk( {
                 buffer: this.get('buffer')
                 , iv: this.get('iv')
@@ -120,9 +121,9 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
                 _.bind(function(arraybuffer){
                     this.set('buffer',arraybuffer)
                     //we are also going to decrypt here to save another worker message
-                    this.decryptChunk()
+                    var decryptedBuffer = this.decryptChunk().buffer
                     //passing the data back just to test
-                    if (callback) callback()
+                    if (callback) callback(decryptedBuffer)
                 },this)
             )
         },
@@ -150,6 +151,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
                   , fileSystem: fileSystem
                   , data: buffer
                   , type: manifest.type
+                  , size: manifest.size
                   , start: start
                 }
             )

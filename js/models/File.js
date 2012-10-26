@@ -1,4 +1,5 @@
 //returns the file model
+totalText=[]
 define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/FileSystem', 'tools/FileSystemHandler'],function(Chunk, Manifest, ChunkWorkerInterface, FileSystem, FileSystemHandler){ 
     return Backbone.Model.extend({
 
@@ -82,7 +83,8 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
                 }
 
-                this.getArrayBufferChunk(start, end, _.bind(function(buffer){
+                debugger;
+                this.getArrayBufferChunk(start, end, _.bind(function(padding, buffer){
 
                     if (padding){
                         var copierDest = new Uint8Array(paddedSize)
@@ -101,7 +103,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                         )
                     }
                     saveChunks(chunks)
-                },this))
+                },this, padding))
                 
 
             }
@@ -127,6 +129,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                 var chunk = chunks[i]
                 
                 //bind the function to this and keep the current index inside to function so it doesn't change when called
+                debugger;
                 chunk.upload(_.bind(function(index, linkName){
                     //save the response here
                     console.log('hello world')
@@ -231,23 +234,66 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                     linkName: chunk.get('chunkInfo')['linkName']
                     , linkKey: chunkKeys[chunk.get('chunkInfo')['linkName']]
                     , IVKey: chunk.get('chunkInfo')['IVKey']
-                }, _.bind(function(){
-                    this.writeChunk(chunk, chunkKeys, callback);
+                }, _.bind(function(decryptedBuffer){
+                    //this.writeChunk(chunk, chunkKeys, callback);
+                    this.appendToFile(chunk, decryptedBuffer, chunkKeys, callback);
                 },this) )
             }
 
         },
 
+        appendToFile: function(chunk, buffer, chunkKeys, callback){
+            var chunkCount = _.keys(this.manifest.get('chunks')).length - 1 //zero indexed
+            var chunkSize = Chunk.prototype.defaults.chunkSize
+            //if this is the last chunk only write the amount needed to the file
+            if ( chunk.get('chunkInfo').part == chunkCount){
+                var lastChunkSize =  this.manifest.get('size') - (chunkCount*chunkSize)
+
+                buffer = buffer.slice(0, lastChunkSize)
+            }
+
+
+            //specify where in the file this chunk starts
+            var start = chunk.get('chunkInfo').part*chunkSize
+
+
+            var errCallback = function(e){console.error('Error in saving file:',e)}
+
+            FileSystemHandler.appendToFile(
+                { 
+                  successCallback: _.bind(function(){
+                      if (chunk.get( 'chunkInfo' )['part']+1 < this.get('chunks').length){
+                          var nextChunk = this.get('chunks')[chunk.get( 'chunkInfo' )['part']+1]
+                          if (this.get('webworkers')) chunk.terminate();
+                          this.downloadChunk(nextChunk, chunkKeys, callback)
+                      }
+                      callback()
+                  },this)
+                  , errorCallback: errCallback
+                  , name: this.manifest.get('name')
+                  , fileSystem: this.fileSystem
+                  , data: buffer
+                  , type: this.manifest.get('type')
+                  , size: this.manifest.get('size')
+                  , start: start
+                }
+            )
+        },
+
         writeChunk: function(chunk, chunkKeys, callback){
+            //console.log('data from chunk is',totalText.push(chunk.readData()), totalText.join(''))
+            debugger;
             chunk.writeToFile(this.fileSystem, this.manifest.toJSON(), _.bind(function(){
 
                 var chunks = this.get('chunks')
                 if (chunk.get( 'chunkInfo' )['part']+1 < chunks.length){
                     var nextChunk = chunks[chunk.get( 'chunkInfo' )['part']+1]
                     if (this.get('webworkers')) chunk.terminate();
-                    this.downloadChunk(nextChunk, chunkKeys, callback)
+                    setTimeout(_.bind(this.downloadChunk,this,nextChunk, chunkKeys, callback),10e3)
                     
                 }
+
+                FileSystemHandler.readFile("test.txt",1e3)
 
                 callback()
             },this))

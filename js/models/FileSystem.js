@@ -53,9 +53,11 @@ define([],function(){
             this.initializeFileSystem(newSize, callback, errCallback)
         },
 
-        getFileSystem: function(callback, errCallback){
+        getFileSystem: function(callback, errCallback, size){
+            size = size || this.size
+            //console.log('this size is gonna be', size)
             errCallback = errCallback || this.defaultErrCallback
-            this.initializeFileSystem(this.size, callback, errCallback)
+            this.initializeFileSystem(size, callback, errCallback)
         },
 
     }
