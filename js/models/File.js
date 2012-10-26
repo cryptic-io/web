@@ -38,9 +38,9 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
         //   ...
         //]
         split: function(callback) {
-            var file = this.get('file');
-            var chunkSize = Chunk.prototype.defaults.chunkSize
-            var chunkCount = Math.ceil(file.size/chunkSize)
+            var file = this.get('file')
+            , chunkSize = Chunk.prototype.defaults.chunkSize
+            , chunkCount = Math.ceil(file.size/chunkSize)
             //see if we need padding
             //32 is becasue the encryption works on a 32 bit array
             //we add one more chunk for padding sake
@@ -49,64 +49,76 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
             if (this.has('chunks')) return callback(this.get('chunks'));
 
-            var counter = 0;
-            var chunks = [];
+            var counter = 0
+            , chunks = []
+            , padding
 
             //async call to save chunks
             var saveChunks = _.after(chunkCount, _.bind(function(chunks){ 
-                this.set('chunks', chunks);
-                this.manifest.setChunks(chunks, function(){
-                    if (callback) callback(chunks)
-                })
             },this) )
 
 
-            padding = false
-            while ( counter < file.size ){
-                var start = counter;
-                counter += chunkSize;
-                var end = counter < file.size ? counter : file.size;
 
-                //It has to fit withing 32*4 because 32 bits is the int size used in data encryption and 4 because AES operates on 4 ints at a time for decryption
-                //Then it has to divide by 8 because 8 bits in a byte
-                //so 2^5 * 2^2 / 2^3  == 16
-                if ( (end - start)%(16) != 0){
-                    leftover = (end - start)%(16)
-                    paddedSize  = (16 - leftover) + (end-start)
+            var splitNext = function(){
+                if ( counter < file.size ){
+                    padding = false
                     
+                    var start = counter;
+                    counter += chunkSize;
+                    var end = counter < file.size ? counter : file.size;
+
+                    //It has to fit withing 32*4 because 32 bits is the int size used in data encryption and 4 because AES operates on 4 ints at a time for decryption
+                    //Then it has to divide by 8 because 8 bits in a byte
+                    //so 2^5 * 2^2 / 2^3  == 16
+                    if ( (end - start)%(16) != 0){
+                        leftover = (end - start)%(16)
+                        paddedSize  = (16 - leftover) + (end-start)
+                        
 
 
-                    console.log('padding is necessary')
+                        console.log('padding is necessary')
 
-                    padding = true;
-                    //end -= leftover;
+                        padding = true;
+                        //end -= leftover;
 
+                    }
+
+                    debugger;
+                    this.getArrayBufferChunk(start, end, _.bind(function(padding, buffer){
+
+                        if (padding){
+                            var copierDest = new Uint8Array(paddedSize)
+                            var copierSource = new Uint8Array(buffer)
+                            _.each(copierSource, function(byte, index){ copierDest[index] = byte })
+                            buffer = copierDest.buffer;
+                        }
+
+                        if (this.get('webworkers')){
+                            chunks.push(
+                                new ChunkWorkerInterface({buffer:buffer})
+                            )
+                        }else{
+                            chunks.push(
+                                new Chunk({buffer:buffer})
+                            )
+                        }
+
+                        //start splitting the next chunk
+                        splitNext.apply(this);
+                    },this, padding))
+
+                }else{
+                    this.set('chunks', chunks);
+                    this.manifest.setChunks(chunks, function(){
+                        if (callback) callback(chunks)
+                    })
                 }
-
-                debugger;
-                this.getArrayBufferChunk(start, end, _.bind(function(padding, buffer){
-
-                    if (padding){
-                        var copierDest = new Uint8Array(paddedSize)
-                        var copierSource = new Uint8Array(buffer)
-                        _.each(copierSource, function(byte, index){ copierDest[index] = byte })
-                        buffer = copierDest.buffer;
-                    }
-
-                    if (this.get('webworkers')){
-                        chunks.push(
-                            new ChunkWorkerInterface({buffer:buffer})
-                        )
-                    }else{
-                        chunks.push(
-                            new Chunk({buffer:buffer})
-                        )
-                    }
-                    saveChunks(chunks)
-                },this, padding))
-                
+                return;
 
             }
+
+            splitNext.apply(this);
+            return;
 
         },
 
