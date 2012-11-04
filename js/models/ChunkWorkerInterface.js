@@ -23,6 +23,11 @@ define(['models/Chunk'],function(Chunk){
             this.on(command+':success', _.once(function(event){callback(event.data.result)}) )
         },
 
+        continousBindSuccess: function(command, callback){
+            //Only want this to happen once
+            this.on(command+':success', function(event){callback(event.data.result)})
+        },
+
         bindError: function(command, callback){
             this.on(command+':error', _.once(callback) )
         },
@@ -137,7 +142,7 @@ define(['models/Chunk'],function(Chunk){
             })
 
             //We listen in for the event that will be triggered when the worker is done
-            this.bindSuccess(command,callback)
+            this.continousbindSuccess(command,callback)
 
             //If we wanted to account for an error we could do
             this.bindError(command,function(result){ console.error('There was an error with the worker in the progress listener',result)})

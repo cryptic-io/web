@@ -33,7 +33,7 @@ Downloader.prototype = {
         request = {command:"downloadFile",filename:linkname,key:key,"meta":{"http":true}}
 
         var xhr = new XMLHttpRequest();
-        var nemo = debug ? "http://localhost:8888" : "http://crypticcandy.com:8888";
+        var nemo = debug ? "http://localhost:8888" : "http://198.61.196.240:81";
         xhr.open('POST', nemo, true);
 
         xhr.responseType = 'arraybuffer';

@@ -102,9 +102,9 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                             )
                         }
 
-                        chunks[chunks.length-1].attachProgressListener(_.bind(function(i, progress){
+                        chunks[chunks.length-1].attachProgressListener(_.bind(function(i, progressObj){
                             debugger;
-                            console.log('================================> chunk',i,'is',progress,'% done')
+                            console.log('================================> chunk',i,'is ',progressObj.event,'and',progressObj.progress,'% done')
                         },this,chunks.length))
 
                         //start splitting the next chunk

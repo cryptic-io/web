@@ -1,6 +1,6 @@
 //returns routes that will be used in the Home page (so most pages)
 
-define(["views/Home","views/Info", "views/File" ],function(HomeView, InfoView, FileView){ 
+define(["views/Home","views/Info", "views/File", "views/Progress"],function(HomeView, InfoView, FileView, ProgressView){ 
     return Backbone.Router.extend({
         routes: {
               "info" : "info"
@@ -13,6 +13,14 @@ define(["views/Home","views/Info", "views/File" ],function(HomeView, InfoView, F
             console.log('starting home')
             home = new HomeView({el:$('body')})
             home.render()
+
+            fileView = new FileView({el:$('#uploadForm')});
+            fileView.render()
+
+            progressView = new ProgressView({container:$('body')});
+            progressView.render()
+
+
         },
 
         info: function() {

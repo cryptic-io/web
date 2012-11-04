@@ -5,6 +5,8 @@ var Uploader = function() {
 Uploader.prototype = {
 
     send : function(location, arraybuffer, fileName, progressListener, callback) {
+        if (progressListener) progressListener({event:"Uploading", progress:0});
+
         var xhr = new XMLHttpRequest();
 
         xhr.open("POST", location, true);
@@ -18,15 +20,13 @@ Uploader.prototype = {
         //setup the progressListener
         xhr.upload.onprogress = function(e){
             if (e.lengthComputable){
-                debugger;
                 var progress = (e.loaded / e.total) * 100;
-                if (progressListener) progressListener(progress);
+                if (progressListener) progressListener({event:"Uploading", progress:progress});
             }
         }
 
         // finally send the request as binary data (really an arraybuffer)
-        xhr.send(new Blob([arraybuffer], {type: 'application/octet-stream'}))
-        debugger;
+        xhr.send(arraybuffer)
     },
 
 };

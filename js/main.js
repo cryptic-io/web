@@ -69,8 +69,6 @@ dependencies, function(require){
                 router.navigate('home',{trigger:true})
             }
 
-            fileView = new FileView({el:$('#uploadForm')});
-            fileView.render()
             ballz = test
             
             wi = ChunkWorkerInterface;

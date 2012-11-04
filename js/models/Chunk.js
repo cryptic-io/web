@@ -45,8 +45,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         },
 
         encryptChunk:function(){
-
-            return
+            if (this.has('progressListener')) this.get('progressListener')({event:'Encrypting',progress:0})
 
             var e = sjcl.mode.betterCBC.encryptChunk( {
                 buffer: this.get('buffer')
@@ -54,6 +53,8 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
                 , key: this.get('key')
             })
             this.set('buffer', e.buffer)
+
+            if (this.has('progressListener')) this.get('progressListener')({event:'Encrypting',progress:100})
 
             return e
 
