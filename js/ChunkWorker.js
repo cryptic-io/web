@@ -106,6 +106,18 @@ require({
                    },this)
               )
             },
+
+            //setup a callback to be called when the progress changes
+            attachProgressListener: function(){
+                this.chunk.attachProgressListener(_.bind(function(progress){
+                    this.postMessage({
+                        command:"attachProgressListener",
+                        status:"success",
+                        result:progress
+                    })
+                }, this))
+            }
+
         }
 
 

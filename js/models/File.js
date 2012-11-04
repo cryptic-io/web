@@ -12,7 +12,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
              *
             */
 
-           webworkers: true
+           webworkers: false
 
         },
 
@@ -21,7 +21,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
         initialize: function(){
 
             //Unfortunately somethings have vendor prefixes so we'll get that sorted right here and now
-            File.prototype.slice = File.prototype.webkitSlice ? File.prototype.webkitSlice : File.prototype.mozSlice;
+            File.prototype.slice = File.prototype.slice ? File.prototype.slice : File.prototype.mozSlice;
 
             if (this.has('file')){
                 this.manifest = new Manifest( _.pick( this.get('file'), 'name', 'type', 'size' ) );
@@ -83,7 +83,6 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
                     }
 
-                    debugger;
                     this.getArrayBufferChunk(start, end, _.bind(function(padding, buffer){
 
                         if (padding){
@@ -102,6 +101,11 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                                 new Chunk({buffer:buffer})
                             )
                         }
+
+                        chunks[chunks.length-1].attachProgressListener(_.bind(function(i, progress){
+                            debugger;
+                            console.log('================================> chunk',i,'is',progress,'% done')
+                        },this,chunks.length))
 
                         //start splitting the next chunk
                         splitNext.apply(this);
@@ -141,11 +145,10 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                 var chunk = chunks[i]
                 
                 //bind the function to this and keep the current index inside to function so it doesn't change when called
-                debugger;
+
+
                 chunk.upload(_.bind(function(index, linkName){
                     //save the response here
-                    console.log('hello world')
-
                     this.manifest.setChunkLinkName(index, linkName, function(){
                         //async way of knowing when all the chunks have been uploaded, we go on to upload the chunks
                         uploadManifest()
@@ -294,7 +297,6 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
         writeChunk: function(chunk, chunkKeys, callback){
             //console.log('data from chunk is',totalText.push(chunk.readData()), totalText.join(''))
-            debugger;
             chunk.writeToFile(this.fileSystem, this.manifest.toJSON(), _.bind(function(){
 
                 var chunks = this.get('chunks')

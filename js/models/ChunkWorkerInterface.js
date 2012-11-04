@@ -93,7 +93,7 @@ define(['models/Chunk'],function(Chunk){
             var command = 'writeToFile'
 
             this.worker.postMessage({
-                "command":command
+                command:command
                 , manifest: manifestObj
                 , fileSystem: fileSystem
                 , chunkInfo: this.get('chunkInfo')
@@ -126,6 +126,22 @@ define(['models/Chunk'],function(Chunk){
 
         terminate: function(){
             this.worker.terminate();
+        },
+
+        //setup a callback to be called when the progress changes
+        attachProgressListener: function(callback){
+            var command = "attachProgressListener"
+
+            this.worker.postMessage({
+                command:command
+            })
+
+            //We listen in for the event that will be triggered when the worker is done
+            this.bindSuccess(command,callback)
+
+            //If we wanted to account for an error we could do
+            this.bindError(command,function(result){ console.error('There was an error with the worker in the progress listener',result)})
         }
+        
     })
 })

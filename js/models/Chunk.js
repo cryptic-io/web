@@ -7,7 +7,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
            encryptor: sjcl.mode.betterCBC,
 
            chunkSize: 10e6  //Specify how big the chunk should be. ******  THIS HAS TO BE DIVISBLE BY 16 ****** (the reason so that we only need pad the last chunk)
-           //chunksize is 1MB
+           //chunksize is 10MB
         },
 
         initialize:  function(options){
@@ -45,6 +45,8 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         },
 
         encryptChunk:function(){
+
+            return
 
             var e = sjcl.mode.betterCBC.encryptChunk( {
                 buffer: this.get('buffer')
@@ -102,7 +104,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
             this.encryptChunk();
 
-            uploader.send(location, this.get('buffer'), linkName, function(response){
+            uploader.send(location, this.get('buffer'), linkName, this.get('progressListener'), function(response){
                 result = JSON.parse(response)
                 callback(result.return)
             })
@@ -175,6 +177,10 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
             }
             console.log(string.toUpperCase())
 
+        },
+
+        attachProgressListener: function(callback){
+            this.set('progressListener',callback)
         },
 
     })
