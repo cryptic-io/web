@@ -205,6 +205,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                 console.log('we got the manifest!');
                 this.manifest = manifest
                 this.createChunksFromManifest()
+                this.attachProgressListenerToChunks();
                 this.downloadChunks(callback)
             },this))
         },
@@ -231,7 +232,6 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
         //Speciy which chunk you want. if unspecified will default to all
         downloadChunks: function(callback){
-            //get all the chunks if whichChunks haven't been specified
             var chunks = this.get('chunks')
 
             //get more space for the new file

@@ -57,7 +57,7 @@ Downloader.prototype = {
     getKeyAndDownload: function(linkname, callback){
         this.getFileKeys([linkname], _.bind(function(fileKeyObj){
             var key = _.values(fileKeyObj)[0]
-            this.downloadFile(linkname,key, callback)
+            this.downloadFile(linkname,key, null, callback)
         },this))
     }
 }
