@@ -11,10 +11,10 @@ define(["views/Home","views/Info", "views/File", "views/Progress"],function(Home
 
         home: function() {
             console.log('starting home')
-            home = new HomeView({el:$('body')})
+            var home = new HomeView({el:$('body')})
             home.render()
 
-            fileView = new FileView({el:$('#uploadForm')});
+            fileView = new FileView({el:$('#uploadBox')});
             fileView.render()
 
         },
@@ -25,13 +25,19 @@ define(["views/Home","views/Info", "views/File", "views/Progress"],function(Home
         },
 
         download: function(linkNameAndPasscode){
-            var linkName = linkNameAndPasscode.split('|')[0]
-            var passcode = linkNameAndPasscode.split('|')[1]
-            file = new FileView(); 
-            file.downloadFile(linkName, passcode, function(){
+            var home = new HomeView({el:$('body')})
+            home.render()
+
+            var linkName = linkNameAndPasscode.split('/')[0]
+            var passcode = linkNameAndPasscode.split('/')[1]
+
+            fileView = new FileView({el:$('#uploadBox'),template:"download"});
+            fileView.render()
+            fileView.downloadFile(linkName, passcode, function(){
                 console.log('woohoo downloaded the file!');
-                file.createDownloadLink();
+                fileView.createDownloadLink();
             });
+
         },
 
         test: function(){

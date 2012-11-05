@@ -26,7 +26,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
          * The first for items in the array are the iv
          */
         encodeIVKey: function(callback){
-            var ivKey = sjcl.codec.base64.fromBits(this.get('iv').concat(this.get('key')))
+            var ivKey = sjcl.codec.base64url.fromBits(this.get('iv').concat(this.get('key')))
             if (callback) callback(ivKey)
             return ivKey
         },
@@ -36,7 +36,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
          * The last four is the key
          */
         decodeIVKey: function(encodedKey){
-            var ivKey = sjcl.codec.base64.toBits(encodedKey);
+            var ivKey = sjcl.codec.base64url.toBits(encodedKey);
 
             this.set('iv',ivKey.slice(0,4))
             this.set('key' , ivKey.slice(4))

@@ -36,20 +36,27 @@
 
 #progressBar{
     display: block;
-    width:100px;
-    height: 20px;
-    background-color: white;
-    position: absolute;
-    top:0px;
-    left:0px;
+    width: 415px;
+    height: 21px;
+    background-color: rgba(75, 75, 75, 0.19);
+    position: relative;
+    top: -7px;
+    left: -7px;
+    .rounded-corners;
+
+    #innerProgress {
+        display: block;
+        color:black;
+        height: 100%;
+        .rounded-corners;
+        -webkit-border-radius: 5px;
+        @topColor: #3C3C3C;
+        @bottomColor: #585858;
+        background-image: -webkit-linear-gradient(bottom, @topColor  31%, @bottomColor  71%);
+        background-image: -moz-linear-gradient(bottom, #3C3C3C 31%, #585858 71%);
+    }
 }
 
-#innerProgress {
-    display: block;
-    color:black;
-    height: 100%;
-    background-color: black;
-}
 
 .rounded-corners (@radius: 5px) {
   border-radius: @radius;
@@ -145,20 +152,47 @@
 
 #uploadBox{
     .rounded-corners;
-    background: whitesmoke;
     height: 300px;
     width: 400px;
     margin: 100px;
-    display:inline-block;
+    display:block;
     text-align:center;
-    box-shadow:@shadow;
+    margin: auto;
+    position:relative;
 
-    #uploadForm{
-        float: left;
-        margin-top: 20px;
-        margin-left: 20px;
+    #headerText{
+        padding-bottom:10px;
     }
-    
+
+    #dragDropUpload{
+        .rounded-corners;
+        height: 300px;
+        width: 400px;
+        margin: 0px;
+        padding: 10px;
+        display:inline-block;
+        box-shadow:inset #322E34 1px 1px 5px;
+        float:left;
+        text-align:center;
+
+        #uploadFile{
+            position:absolute;
+            bottom: -70px;
+            left: 170px;
+            margin: 0px auto;
+        }
+
+        #downloadLink{
+            position: relative;
+            display:none;
+            top: -11px;
+            width: 105%;
+            height: 21px;
+            left: -10px;
+        }
+
+    }
+
 }
 
 #files{

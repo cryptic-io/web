@@ -15,8 +15,14 @@ define(["jade!templates/Progress"], function(ProgressTemplate){
             this.options.container.append(this.$el)
         },
 
+        remove:function(){
+            this.$el.remove()
+            //null the render call so we don't render when this should have been removed
+            this.render = function(){};
+        },
+
         updatePercentage: function(){
-            this.$el.find('#innerProgress').css('width',this.percentComplete+'%')
+            this.$el.find('#innerProgress').anim({'width':this.percentComplete+'%'},1,'linear')
         },
 
         changePercentage: function(newPercentage){
