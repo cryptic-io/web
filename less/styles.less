@@ -34,7 +34,22 @@
     background: -moz-gradient(center top, @start 0%, @stop 100%);
 }
 
+#progressBar{
+    display: block;
+    width:100px;
+    height: 20px;
+    background-color: white;
+    position: absolute;
+    top:0px;
+    left:0px;
+}
 
+#innerProgress {
+    display: block;
+    color:black;
+    height: 100%;
+    background-color: black;
+}
 
 .rounded-corners (@radius: 5px) {
   border-radius: @radius;
@@ -113,6 +128,19 @@
 #backgroundCanvas {
     width:100%;
     height:100%;
+}
+
+#uploadDragDropBox{
+    .rounded-corners;
+    background: whitesmoke;
+    height: 200px;
+    width: 200px;
+    margin: 50px;
+    display:inline-block;
+    text-align:center;
+    box-shadow:@shadow;
+
+
 }
 
 #uploadBox{

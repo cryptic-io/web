@@ -29,20 +29,22 @@ Downloader.prototype = {
         xhr.send(JSON.stringify(request));
     },
 
-    downloadFile: function(linkname, key, callback){
+    downloadFile: function(linkname, key, progressListener, callback){
+        if (progressListener) progressListener({event:"Downloading", progress:0});
         request = {command:"downloadFile",filename:linkname,key:key,"meta":{"http":true}}
 
-        var xhr = new XMLHttpRequest();
-        var nemo = debug ? "http://localhost:8888" : "http://198.61.196.240:81";
-        xhr.open('POST', nemo, true);
+        var xhr = new XMLHttpRequest()
+        var nemo = debug ? "http://localhost:8888" : "http://198.61.196.240:81"
+        xhr.open('POST', nemo, true)
 
-        xhr.responseType = 'arraybuffer';
+        xhr.responseType = 'arraybuffer'
         xhr.setRequestHeader('Content-Type','text/plain')
 
         xhr.onload = function(e) {
           if (this.status == 200) {
             //console.log(this.response);
             if (callback) callback(this.response)
+            if (progressListener) progressListener({event:"Downloading", progress:100});
           }
         };
 

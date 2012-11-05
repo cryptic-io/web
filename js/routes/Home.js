@@ -17,10 +17,6 @@ define(["views/Home","views/Info", "views/File", "views/Progress"],function(Home
             fileView = new FileView({el:$('#uploadForm')});
             fileView.render()
 
-            progressView = new ProgressView({container:$('body')});
-            progressView.render()
-
-
         },
 
         info: function() {

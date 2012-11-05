@@ -61,6 +61,8 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         },
 
         decryptChunk:function(){
+            if (this.has('progressListener')) this.get('progressListener')({event:'Decrypting',progress:0})
+
             var d = sjcl.mode.betterCBC.decryptChunk( {
                 buffer: this.get('buffer')
                 , iv: this.get('iv')
@@ -68,6 +70,8 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
             })
 
             this.set('buffer', d.buffer)
+
+            if (this.has('progressListener')) this.get('progressListener')({event:'Decrypting',progress:100})
 
             return d
 
@@ -121,6 +125,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
             Downloader.prototype.downloadFile(
                 this.get('linkName'),
                 this.get('linkKey'), 
+                this.get('progressListener'), 
                 _.bind(function(arraybuffer){
                     this.set('buffer',arraybuffer)
                     //we are also going to decrypt here to save another worker message

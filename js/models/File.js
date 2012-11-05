@@ -12,7 +12,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
              *
             */
 
-           webworkers: false
+           webworkers: true
 
         },
 
@@ -52,11 +52,6 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
             var counter = 0
             , chunks = []
             , padding
-
-            //async call to save chunks
-            var saveChunks = _.after(chunkCount, _.bind(function(chunks){ 
-            },this) )
-
 
 
             var splitNext = function(){
@@ -102,10 +97,11 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                             )
                         }
 
+                        /**
                         chunks[chunks.length-1].attachProgressListener(_.bind(function(i, progressObj){
-                            debugger;
                             console.log('================================> chunk',i,'is ',progressObj.event,'and',progressObj.progress,'% done')
                         },this,chunks.length))
+                        */
 
                         //start splitting the next chunk
                         splitNext.apply(this);
@@ -126,9 +122,53 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
         },
 
+        attachProgressListenerToChunks: function(){
+            var chunks = this.get('chunks');
+            var progressView = this.get('progressView')
+            var numberOfUpdateEventsPerChunk = 2 //represents the events that will be updated for each chunk, this is weighted evenly
+            //There is the upload event and the encrypting event. That's 2
+            var numberOfChunks = chunks.length  //the chunks that are going to be part of the whole progress
+            var chunkProgress = {}
+
+            var progressListener = function(chunkNo){
+                //We are going to keep track of each individual chunks progress 
+                var currentChunkProgress = chunkProgress[chunkNo] = {Uploading:0}
+                
+
+                //in order to scale the individual progress events for the whole shebang 
+                return function(progressObj){
+
+                    //update the progress of the affected chunk
+                    currentChunkProgress[progressObj.event]=progressObj.progress
+                    console.log(progressObj.event,progressObj.progress)
+                    debugger;
+
+                    //create an array of total progresses for each chunk
+                    var totalChunkProgress = _.map(chunkProgress, function(singleChunkProgressObj){
+                        return _.reduce(singleChunkProgressObj, function(memo, eventProgress){ return memo + eventProgress })
+                    })
+
+                    //sum the total progresses from each chunk to a total progress
+                    totalChunkProgress = _.reduce(totalChunkProgress, function(memo, singleChunkProgress){ return singleChunkProgress + memo})
+
+                    //scale the progress appropriately for the chunks
+                    totalChunkProgress = totalChunkProgress/(numberOfChunks*numberOfUpdateEventsPerChunk)
+                    console.log('total progress:',totalChunkProgress)
+                    a = chunkProgress;
+
+                    progressView.changePercentage(totalChunkProgress)
+                }
+            }
+
+            //attach the progress listener to each chunk
+            _.each(chunks, function(chunk, chunkNo){
+                chunk.attachProgressListener(progressListener(chunkNo));
+            })
+        },
+
         //Returns the linkName for the manifest and the key
         upload: function(callback){
-            //this.split()
+            //check to see if we have made chunks for this file or not
             if (!this.has('chunks')){
                 return this.split(_.bind(this.upload,this,callback));
             }
@@ -137,6 +177,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
             var chunkSize = Chunk.prototype.defaults.chunkSize
             var chunkCount = Math.ceil(file.size/chunkSize)
 
+            this.attachProgressListenerToChunks();
 
 
             uploadManifest = _.after(chunks.length, _.bind(this.manifest.uploadManifest, this.manifest, callback) )
@@ -356,7 +397,14 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
             //lets start reading
             reader.readAsArrayBuffer(blob)
-        }
+        },
+
+        destroy:function(){
+            this.trigger('destroy')
+            if (this.get('webworkers')){
+                _.each(this.get('chunks'), function(chunk){ chunk.terminate() })
+            }
+        },
     })
 });
 

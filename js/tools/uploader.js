@@ -14,6 +14,7 @@ Uploader.prototype = {
         xhr.onload = function(e) {
             if (this.status == 200) {
                 callback(xhr.responseText);
+                if (progressListener) progressListener({event:"Uploading", progress:100});
             }
         };
 

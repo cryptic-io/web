@@ -1,5 +1,5 @@
 //returns the file view
-define(["models/File","jade!templates/FileUpload"], function(FileModel, template){ 
+define(["models/File","views/Progress", "jade!templates/FileUpload"], function(FileModel, ProgressView, template){ 
     return Backbone.View.extend({
 
         tagName: "div",
@@ -34,14 +34,22 @@ define(["models/File","jade!templates/FileUpload"], function(FileModel, template
 
         uploadFile: function(){
             var model = this.model;
+            var progressView = new ProgressView({container:$("body")})
+            progressView.render()
+            model.set('progressView',progressView)
             model.upload(function(linkData){
                 //alert('#download/'+linkData.linkName+'|'+linkData.IVKey)
                 console.log('an alert would have happened here','#download/'+linkData.linkName+'|'+linkData.IVKey)
+                progressView.remove()
+                model.destroy()
             })
         },
 
         downloadFile: function(linkName, passcode, callback){
+            var progressView = new ProgressView({container:$("body")})
+            progressView.render()
             this.model = new FileModel();
+            this.model.set('progressView',progressView)
             this.model.download(linkName, passcode, callback);
         },
 
