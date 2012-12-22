@@ -13,6 +13,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
             */
 
            webworkers: true
+           , maxWorkers: 2
 
         },
 
@@ -141,7 +142,6 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                     //update the progress of the affected chunk
                     currentChunkProgress[progressObj.event]=progressObj.progress
                     console.log(progressObj.event,progressObj.progress)
-                    debugger;
 
                     //create an array of total progresses for each chunk
                     var totalChunkProgress = _.map(chunkProgress, function(singleChunkProgressObj){
@@ -154,7 +154,6 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                     //scale the progress appropriately for the chunks
                     totalChunkProgress = totalChunkProgress/(numberOfChunks*numberOfUpdateEventsPerChunk)
                     console.log('total progress:',totalChunkProgress)
-                    a = chunkProgress;
 
                     progressView.changePercentage(totalChunkProgress)
                 }
@@ -182,21 +181,30 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
             uploadManifest = _.after(chunks.length, _.bind(this.manifest.uploadManifest, this.manifest, callback) )
 
-            for (var i = 0; i < chunks.length; i++) {
-                var chunk = chunks[i]
-                
-                //bind the function to this and keep the current index inside to function so it doesn't change when called
+            // The chunks array will act as a queue, and we will spawn
+            // maxWorkers number of workers to read from the queue
+           
+            _.each(_.range(this.get('maxWorkers')), _.bind(function(){this.recursivelyUploadChunks(chunks)},this))
+        },
 
+        recursivelyUploadChunks: function(chunks){
+          if (!chunks.length) return;
+          var chunk = chunks.pop()
+          chunk.upload(_.bind(function(index,linkName){
+            if(this.get('webworkers')){
+                chunk.terminate(); //destroy the current chunk web worker, to save resources
+            }
 
-                chunk.upload(_.bind(function(index, linkName){
-                    //save the response here
-                    this.manifest.setChunkLinkName(index, linkName, function(){
-                        //async way of knowing when all the chunks have been uploaded, we go on to upload the chunks
-                        uploadManifest()
-                    })
+            //save the response from the server
+            this.manifest.setChunkLinkName(index, linkName, function(){
+              //async way of knowing when all the chunks have been uploaded, we go on to upload the chunks
+              uploadManifest()
 
-                }, this, i))
-            };
+            })
+
+            //now we recursively upload the chunks, given there are still chunks to process
+            if (chunks.length) this.recursivelyUploadChunks(chunks)
+          }, this, chunks.length))
         },
 
         download: function(linkName, passcode, callback){
@@ -244,63 +252,119 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                         //callback after all the chunks have been written
                         var asyncCallback = _.after(chunks.length, callback)
 
-                        //we need to get the fileKeys
-                        this.manifest.fetchChunkKeys(_.bind(function(chunkKeys){
-                            //download each chunk
-                            var chunk = chunks[0];
-                            this.downloadChunk(chunk, chunkKeys, asyncCallback)
+                        //reverse the chunks to use it as a stack
+                        var chunksStack = chunks.reverse()
+                        var writePositionObj = { writePosition:0, downloadedChunks:{}, numberOfChunks:chunks.length }
 
-                        },this))
+                        //spawn the number of maxWorkers
+                        _.map(_.range(this.get('maxWorkers')), _.bind(this.recursivelyDownloadChunks, this, chunksStack, writePositionObj))
+
+                        //spawn a single writing worker
+                        this.recursivelyWriteChunks(writePositionObj, callback)
+
+                        //this.downloadChunk(chunk, chunkKeys, asyncCallback)
 
                     },this)
                     , name: this.manifest.get('name')
                     , fileSystem: this.fileSystem
                 })
-
-
             }, this))
 
         },
 
-        downloadChunk: function(chunk, chunkKeys, callback){
-
-            if ( !this.get('webworkers') ){
-
-                //If there are no web workers go here
-                var args = {
-                    linkName: chunk.get('chunkInfo')['linkName']
-                    , linkKey: chunkKeys[chunk.get('chunkInfo')['linkName']]
-                    , IVKey: chunk.get('chunkInfo')['IVKey']
-                }
-                chunk.set({'linkName':args.linkName, 'linkKey':args.linkKey})
-                chunk.decodeIVKey(args.IVKey)
-
-                chunk.download(_.bind(function(){
-
-                    var chunks = this.get('chunks')
-
-                    this.writeChunk(chunk, chunkKeys, callback);
-                },this) )
-
-            }else{
-
-                console.log('USING WEBWORKERS')
-                //If there are web workers do this
-                chunk.download({
-                    linkName: chunk.get('chunkInfo')['linkName']
-                    , linkKey: chunkKeys[chunk.get('chunkInfo')['linkName']]
-                    , IVKey: chunk.get('chunkInfo')['IVKey']
-                }, _.bind(function(decryptedBuffer){
-                    //this.writeChunk(chunk, chunkKeys, callback);
-                    this.appendToFile(chunk, decryptedBuffer, chunkKeys, callback);
-                },this) )
+        recursivelyDownloadChunks : function(chunks, writePositionObj){
+            //nothing left to process
+            if (chunks.length == 0){
+                return;
             }
 
+            //peek at the chunk before we decide we want it
+            var chunk = chunks[chunks.length-1]
+            , chunkIndex = chunk.get('chunkInfo').part
+
+            // Prevent from downloading too far ahead.
+            // If this worker is too ahead we don't want the chunk just yet
+            if ( chunkIndex > this.get('maxWorkers') + writePositionObj.writePosition ){
+                setTimeout(_.bind(arguments.callee,this,chunks, writePositionObj), 500) //wait half a second to try again
+                return
+            }
+
+            //we want the chunk, so lets pop it off the stack
+            chunk = chunks.pop()
+
+            //get the key and then download the file
+            this.manifest.fetchChunkKey(chunk.get('chunkInfo').part, _.bind(function(linkKey){
+
+                if ( this.get('webworkers') ){
+                    console.log('USING WEBWORKERS')
+                    //If there are web workers do this
+                    chunk.download({
+                        linkName: chunk.get('chunkInfo')['linkName']
+                        , linkKey: linkKey
+                        , IVKey: chunk.get('chunkInfo')['IVKey']
+                    }, function(decryptedBuffer){
+                        //Here we put it on the map to be written by the main thread
+                        writePositionObj.downloadedChunks[chunkIndex]=chunk
+                    })
+                }else{
+                    //not using webworkers
+                    //We need to break it up into multiple steps (something the webworker does to save messages)
+                    var args = {
+                        linkName: chunk.get('chunkInfo')['linkName']
+                        , linkKey: linkKey
+                        , IVKey: chunk.get('chunkInfo')['IVKey']
+                    }
+                    chunk.set({'linkName':args.linkName, 'linkKey':args.linkKey})
+                    chunk.decodeIVKey(args.IVKey)
+                    chunk.download(_.bind(function(decryptedBuffer){
+                        //Here we put it on the map to be written by the main thread
+                        writePositionObj.downloadedChunks[chunkIndex]=chunk
+                    },this) )
+                }
+
+                // Using a dirty hack to place the recursive call at the top of Javascript's call stack  
+                // We want to place it at the top because it gives the writer a chance to catch up
+                _.defer(_.bind(this.recursivelyDownloadChunks, this, chunks, writePositionObj))},this))
         },
 
-        appendToFile: function(chunk, buffer, chunkKeys, callback){
+        recursivelyWriteChunks : function(writePositionObj, writeCompleteCallback){
+            // So we are going to read from the writePositionObj and treat it as a pointer
+            // it's a sort of queue that of processed chunks from the download worker
+            // We have to write the chunks sequentially, but we don't have to download the chunks one by one
+            // So we have maxWorkers downloading and staying with writePosition+maxWorkers chunks
+            var writePosition = writePositionObj.writePosition
+            , downloadedChunks = writePositionObj.downloadedChunks
+
+            //lets check to see if we have already written everything.
+            if ( writePosition >= writePositionObj.numberOfChunks ){
+                writeCompleteCallback()
+                return
+            }
+
+
+            // if the current write position chunk is undefined, that means we haven't downloaded it yet
+            // Let's wait a bit for the download workers to do their work
+            if ( !downloadedChunks[writePosition] ){
+                setTimeout(_.bind(arguments.callee, this, writePositionObj, writeCompleteCallback), 500)
+                return
+            }
+
+            //So we have a chunk that is ready to be written
+            var chunk = downloadedChunks[writePosition]
+            this.appendToFile(chunk, _.bind(function(){
+                writePositionObj.writePosition++; //Increment the writePositionObj
+
+                // Make the recursive call
+                // Using a dirty hack to place the recursive call at the top of Javascript's call stack  
+                _.defer(_.bind(this.recursivelyWriteChunks, this, writePositionObj, writeCompleteCallback))
+            },this));
+        },
+
+        appendToFile: function(chunk, callback){
             var chunkCount = _.keys(this.manifest.get('chunks')).length - 1 //zero indexed
-            var chunkSize = Chunk.prototype.defaults.chunkSize
+            , chunkSize = Chunk.prototype.defaults.chunkSize
+            , buffer = chunk.get('buffer')
+
             //if this is the last chunk only write the amount needed to the file
             if ( chunk.get('chunkInfo').part == chunkCount){
                 var lastChunkSize =  this.manifest.get('size') - (chunkCount*chunkSize)
@@ -318,11 +382,6 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
             FileSystemHandler.appendToFile(
                 { 
                   successCallback: _.bind(function(){
-                      if (chunk.get( 'chunkInfo' )['part']+1 < this.get('chunks').length){
-                          var nextChunk = this.get('chunks')[chunk.get( 'chunkInfo' )['part']+1]
-                          if (this.get('webworkers')) chunk.terminate();
-                          this.downloadChunk(nextChunk, chunkKeys, callback)
-                      }
                       callback()
                   },this)
                   , errorCallback: errCallback
@@ -334,25 +393,6 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                   , start: start
                 }
             )
-        },
-
-        writeChunk: function(chunk, chunkKeys, callback){
-            //console.log('data from chunk is',totalText.push(chunk.readData()), totalText.join(''))
-            chunk.writeToFile(this.fileSystem, this.manifest.toJSON(), _.bind(function(){
-
-                var chunks = this.get('chunks')
-                if (chunk.get( 'chunkInfo' )['part']+1 < chunks.length){
-                    var nextChunk = chunks[chunk.get( 'chunkInfo' )['part']+1]
-                    if (this.get('webworkers')) chunk.terminate();
-                    setTimeout(_.bind(this.downloadChunk,this,nextChunk, chunkKeys, callback),10e3)
-                    
-                }
-
-                FileSystemHandler.readFile("test.txt",1e3)
-
-                callback()
-            },this))
-
         },
 
         getFileEntry: function(callback){
@@ -375,9 +415,6 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                 })
             })
         },
-
-
-
 
         getArrayBufferChunk:function(start, end, callback){
 

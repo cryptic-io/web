@@ -4,6 +4,10 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
     return Backbone.Model.extend({
 
         defaults: {
+            chunkKeyCache : {}
+            , lastChunkKeyTimestamp : 0
+            , chunkKeyTimeout: 30e3 //timeout in ms
+            , maxKeysPerRequest: 20
         /** These are what the manifest object would look like
            name: coolFileBro.txt
            type: 'text/plain'
@@ -103,11 +107,44 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
             },this))
         },
 
-        fetchChunkKeys: function(callback){
-            var chunks = _.values(this.get('chunks'))
-            chunks = _.map(chunks, function(chunk) { return chunk.linkName } )
-            Downloader.prototype.getFileKeys(chunks, callback)
+        fetchChunkKeys: function(startingIndex, callback){
+            var endIndex = _.min([_.keys(this.get('chunks')).length, this.get('maxKeysPerRequest')+startingIndex])
+            , indices = _.range(startingIndex, endIndex)
+            , chunks = this.get('chunks')
+            , chunkLinkNames = _.map(indices, function(index){
+                return chunks[index].linkName
+            }, this)
+
+            Downloader.prototype.getFileKeys(chunkLinkNames, _.bind(function(chunkKeys){
+                this.set('chunkKeyCache',chunkKeys)
+                this.set('lastChunkKeyTimestamp',+(new Date()))
+
+                callback(chunkKeys[chunks[startingIndex].linkName])
+            },this))
+
         },
+
+        // This will transperantly handle fetching the chunk keys from the server
+        // It will make a request and remember the request time
+        // If a chunkKey is requested withouth being in the cached array, another request will be made
+        fetchChunkKey: function(chunkIndex, callback){
+            //check the timeout
+            if ( this.get('chunkKeyTimeout') < ( +(new Date()) - this.get('lastChunkKeyTimestamp') ) ){
+                this.fetchChunkKeys(chunkIndex, callback)
+                return
+            }
+
+            var chunkLinkName = this.get('chunks')[chunkIndex].linkName
+
+            if ( _.isUndefined(this.get('chunkKeyCache')[chunkLinkName]) ){
+                this.fetchChunkKeys(chunkIndex, callback)
+                return
+            }else{
+                callback(this.get('chunkKeyCache')[chunkLinkName])
+                return
+            }
+        },
+
 
         manifestToBuffer: function(){
             var manifestData = JSON.stringify(this.toJSON())

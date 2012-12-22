@@ -8,15 +8,29 @@ define(['models/Chunk'],function(Chunk){
         //setup a new worker
         initialize: function(){
             this.worker = new Worker(this.get('workerScript'))
+            var command = "initializeChunk"
             this.worker.postMessage({
-                command:"initializeChunk"
-                , arrayBuffer:this.get('buffer')
-                , entropy: sjcl.random.randomWords(8)
+                command : "initializeChunk"
+                , entropy : sjcl.random.randomWords(8)
             })
 
+            //setup the callback handler
             this.worker.onmessage = _.bind(this.callbackHandler,this)
         },
 
+        //have the ability to call this only when really necessary. Be lazy ;)
+        setBuffer: function(callback){
+
+            this.placedBuffer = true;
+            var command = "setBuffer"
+            this.worker.postMessage({
+                command:command
+                , arrayBuffer:this.get('buffer')
+            })
+
+            this.bindSuccess(command, callback)
+
+        },
 
         bindSuccess: function(command, callback){
             //Only want this to happen once
@@ -33,6 +47,13 @@ define(['models/Chunk'],function(Chunk){
         },
 
         encryptChunk: function(callback){
+            //Check to see if the worker has a copy of the buffer, if not, give it one
+            if (!this.placedBuffer){
+                this.setBuffer(_.bind(arguments.callee, this, callback))
+                return 
+            }
+
+
             var command = "encryptChunk"
             this.worker.postMessage({
                 "command":command
@@ -62,8 +83,13 @@ define(['models/Chunk'],function(Chunk){
         },
 
         upload: function(callback){
-            var command = "upload"
+            //Check to see if the worker has a copy of the buffer, if not, give it one
+            if (!this.placedBuffer){
+                this.setBuffer(_.bind(arguments.callee, this, callback))
+                return 
+            }
 
+            var command = "upload"
 
             this.worker.postMessage({
                 "command":command
@@ -88,7 +114,10 @@ define(['models/Chunk'],function(Chunk){
             })
 
             //We listen in for the event that will be triggered when the worker is done
-            this.bindSuccess(command,callback)
+            this.bindSuccess(command,_.bind(function(decryptedBuffer){
+                this.set('buffer',decryptedBuffer)
+                callback(decryptedBuffer)
+            },this))
 
             //If we wanted to account for an error we could do
             this.bindError(command,function(result){ console.error('There was an error with the worker',result)})
@@ -130,7 +159,7 @@ define(['models/Chunk'],function(Chunk){
         },
 
         terminate: function(){
-            this.worker.terminate();
+            if (this.worker) this.worker.terminate()
         },
 
         //setup a callback to be called when the progress changes

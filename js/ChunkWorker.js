@@ -17,14 +17,22 @@ require({
             initializeChunk: function(args){
                 var entropy = args.entropy;
                 sjcl.random.addEntropy(entropy,256)
-                this.chunk = new Chunk({buffer:args.arrayBuffer}) 
+                this.chunk = new Chunk() 
                 this.postMessage({
                     command:"initializeChunk",
                     status:"success"
                 })
             },
 
-            newEmptyChunk: function(){
+            setBuffer: function(args){
+                this.chunk.set('buffer',args.arrayBuffer)
+                this.postMessage({
+                    command:"setBuffer",
+                    status:"success"
+                })
+            },
+
+            newEmptyChunk: function(args){
                 var entropy = args.entropy;
                 sjcl.random.addEntropy(entropy,256)
 
