@@ -59,8 +59,9 @@ dependencies, function(require){
     
 
     require( 
-        ['models/File','views/File','views/MusicPlayer','test/test','routes/Home','models/ChunkWorkerInterface','tools/downloader'],
-        function(FileModel, FileView, MusicPlayer, test, HomeRouter, ChunkWorkerInterface, Downloader) {
+        ['models/File','views/File','views/MusicPlayer','test/test','routes/Home','models/ChunkWorkerInterface','tools/downloader', 'models/UserBlob'],
+        function(FileModel, FileView, MusicPlayer, test, HomeRouter, ChunkWorkerInterface, Downloader, UserBlob) {
+            userBlob = UserBlob;
             dler = new Downloader()
             
             router = new HomeRouter();
