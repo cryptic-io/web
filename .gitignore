@@ -1,3 +1,4 @@
 *.sw?
 *.vim
+js/config.js
 tests/chrome
