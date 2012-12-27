@@ -3,7 +3,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
   return Backbone.Model.extend({
     defaults: {
       version : 1.0
-      , e_rsa: "1337"
+      , e_rsa: "1337" //this is actually hex for 4919
       , bits_rsa: 512
       , iterations_hash: 1337
       , bytes_hash: 16
@@ -23,46 +23,56 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
       this.set('pub_key', rsa.n)
     }
 
-    , hashPassword: function(password){
-      var salt = this.get('pub_key').toByteArray()
-      , iterations = this.get('iterations_hash')
-      , bytes = this.get('bytes_hash')
-      , hash = sjcl.misc.pbkdf2(password, salt)
-      this.set('hashed_password', hash)
-
-      this.chunk.set('iv',hashed_password.slice(0,4))
-      this.chunk.set('key',hashed_password.slice(4))
-    }
-
-
     , isIVKeySet: function(){
       return (this.chunk.has('iv') && this.chunk.has('key'))
     }
 
-    //generic crypt funciton for (en/de)crypting
-    //reads the hashed password from the model, encrypts the arrayBuffer using the hashedPassword
-    , encryptBlob: function(){
-      if (this.isIVKeySet){
-        chunk.encryptChunk()
-        return chunk.buffer
+    , getBlob: function(){
+        var userBlob = _.pick(this.toJSON(),["fs", "version"])
+
+        //store RSA values in base64 likaboss
+        userBlob["pub_key"] = hex2b64(this.get('rsa').n.toString(16))
+        userBlob["private_key"] = hex2b64(this.get('rsa').d.toString(16))
+        userBlob["rsa_e"] = hex2b64(this.get('rsa').d.toString(16))
+
+        return userBlob
+    }
+
+    , setBlob: function(userBlob){
+        
+        this.set(userBlob)
+        var rsa = new RSAKey()
+        //keys for the N, E, D components of the rsa
+        var NEDkeys = [userBlob.pub_key, rsa_e, userBlob.private_key]
+        //transform the keys to hex from b64
+        NEDkeys = _.map(NEDkeys, b64tohex)
+
+        //set the value to the rsa
+        rsa.setPrivate.apply(rsa, NEDkeys)
+    }
+
+    // Simple shortcut, we are just gonna use the excellent work in the sjcl library
+    // Returns an JSON string with ciphertext and some info to decrypt (iv, salt)
+    , encryptBlob: function(userBlob, password){
+      if (password){
+        userBlob = JSON.stringify(userBlob)
+        return sjcl.encrypt(password, userBlob)
       }else{
-        this.errorHandler({error:"password not set yet"})
-        return
+          this.errorHandler({error:"password not set yet"})
+          return
       }
     }
 
-    , decryptBlob: function(arrayBuffer){
-      try{
-        if (this.isIVKeySet){
-          chunk.decryptChunk()
-          return chunk.buffer
-        }else{
+    , decryptBlob: function(encryptedUserBlob, password){
+      if (password){
+        var userBlob = sjcl.decrypt(password, encryptedUserBlob)
+        userBlob = JSON.parse(userBlob)
+
+        //save the imported userblob
+        userBlob = this.set(userBlob)
+      }else{
           this.errorHandler({error:"password not set yet"})
           return
-        }
-      }catch(err){
-        this.errorHandler({error:"Invalid password"})
-        return 
       }
     }
 
