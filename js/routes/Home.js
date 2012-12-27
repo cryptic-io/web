@@ -11,21 +11,20 @@ define(["views/Home","views/Info", "views/File", "views/Progress"],function(Home
 
         home: function() {
             console.log('starting home')
-            var home = new HomeView({el:$('body')})
+            var home = new HomeView({el:$('#mainContainer')})
             home.render()
 
             fileView = new FileView({el:$('#uploadBox')});
             fileView.render()
-
         },
 
         info: function() {
-            info = new InfoView({el:$('body')})
+            info = new InfoView({el:$('#mainContainer')})
             info.render()
         },
 
         download: function(linkNameAndPasscode){
-            var home = new HomeView({el:$('body')})
+            var home = new HomeView({el:$('#mainContainer')})
             home.render()
 
             var linkName = linkNameAndPasscode.split('/')[0]
