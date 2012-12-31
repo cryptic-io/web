@@ -27,10 +27,13 @@ define(["jade!templates/Userlogin", "models/UserBlob"], function(Logintemplate, 
             ,  password = this.$el.find('#passwordInput > input').val()
 
             //testing
-            username="frank"
+            username="frank3"
             password="sinatra"
 
-            this.userBlob = new UserBlob({username:username})
+            this.userBlob = new UserBlob(
+                {username:username
+                 , password: password
+            })
             this.userBlob.generateRSA()
 
             var userBlob = this.userBlob.getBlob()
@@ -49,8 +52,12 @@ define(["jade!templates/Userlogin", "models/UserBlob"], function(Logintemplate, 
 
         login: function(){
             var username = this.$el.find('#usernameInput > input').val()
+            , password = this.$el.find('#passwordInput > input').val()
 
-            username = "frank"
+            username = "frank3"
+            password = "sinatra"
+            this.userBlob = new UserBlob({username:username, password:password})
+
             $.post(api.getUserBlobs 
                    , JSON.stringify(
                        { username: username})
@@ -59,6 +66,20 @@ define(["jade!templates/Userlogin", "models/UserBlob"], function(Logintemplate, 
 
         loginCallback: function(response){
             data = response
+            var password = this.userBlob.get('password')
+
+            password = "sinatra"
+            userBlobs = response.return.blobs
+
+            userBlobs = _.map(userBlobs, _.bind(this.userBlob.decryptBlob,this, password))
+
+            var userBlob = this.userBlob.consolidateBlobs(userBlobs)
+
+            //save the id
+            userBlob.id = response.return.id
+            this.userBlob.setBlob(userBlob)
+
+            this.trigger('loggedIn')
         },
 
         registerCallback: function(){

@@ -6,12 +6,8 @@ define(["jade!templates/Home", "views/User"], function(homeTemplate, UserView){
         initialize: function(){
         },
 
-
         render: function() {
             this.$el.html(this.template());
-
-            this.userView = new UserView({userLoginContainer:this.$el.find('#userLogin')})
-            this.userView.render()
         },
 
 

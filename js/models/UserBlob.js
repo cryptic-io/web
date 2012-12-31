@@ -8,7 +8,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
       , iterations_hash: 1337
       , bytes_hash: 16
       , debug: true
-      , fs : {"/":[]}
+      , fs : {name:"root", value:{}}
       , sane: true //simple check to see if a blob has been decrypted
       , chunk : new Chunk()
     }
@@ -21,6 +21,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
       rsa.generate(this.get('bits_rsa'), this.get('e_rsa'))
       this.set('rsa',rsa)
       this.set('pub_key', rsa.n)
+
     }
 
     , isIVKeySet: function(){
@@ -28,12 +29,12 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
     }
 
     , getBlob: function(){
-        var userBlob = _.pick(this.toJSON(),["fs", "version"])
+        var userBlob = _.pick(this.toJSON(),["fs", "version", "id"])
 
         //store RSA values in base64 likaboss
         userBlob["pub_key"] = hex2b64(this.get('rsa').n.toString(16))
         userBlob["private_key"] = hex2b64(this.get('rsa').d.toString(16))
-        userBlob["rsa_e"] = hex2b64(this.get('rsa').d.toString(16))
+        userBlob["rsa_e"] = hex2b64(this.get('rsa').e.toString(16))
 
         return userBlob
     }
@@ -43,12 +44,19 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         this.set(userBlob)
         var rsa = new RSAKey()
         //keys for the N, E, D components of the rsa
-        var NEDkeys = [userBlob.pub_key, rsa_e, userBlob.private_key]
+        var NEDkeys = [userBlob.pub_key, userBlob.rsa_e, userBlob.private_key]
         //transform the keys to hex from b64
         NEDkeys = _.map(NEDkeys, b64tohex)
 
         //set the value to the rsa
         rsa.setPrivate.apply(rsa, NEDkeys)
+        this.set('rsa',rsa)
+    }
+
+    //Merge multiple userBlobs into one, prevents a user from accidently overwriting his data
+    , consolidateBlobs: function(userBlobs){
+        //TODO actually do something here
+        return userBlobs[0]
     }
 
     // Simple shortcut, we are just gonna use the excellent work in the sjcl library
@@ -63,13 +71,10 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
       }
     }
 
-    , decryptBlob: function(encryptedUserBlob, password){
+    , decryptBlob: function(password, encryptedUserBlob){
       if (password){
         var userBlob = sjcl.decrypt(password, encryptedUserBlob)
-        userBlob = JSON.parse(userBlob)
-
-        //save the imported userblob
-        userBlob = this.set(userBlob)
+        return userBlob = JSON.parse(userBlob)
       }else{
           this.errorHandler({error:"password not set yet"})
           return
@@ -90,23 +95,27 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
       alert("Error: "+errorObj.error)
     }
 
-    , addFile: function(location, filename, link){
-      var fs = this.get('fs')
-      , currentFolder = fs
+    , addFile: function(fs, loc, fileObj){
 
-      folder = location.split('/')
-      folder = _.filter(folder, function(part) {return part != ""})
+      var contents = fileObj
+      , filename = fileObj.filename
+      contents.value = contents.link
 
-      _.each(folder, function(folderName){currentFolder=currentFolder[folderName]})
+      contents = _.defaults(contents, {
+          created: +(new Date()), modified: +( new Date() ), type: "file", location: loc, size:"Unknown"})
+
+      var folder = this.getFile(fs, loc)
+      , currentFolder = folder.value //the value of the folder is the object that contains all the other files
 
       if (_.isUndefined(currentFolder[filename]) ){
-          currentFolder[filename]=link
+          currentFolder[filename]=contents
       }else{
         
         //increment through filenames if the file already exists
         (function(filename, copyNumber){
           if( _.isUndefined(currentFolder[filename+' ('+copyNumber+')']) ){
-            currentFolder[filename]=link
+            contents.filename = filename + ' ('+copyNumber+')'
+            currentFolder[filename + ' ('+copyNumber+')']=contents
           }else{
             //we need to increment the number
             arguments.callee(filename, ++copyNumber)
@@ -114,12 +123,41 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
           }
         })(filename, 1)
       }
+
+      return fs
     }
 
-    , addFolder: function(location, folderName){
-      this.addFile(location, folderName, {})
+    , addFolder: function(fs, loc, folderName){
+      this.addFile(fs, loc, folderName, {}, { type: "folder" })
     }
     
+    // Given a fs and location, return an array of all the files inside
+    , getFile: function(fs, loc){
+        var locationArray = _.without(loc.split('/'), "")
+        , file = fs
+
+        _.each(locationArray, function(location){
+          //navigate inside folders 
+          file = file.value[location]
+        })
+
+        return file
+    }
+
+    , ls: function(fs, loc){
+      //we return a list of files from a folder
+      return _.values(this.getFile(fs, loc).value)
+    }
+    
+    // given an array, and an  object, navigate the object given the array
+    , getIn: function(object, loc){
+        var tempObj = object
+        _.each(loc, function(part){
+            tempObj = tempObj[part]
+        })
+
+        return tempObj
+    }
     
     //serialize the current state of the blob and save it to the blob's chunk's arrayBuffer
     , serializeBlob : function(){
@@ -136,7 +174,23 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
     }
 
     , signMessage: function(messageString){
-      return rsa.encrypt(messageString)
+      //first lets hash the message
+      var hash = sjcl.hash.sha256.hash(messageString)
+      , rsa = this.get('rsa')
+      hash = sjcl.codec.base64.fromBits(hash) //convert to b64
+
+      //Sign the hash
+      //We sign the hash by encrypting the hash with the private key, so it will later be decrypted with a public key to compare
+      //the computed hash with the given, signed hash
+      //Place the padding
+      padded_hash = pkcs1pad2(hash, (rsa.n.bitLength()+7)>>3)
+      //Encrypt the hash using the private key
+      signed_hash = padded_hash.modPow(rsa.d, rsa.n)
+      
+      //b64 encode
+      var sig = hex2b64(signed_hash.toString(16))
+
+      return sig
     }
 
     , hashArrayBuffer: function(arrayBuffer){

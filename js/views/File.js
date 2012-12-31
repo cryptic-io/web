@@ -66,6 +66,14 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
                 model.destroy()
                 this.displayDownloadLink(location.origin+'/#download/'+linkData.linkName+'/'+linkData.IVKey)
 
+                //trigger the file uploaded event
+                debugger;
+                this.trigger('fileUploaded',
+                             {link:linkData.linkName+'/'+linkData.IVKey
+                             , filename:this.model.get('file').name
+                             , size: this.model.get('file').size
+                             , type: this.model.get('file').type})
+
             },this))
         },
 
@@ -113,7 +121,7 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
             dragDropUpload.find('#filename').text('')
             
             //change the message to tell the user uploading is happening
-            fileView.$el.find('#headerText').text('Encrypting and Uploading the file...')
+            this.$el.find('#headerText').text('Encrypting and Uploading the file...')
 
 
             var progressView = this.model  ? this.model.get('progressView') : {render:function(){}}
@@ -132,7 +140,7 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
             downloadLink.val(link)
 
             //set the helpful header text
-            fileView.$el.find('#headerText').text('File has been encrypted and uploaded, the link below is your key to your cryptic goodness!')
+            this.$el.find('#headerText').text('File has been encrypted and uploaded, the link below is your key to your cryptic goodness!')
 
             //hide the upload box
             dragDropUpload.css('height','5px')
