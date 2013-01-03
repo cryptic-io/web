@@ -1,9 +1,15 @@
-#loginBox
-  #usernameInput Username:
-    input(type="text") 
-  #passwordInput Password:
-    input(type="password")
-  #loginButton
-    button Login
-  #registerButton
-    button Register
+if loggedIn 
+  #userInfo
+    .usernameContainer
+      span signed in as 
+      #username= username
+else 
+  #loginBox
+    #usernameInput Username:
+      input(type="text") 
+    #passwordInput Password:
+      input(type="password")
+    #loginButton
+      button Login
+    #registerButton
+      button Register

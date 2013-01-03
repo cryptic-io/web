@@ -12,19 +12,25 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User"]
         },
 
         user: function(){
-            console.log('starting user home')
-            var home = new HomeView({el:$('#mainContainer')})
-            home.render()
+            if (!this.userView) {
+                console.log('starting user home')
+                var home = new HomeView({el:$('#mainContainer')})
+                home.render()
 
-            var fileView = new FileView({el:$('#uploadBox')});
-            fileView.render()
+                var fileView = new FileView({el:$('#uploadBox')});
+                fileView.render()
 
-            this.userView = new UserView({userLoginContainer:$('#userLogin')
-                                        , userFilesContainer:$('#userFilesContainer')})
-            this.userView.render()
+                //check to see if we need to create it
+                this.userView = new UserView({userLoginContainer:$('#userLogin')
+                                            , userFilesContainer:$('#userFilesContainer')})
+                this.userView.listenTo(fileView, 'fileUploaded', this.userView.fileUploaded)
+                this.userView.render()
+                
+            }else{
+                //We already have the page built, we just need to go to the root directory
+                this.userView.model.set('fsLocation','/')
+            }
 
-            fileView.on('fileUploaded', this.userView.fileUploaded, this.userView)
-            this.on('showFileInfo', this.userView.showFileInfo, this.userView)
         },
 
         openUserFile: function(fileLocation){
@@ -33,7 +39,7 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User"]
                 this.user()
             }
 
-            this.trigger('showFileInfo', "/"+fileLocation)
+            this.userView.model.set('fsLocation', "/"+fileLocation)
         },
 
 

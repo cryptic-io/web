@@ -13,7 +13,11 @@ define(["jade!templates/SingleFileInfo", "models/UserBlob"], function(fileTempla
             var bytes = args.file.size
             , sizeUnit = this.calcHumanReadableSize(bytes)
             , size = this.truncateBytes(bytes)
-            this.$el.html(this.template({file:args.file, size:size, sizeUnit:sizeUnit}));
+            , fileLocation = args.fileLocation
+
+            fileLocation = ['/'].concat(_.without(fileLocation.split('/'), "")) //array of the parts of the file
+
+            this.$el.html(this.template({file:args.file, size:size, sizeUnit:sizeUnit, fileLocation:fileLocation}));
 
             this.file = args.file
         },
