@@ -1,5 +1,5 @@
 //returns the User View, this contains the fs and is the parent to the userLogin
-define(["jade!templates/User", "models/User", "views/Userlogin", "views/UserFiles"], function(userTemplate, User, UserLoginView, UserFileView){ 
+define(["jade!templates/User", "models/User", "views/Userlogin", "views/UserFiles", "views/UserSpaceInfo"], function(userTemplate, User, UserLoginView, UserFileView, UserSpaceInfo){ 
     return Backbone.View.extend({
         template: userTemplate,
 
@@ -16,6 +16,7 @@ define(["jade!templates/User", "models/User", "views/Userlogin", "views/UserFile
             //userFileView
             this.userFileView = new UserFileView({el:this.options.userFilesContainer, model: this.model})
             this.userLoginView = new UserLoginView({el:this.options.userLoginContainer, model: this.model})
+            this.userSpace = new UserSpaceInfo({el:this.options.userSpaceContainer, model: this.model})
 
 
 

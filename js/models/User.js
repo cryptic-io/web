@@ -6,21 +6,23 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
             , fsLocation : '/' // keep track of where the user is currently looking
             , loggedIn : false
             , username : ""
+            , totalSpace : 10e6 // That's 10 MB
         }
 
 
       , register: function(username, password){
+          var userBlob = this.get('userBlob')
   
-          this.userBlob = new UserBlob(
+          userBlob = new UserBlob(
               {username:username
                , password: password
           })
-          this.userBlob.generateRSA()
+          userBlob.generateRSA()
   
-          var userBlob = this.userBlob.getBlob()
-          , publickey_n = userBlob.pub_key
-          , publickey_e = userBlob.rsa_e
-          , encryptedBlob = this.userBlob.encryptBlob(userBlob, password)
+          var userBlobJSON = userBlob.getBlob()
+          , publickey_n = userBlobJSON.pub_key
+          , publickey_e = userBlobJSON.rsa_e
+          , encryptedBlob = userBlob.encryptBlob(userBlobJSON, password)
   
           $.post(api.createUser 
               , JSON.stringify(
@@ -37,7 +39,8 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
   
       , login: function(username, password){
           this.set('username',username)
-          this.userBlob = new UserBlob({username:username, password:password})
+          var userBlob = new UserBlob({username:username, password:password})
+          this.set('userBlob', userBlob)
   
           $.post(api.getUserBlobs 
                  , JSON.stringify(
@@ -46,19 +49,18 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
       }
   
       , loginCallback: function(response){
-          var password = this.userBlob.get('password')
-  
-          //debug
-          password = "sinatra"
+          var userBlob = this.get('userBlob')
+          , password = userBlob.get('password')
   
           var userBlobs = response.return.blobs
-          userBlobs = _.map(userBlobs, _.bind(this.userBlob.decryptBlob,this, password))
+          userBlobs = _.map(userBlobs, _.bind(userBlob.decryptBlob,this, password))
   
-          var userBlob = this.userBlob.consolidateBlobs(userBlobs)
+          var userBlobFromServer = userBlob.consolidateBlobs(userBlobs)
   
           //save the id
-          userBlob.id = response.return.id
-          this.userBlob.setBlob(userBlob)
+          userBlobFromServer.id = response.return.id
+
+          userBlob.setBlob(userBlobFromServer)
   
           this.set('loggedIn', true)
 
@@ -67,30 +69,37 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
 
       //interface for showing off the files
       , getFile : function(){
-          var fs = this.userBlob.get("fs")
+          var userBlob = this.get('userBlob')
+          , fs = userBlob.get("fs")
           , fsLocation = this.get("fsLocation")
 
-          return this.userBlob.getFile(fs, fsLocation)
+          return userBlob.getFile(fs, fsLocation)
       }
 
       , ls : function(){
-          var fs = this.userBlob.get("fs")
+          var userBlob = this.get('userBlob')
+          , fs = userBlob.get("fs")
           , fsLocation = this.get("fsLocation")
 
-          return this.userBlob.ls(fs, fsLocation)
+          return userBlob.ls(fs, fsLocation)
       }
 
       , addFile : function(fileObj, fsLocation){
-          var fs = this.userBlob.get("fs")
+          var userBlob = this.get('userBlob')
+          , fs = userBlob.get("fs")
           fs = _.clone(fs) //get a copy so we don't modify the original
 
-          fs = this.userBlob.addFile(fs, fsLocation, fileObj)
-          this.userBlob.set('fs',fs)
+          fs = userBlob.addFile(fs, fsLocation, fileObj)
+          userBlob.set('fs',fs)
 
-          this.userBlob.saveBlob()
+          userBlob.saveBlob()
 
           //let listeners know that the fs has changed
           this.trigger('change:fs')
+      }
+
+      , calcSpaceUsed : function(){
+            return this.get('userBlob').calcSpaceUsed()
       }
 
   })

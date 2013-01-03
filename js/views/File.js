@@ -18,6 +18,7 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
         render: function(){
             this.$el.html(this.template());
             this.fileInput = this.$el.find('#file-input')[0];
+            this.hideUploadAnother()
             return this.$el;
         },
 
@@ -25,6 +26,7 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
         events: {
             "change #file-input" : "loadFile",
             "click #uploadFile" : "uploadFile",
+            "click #uploadAnother" : "render",
             "dragover #dragDropUpload" : "handleDragOver",
             "drop #dragDropUpload" : "handleFileDrop",
 
@@ -65,9 +67,9 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
                 progressView.remove()
                 model.destroy()
                 this.displayDownloadLink(location.origin+'/#download/'+linkData.linkName+'/'+linkData.IVKey)
+                this.showUploadAnother()
 
                 //trigger the file uploaded event
-                debugger;
                 this.trigger('fileUploaded',
                              {link:linkData.linkName+'/'+linkData.IVKey
                              , filename:this.model.get('file').name
@@ -149,6 +151,14 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
             //run the native DOM code
             downloadLink[0].select()
         },
+
+        showUploadAnother : function(){
+            this.$el.find('#uploadAnother').show()
+        },
+
+        hideUploadAnother : function(){
+            this.$el.find('#uploadAnother').hide()
+        }
 
 
     })

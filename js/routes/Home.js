@@ -22,7 +22,8 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User"]
 
                 //check to see if we need to create it
                 this.userView = new UserView({userLoginContainer:$('#userLogin')
-                                            , userFilesContainer:$('#userFilesContainer')})
+                                            , userFilesContainer:$('#userFilesContainer')
+                                            , userSpaceContainer:$('#userSpaceContainer')})
                 this.userView.listenTo(fileView, 'fileUploaded', this.userView.fileUploaded)
                 this.userView.render()
                 

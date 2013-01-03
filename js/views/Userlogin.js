@@ -26,20 +26,12 @@ define(["jade!templates/Userlogin"], function(Logintemplate, UserBlob){
             var username = this.$el.find('#usernameInput > input').val()
             ,  password = this.$el.find('#passwordInput > input').val()
 
-            //debug
-            username="frank3"
-            password="sinatra"
-
             this.model.register(username, password)
         },
 
         login: function(){
             var username = this.$el.find('#usernameInput > input').val()
             , password = this.$el.find('#passwordInput > input').val()
-
-            //debug
-            username = "frank3"
-            password = "sinatra"
   
 
             this.model.login(username, password)

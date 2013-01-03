@@ -9,7 +9,6 @@ define(["apiEndPoints"],function(api){
       , bits_rsa: 512
       , iterations_hash: 1337
       , bytes_hash: 16
-      , debug: true
       , fs : {name:"root", type:"folder", value:{}}
       , sane: true //simple check to see if a blob has been decrypted
     }
@@ -199,7 +198,6 @@ define(["apiEndPoints"],function(api){
       , encryptedBlob = this.encryptBlob(userBlob, password)
       , signature = this.signMessage(encryptedBlob)
 
-      debugger
       $.post(api.updateUserBlob
         , JSON.stringify(
           { username:username
@@ -210,7 +208,6 @@ define(["apiEndPoints"],function(api){
     }
 
     , saveBlobCallback: function(){
-      debugger
     }
 
     , resetFS: function(){
@@ -218,8 +215,23 @@ define(["apiEndPoints"],function(api){
       this.saveBlob()
     }
 
+    , calcSpaceUsed: function(){
+      var fs = this.get('fs')
 
-      
+      var recursiveReduceSum = function(memo, fileObj){
+        if (fileObj.type == "folder"){
+         return memo +  _.reduce(_.values(fileObj.value), recursiveCalculation, 0)
+        // it is a file
+        }else{
+          return memo + fileObj.size
+
+        }
+      }
+
+      return _.reduce(_.values(fs.value), recursiveReduceSum, 0)
+
+    }
+
   })
 }) 
 
