@@ -20,7 +20,12 @@ define(["jade!templates/Userlogin"], function(Logintemplate, UserBlob){
         events: {
             "click #registerButton": "register"
             , "click #loginButton": "login"
+            , "click #userOptionsButton": "showUserOptions"
         }, 
+
+        showUserOptions: function(){
+            this.model.set('inOptions', true)
+        },
 
         register: function(){
             var username = this.$el.find('#usernameInput > input').val()
@@ -35,7 +40,10 @@ define(["jade!templates/Userlogin"], function(Logintemplate, UserBlob){
   
 
             this.model.login(username, password)
-        }
+        },
+
+        renderOptions: function(){
+        },
 
 
     })

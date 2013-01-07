@@ -82,23 +82,23 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
         downloadFile: function(linkName, passcode, callback){
             var progressView = new ProgressView({container:$("#progressBarContainer")})
             progressView.render()
-            this.model = new FileModel();
+            this.model = new FileModel()
             this.model.set('progressView',progressView)
-            this.model.download(linkName, passcode, callback);
+            this.model.download(linkName, passcode, callback)
         },
 
 
         fileLoaded: function(){
-            console.log('file has been loaded!');
-            var filename = this.model.get('file').name;
-            this.$el.find('#dragDropUpload > #filename').html(filename);
+            console.log('file has been loaded!')
+            var filename = this.model.get('file').name
+            this.$el.find('#dragDropUpload > #filename').html(filename)
         },
 
         createDownloadLink: function(){
             this.model.getFileEntry(_.bind(function(fileEntry){
                 var a = document.createElement('a')
                 a.download = this.model.manifest.get('name')
-                a.href = fileEntry.toURL();
+                a.href = fileEntry.toURL()
                 a.innerText='DOWNLOAD FILE'
 
                 //place it in the html

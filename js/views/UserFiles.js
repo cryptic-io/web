@@ -7,6 +7,7 @@ define(["jade!templates/UserFiles", "views/SingleFileInfo"], function(filesTempl
             //react to the changes in the fsLocation
             this.listenTo(this.model,'change:fsLocation',this.updateView)
             this.listenTo(this.model,'change:loggedIn',this.updateView)
+            this.listenTo(this.model,'change:inOptions',this.updateView)
             //check if the fs has changed
             this.listenTo(this.model,'change:fs',this.updateView)
 
@@ -16,6 +17,7 @@ define(["jade!templates/UserFiles", "views/SingleFileInfo"], function(filesTempl
         updateView: function(){
             //make sure we only draw the view if the user is logged In
             if (this.model.get('loggedIn') == false) return
+            if (this.model.get('inOptions') == true) return
 
             //this should return a list of files in the current fsLocation
             var file = this.model.getFile()

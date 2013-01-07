@@ -5,9 +5,14 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
             userBlob : new UserBlob()
             , fsLocation : '/' // keep track of where the user is currently looking
             , loggedIn : false
+            , inOptions: false
             , username : ""
             , totalSpace : 10e6 // That's 10 MB
         }
+
+      , initialize : function(){
+          this.login("abc", "123")
+      }
 
 
       , register: function(username, password){
@@ -64,6 +69,12 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
   
           this.set('loggedIn', true)
 
+      }
+
+      , changePassword: function(oldPassword, newPassword){
+          if ( oldPassword == this.userBlob.get('password') ){
+
+          }
       }
 
 
