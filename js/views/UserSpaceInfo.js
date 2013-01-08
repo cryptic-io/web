@@ -11,7 +11,7 @@ define(["jade!templates/UserSpaceInfo", "tools/humanReadableByteLength"], functi
         , render: function(){
             var totalSpace = this.model.get('totalSpace')
             , usedSpace = this.model.calcSpaceUsed()
-            , percentUsed = parseInt(100*usedSpace/totalSpace)/100+"%"
+            , percentUsed = parseInt(10000*usedSpace/totalSpace)/100+"%"
 
             totalSpace = hrByteLength.prettyFormat(totalSpace)
             usedSpace = hrByteLength.prettyFormat(usedSpace)
