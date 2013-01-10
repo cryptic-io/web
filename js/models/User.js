@@ -109,6 +109,22 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
           this.trigger('change:fs')
       }
 
+      , removeFile : function(fsLocation, filename){
+          var userBlob = this.get('userBlob')
+          , fs = userBlob.get("fs")
+
+          fs = _.clone(fs) //get a copy so we don't modify the original
+
+          fs = userBlob.removeFile(fs, fsLocation, filename)
+          userBlob.set('fs',fs)
+          userBlob.saveBlob()
+
+          //TODO remove file from server
+
+          //let listeners know that the fs has changed
+          this.trigger('change:fs')
+      }
+
       , calcSpaceUsed : function(){
             return this.get('userBlob').calcSpaceUsed()
       }

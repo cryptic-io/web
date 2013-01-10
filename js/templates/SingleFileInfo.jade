@@ -9,11 +9,14 @@
     span= file.type
   .filesize Size:
     span   #{size}  #{sizeUnit}
+  .downloadLink Link:
+    span
+      input(type="text", value="#{downloadLink}")
   #downloadButton
     button Download 
-  .deleteButton
+  #deleteButton
     button Delete
-  .moveButton
+  #moveButton
     button move
     
 

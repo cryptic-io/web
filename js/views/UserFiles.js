@@ -50,7 +50,7 @@ define(["jade!templates/UserFiles", "views/SingleFileInfo"], function(filesTempl
             , fsLocation = this.model.get('fsLocation')
 
             if (file && file.type != "folder"){
-                var singleFileInfo = new SingleFileInfo({el:this.el})
+                var singleFileInfo = new SingleFileInfo({el:this.el, model:this.model})
                 singleFileInfo.render({file:file, fileLocation:fsLocation})
             }
         },

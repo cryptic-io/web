@@ -127,6 +127,18 @@ define(["apiEndPoints"],function(api){
       return fs
     }
 
+    , removeFile: function(fs, loc, filename){
+      var folder = this.getFile(fs, loc)
+      , currentFolder = folder.value //the value of the folder is the object that contains all the other files
+
+      //remove the file from the folder
+      currentFolder = _.omit(currentFolder, filename)
+
+      folder.value = currentFolder
+
+      return fs
+    }
+
     , addFolder: function(fs, loc, folderName){
       this.addFile(fs, loc, folderName, {}, { type: "folder" })
     }
