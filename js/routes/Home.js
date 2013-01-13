@@ -17,7 +17,7 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User"]
                 var home = new HomeView({el:$('#mainContainer')})
                 home.render()
 
-                var fileView = new FileView({el:$('#uploadBox')});
+                var fileView = new FileView({el:$('#uploadBoxContainer')});
                 fileView.render()
 
                 //check to see if we need to create it
@@ -26,6 +26,10 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User"]
                                             , userSpaceContainer:$('#userSpaceContainer')})
                 this.userView.listenTo(fileView, 'fileUploaded', this.userView.fileUploaded)
                 this.userView.render()
+
+                this.listenTo(this.userView.model, 'loggedIn', function(){
+                    $('#uploadBoxContainer').css('display','inline-block')
+                })
                 
             }else{
                 //We already have the page built, we just need to go to the root directory
@@ -49,7 +53,8 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User"]
             var home = new HomeView({el:$('#mainContainer')})
             home.render()
 
-            var fileView = new FileView({el:$('.page')});
+            var fileView = new FileView({el:$('#uploadBoxContainer')});
+            $('#uploadBoxContainer').css('display','block')
             fileView.render()
         },
 
@@ -65,7 +70,7 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User"]
             var linkName = linkNameAndPasscode.split('/')[0]
             var passcode = linkNameAndPasscode.split('/')[1]
 
-            fileView = new FileView({el:$('#uploadBox'),template:"download"});
+            fileView = new FileView({el:$('#uploadBoxContainer'),template:"download"});
             fileView.render()
             fileView.downloadFile(linkName, passcode, function(){
                 console.log('woohoo downloaded the file!');

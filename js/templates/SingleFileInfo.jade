@@ -1,23 +1,24 @@
-#breadCrumbs
-  each breadCrumb in fileLocation
-    span
-      span.breadCrumb= breadCrumb
-#fileInfo 
-  .filename Name: 
-    span= file.filename
-  .filetype Type: 
-    span= file.type
-  .filesize Size:
-    span   #{size}  #{sizeUnit}
-  .downloadLink Link:
-    span
-      input(type="text", value="#{downloadLink}")
-  #downloadButton
-    button Download 
-  #deleteButton
-    button Delete
-  #moveButton
-    button move
-    
+.page 
+  #breadCrumbs
+    each breadCrumb in fileLocation
+      span
+        span.breadCrumb= breadCrumb
+  #fileInfo 
+    .filename Name: 
+      span= file.filename
+    .filetype Type: 
+      span= file.type
+    .filesize Size:
+      span   #{size}  #{sizeUnit}
+    .downloadLink Link:
+      span
+        input(type="text", value="#{downloadLink}")
+    #downloadButton
+      button Download 
+    #deleteButton
+      button Delete
+    #moveButton
+      button move
+      
 
 

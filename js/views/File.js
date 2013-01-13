@@ -192,6 +192,11 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
         },
 
         downloadFile: function(linkName, passcode, callback){
+            $('#progressBarContainer').css({
+                width: "100%"
+                , height: "20px"
+            })
+
             var progressView = new ProgressView({container:$("#progressBarContainer")})
             progressView.render()
             this.model = new FileModel()

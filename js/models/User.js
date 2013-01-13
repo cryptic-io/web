@@ -11,7 +11,7 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
         }
 
       , initialize : function(){
-          this.login("abc", "123")
+          //this.login("abc", "123")
       }
 
 
