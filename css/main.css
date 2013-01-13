@@ -402,6 +402,7 @@ p {
 	overflow-x:hidden;
 	background:whiteSmoke;
 	padding:20px;
+    display:block;
 	margin:80px auto 20px;
 	position:relative;
 	-webkit-box-shadow: 0 8px 6px -6px black;

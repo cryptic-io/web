@@ -68,6 +68,7 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
           userBlob.setBlob(userBlobFromServer)
   
           this.set('loggedIn', true)
+          this.trigger('loggedIn')
 
       }
 

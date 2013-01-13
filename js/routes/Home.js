@@ -28,6 +28,8 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User"]
                 this.userView.render()
 
                 this.listenTo(this.userView.model, 'loggedIn', function(){
+                    $('#uploadBoxContainer').css('margin-left','0px')
+                    
                     $('#uploadBoxContainer').css('display','inline-block')
                 })
                 
