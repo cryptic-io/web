@@ -6,7 +6,6 @@ define(["jade!templates/Progress"], function(ProgressTemplate){
         id: "progressBar", 
 
         initialize: function(){
-            $('#progressBar').remove()
             this.percentComplete = this.options.percentComplete || 0;
         },
 
@@ -34,5 +33,13 @@ define(["jade!templates/Progress"], function(ProgressTemplate){
             this.percentComplete += newDeltaPercentage
             this.updatePercentage()
         },
+
+        //erases the bar and shows a message
+        displayLink: function(link){
+
+            var html = '<input type=text style="width:100%" value="'+ link +'"></input>'
+            this.$el.html(html)
+            this.$el.find('input')[0].focus()
+        }
     })
 });

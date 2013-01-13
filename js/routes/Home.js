@@ -49,7 +49,7 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User"]
             var home = new HomeView({el:$('#mainContainer')})
             home.render()
 
-            var fileView = new FileView({el:$('#uploadBox')});
+            var fileView = new FileView({el:$('.page')});
             fileView.render()
         },
 

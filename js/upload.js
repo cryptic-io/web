@@ -1,9 +1,12 @@
-var dropbox = document.getElementById("upload")
  
 // init event handlers
+/*
+var dropbox = document.getElementById("upload")
 dropbox.addEventListener("dragenter", dragEnter, false);
 dropbox.addEventListener("dragleave", dragLeave, false);
 dropbox.addEventListener("drop", drop, false);
+},2e3)
+*/
 
 function dragEnter(e) {
 	console.log("dragenter");
@@ -20,6 +23,7 @@ function drop(e) {
 	e.stopPropagation(); 
 	e.preventDefault();
 
+    debugger
 	$(this).removeClass("dragEnter");
 	move();
 	// Parse dropped files and stage them for uploading.
