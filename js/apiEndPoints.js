@@ -3,4 +3,6 @@ define({
     updateUserBlob : "/api/updateUserBlob"
     , createUser : "/api/createUser"
     , getUserBlobs : "/api/getUserBlobs"
+    , getFileKeys : "/api/getFileKeys"
+    , uploadFile : "/api/uploadFile"
 })

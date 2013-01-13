@@ -1,5 +1,5 @@
 //Define the chunk model
-define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/FileSystem'],function(Uploader, Downloader, FileSystemHandler, FileSystem){ 
+define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/FileSystem', 'apiEndPoints'],function(Uploader, Downloader, FileSystemHandler, FileSystem, api){ 
 
     return Backbone.Model.extend({
 
@@ -101,7 +101,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
         //The callback will contain the linkName
         upload: function(callback){
-            var location = '/api/uploadFile'
+            var location = api.uploadFile
             var linkName = Math.random().toString(36).substring(2);
             var chunkData = this.serializeChunk(this.get('buffer'))
 
