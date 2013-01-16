@@ -12,6 +12,7 @@ define(["jade!templates/SingleFileInfo", "tools/humanReadableByteLength"], funct
         render: function(args) {
             this.file = args.file
 
+            debugger;
             var bytes = args.file.size
             , sizeUnit = hrByteLength.calcHumanReadableSize(bytes)
             , size = hrByteLength.truncateBytes(bytes)
@@ -34,8 +35,11 @@ define(["jade!templates/SingleFileInfo", "tools/humanReadableByteLength"], funct
         },
 
         deleteFile : function(){
+            var fsLocation = this.model.get('fsLocation')
+            , userBlob = this.model.get('userBlob')
+            , parentLocation = userBlob.getParentFsLocation(fsLocation)
             this.model.removeFile(this.file.location, this.file.filename)
-            this.model.set('fsLocation',this.file.location)
+            this.model.set('fsLocation', parentLocation)
         },
 
     })

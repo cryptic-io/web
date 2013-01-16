@@ -5,7 +5,7 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User"]
         routes: {
               "info" : "info"
             , "home" : "home"
-            , "user/fs/:fileLocation" : "openUserFile"
+            , "user/fs/*fileLocation" : "openUserFile"
             , "user/fs" : "user"
             , "user/fs/" : "user"
             , "user" : "user"

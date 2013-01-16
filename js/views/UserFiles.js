@@ -18,6 +18,9 @@ define(["jade!templates/UserFiles", "views/SingleFileInfo"], function(filesTempl
             //make sure we only draw the view if the user is logged In
             if (this.model.get('loggedIn') == false) return
             if (this.model.get('inOptions') == true) return
+            if (_.isUndefined(this.model.getFile())) return
+
+
 
             //this should return a list of files in the current fsLocation
             var file = this.model.getFile()
@@ -31,7 +34,7 @@ define(["jade!templates/UserFiles", "views/SingleFileInfo"], function(filesTempl
 
         render: function(args) {
             var files = args.files
-            this.$el.html(this.template({files:files}));
+            this.$el.html(this.template(args));
         },
 
         events : {
@@ -73,9 +76,12 @@ define(["jade!templates/UserFiles", "views/SingleFileInfo"], function(filesTempl
             loc = loc ||  "/"
 
             var files = this.model.ls()
-            this.model.get
+            , fsLocation = this.model.get('fsLocation')
 
-            this.render({files:files, folder: this.model.getFile()})
+            //location that can be put with a filename something like /a.file and /afolder/b.file so / and /afolder/ respectively
+            fsLocation = '/' == fsLocation ? '/' : fsLocation + '/'
+
+            this.render({files:files, folder: this.model.getFile(), fsLocation:fsLocation})
             return files
         },
 
