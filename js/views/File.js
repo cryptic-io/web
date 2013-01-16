@@ -38,7 +38,7 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
             "drop #upload": "handleFileDrop",
             "dragenter #upload": "handleDragEnter",
             "dragleave #upload": "handleDragLeave",
-            "dragOver #upload": "handleDragOver",
+            "dragover #upload": "handleDragOver",
         },
 
         cancelUpload: function(){

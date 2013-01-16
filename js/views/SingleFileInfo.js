@@ -34,8 +34,8 @@ define(["jade!templates/SingleFileInfo", "tools/humanReadableByteLength"], funct
         },
 
         deleteFile : function(){
-            this.model.set('fsLocation',this.file.location)
             this.model.removeFile(this.file.location, this.file.filename)
+            this.model.set('fsLocation',this.file.location)
         },
 
     })

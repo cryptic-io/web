@@ -1,7 +1,17 @@
 .page#UserFiles Here are your files: 
-  each file in files
-    .file
-      .filename
-        a.folder(href="#user/fs#{file.location}#{file.filename}")= file.filename
+  #folderButtons
+    span#newFolder
+      button New Folder
+    span#deleteFolder
+      button Delete Folder
+
+  #deleteButton
+  .files 
+    .file#folderNameInput(style="display:none")
+      input(placeholder="Folder Name")
+    each file in files
+      .file
+        .filename
+          a.folder(href="#user/fs#{file.location}#{file.filename}")= file.filename
 
         

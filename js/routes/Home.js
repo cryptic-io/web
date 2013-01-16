@@ -6,6 +6,8 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User"]
               "info" : "info"
             , "home" : "home"
             , "user/fs/:fileLocation" : "openUserFile"
+            , "user/fs" : "user"
+            , "user/fs/" : "user"
             , "user" : "user"
             , "test" : "test"
             , "download/*linkNameAndPasscode" : "download"
@@ -31,6 +33,12 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User"]
                     $('#uploadBoxContainer').css('margin-left','0px')
                     
                     $('#uploadBoxContainer').css('display','inline-block')
+                })
+
+
+                //change the url according to the fsLocation on the model
+                this.listenTo(this.userView.model, 'change:fsLocation', function(model){
+                    this.navigate('/user/fs/'+model.get('fsLocation').substr(1))
                 })
                 
             }else{

@@ -1,5 +1,5 @@
 //Define the User Blob model
-define(["apiEndPoints"],function(api){ 
+define(["apiEndPoints", "models/File"],function(api, File){ 
 
 
   return Backbone.Model.extend({
@@ -99,10 +99,9 @@ define(["apiEndPoints"],function(api){
 
       var contents = fileObj
       , filename = fileObj.filename
-      contents.value = contents.link
 
       contents = _.defaults(contents, {
-          created: +(new Date()), modified: +( new Date() ), type: "file", location: loc, size:"Unknown"})
+          created: +(new Date()), modified: +( new Date() ), type: "file", location: loc, size:"Unknown", value: contents.link})
 
       var folder = this.getFile(fs, loc)
       , currentFolder = folder.value //the value of the folder is the object that contains all the other files
@@ -127,22 +126,54 @@ define(["apiEndPoints"],function(api){
       return fs
     }
 
-    , removeFile: function(fs, loc, filename){
+    , deleteFolder : function(fs, loc, filename){
+        return this.removeFile(fs, loc, filename, true)
+    }
+
+    , removeFile: function(fs, loc, filename, isFolder){
       var folder = this.getFile(fs, loc)
       , currentFolder = folder.value //the value of the folder is the object that contains all the other files
+      , file = folder.value[filename]
 
       //remove the file from the folder
       currentFolder = _.omit(currentFolder, filename)
 
       folder.value = currentFolder
 
+      if (isFolder){
+          return fs
+      }
+
+      this.removeFileFromServer(file.value)
+
       return fs
     }
 
-    , addFolder: function(fs, loc, folderName){
-      this.addFile(fs, loc, folderName, {}, { type: "folder" })
+    , removeFileFromServer: function(link){
+        var linkName = link.split('/')[0]
+        , passcode = link.split('/')[1]
+        , file = new File()
+
+        file.loadManifest(linkName, passcode, _.bind(function(manifest){
+            var links = manifest.getChunkLinks()
+
+            //include the manifest file
+            links = links.concat(linkName)
+
+            var sig = this.signMessage(JSON.stringify(links))
+            $.post(api.removeFile,
+                JSON.stringify(
+                    { username: this.get('username')
+                      , filenames : links
+                      , signature : sig
+                    }
+                )
+            )
+        }, this))
+
+
     }
-    
+
     // Given a fs and location, return an array of all the files inside
     , getFile: function(fs, loc){
         var locationArray = _.without(loc.split('/'), "")
@@ -232,7 +263,7 @@ define(["apiEndPoints"],function(api){
 
       var recursiveReduceSum = function(memo, fileObj){
         if (fileObj.type == "folder"){
-         return memo +  _.reduce(_.values(fileObj.value), recursiveCalculation, 0)
+         return memo +  _.reduce(_.values(fileObj.value), recursiveReduceSum, 0)
         // it is a file
         }else{
           return memo + fileObj.size

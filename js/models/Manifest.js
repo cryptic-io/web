@@ -25,6 +25,13 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
 
         },
 
+        getChunkLinks : function(){
+            var chunks = this.get('chunks')
+            , length = _.keys(chunks).length
+            , chunkLinks = _.map( _.range(length), function(index){ return chunks[index].linkName })
+            return chunkLinks
+        },
+
         setChunkLinkName: function(chunkIndex, linkName, callback){
             var chunks = this.get('chunks');
             chunks[chunkIndex].linkName = linkName

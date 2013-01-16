@@ -218,6 +218,10 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
             },this))
         },
 
+        loadManifest: function(linkName, passcode, callback){
+            this.manifest.downloadManifest(linkName, passcode, callback)
+        },
+
         createChunksFromManifest: function(){
             var chunks = _.clone(this.manifest.get('chunks'));
             //convert the chunks obj into an array 

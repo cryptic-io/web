@@ -34,12 +34,44 @@ define(["jade!templates/UserFiles", "views/SingleFileInfo"], function(filesTempl
             this.$el.html(this.template({files:files}));
         },
 
+        events : {
+            "click #newFolder":"showNewFolder"
+            , "change #folderNameInput": "createNewFolder"
+            , "click #deleteFolder":"deleteFolder"
+        },
+
+        deleteFolder : function(){
+            //TODO show warning
+
+            this.model.deleteFolder()
+
+            var file = this.model.getFile()
+            //this.model.set('fsLocation',this.file.location)
+        },
+
+        showNewFolder : function(){
+            this.$el.find('#folderNameInput').show()
+        },
+
+        createNewFolder : function(evt){
+            debugger
+
+            var folderName = evt.target.value
+
+            this.model.addFolder(folderName)
+
+            this.$el.find('#folderNameInput').hide()
+        },
+
+
+
         showFiles: function(loc){
             loc = loc ||  "/"
 
             var files = this.model.ls()
+            this.model.get
 
-            this.render({files:files})
+            this.render({files:files, folder: this.model.getFile()})
             return files
         },
 

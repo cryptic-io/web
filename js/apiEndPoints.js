@@ -5,4 +5,5 @@ define({
     , getUserBlobs : "/api/getUserBlobs"
     , getFileKeys : "/api/getFileKeys"
     , uploadFile : "/api/uploadFile"
+    , removeFile : "/api/removeFiles"
 })

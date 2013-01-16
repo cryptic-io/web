@@ -52,10 +52,9 @@ define(["jade!templates/User", "models/User", "views/Userlogin", "views/UserFile
 
         //call this function when the file has been uploaded succefully
         fileUploaded : function(fileObj){
-            var fsLocation = '/'
-            console.log('Saving',fileObj.name,'to userblob at', fsLocation)
+            console.log('Saving',fileObj.name,'to userblob at', fileObj.location)
 
-            this.model.addFile(fileObj, fsLocation)
+            this.model.addFile(fileObj)
         },
 
     })
