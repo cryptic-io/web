@@ -42,10 +42,14 @@ define(["jade!templates/UserFiles", "views/SingleFileInfo"], function(filesTempl
 
         deleteFolder : function(){
             //TODO show warning
+            
+            
+            var parentFsLocation = this.model.get('userBlob').getParentFsLocation(this.model.get('fsLocation'))
+            , folder = this.model.getFile()
 
-            this.model.deleteFolder()
 
-            var file = this.model.getFile()
+            this.model.deleteFolder(parentFsLocation, folder.filename)
+
             //this.model.set('fsLocation',this.file.location)
         },
 

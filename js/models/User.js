@@ -115,13 +115,12 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
           this.trigger('change:fs')
       }
 
-      , deleteFolder: function(){
+      , deleteFolder: function(fsLocation, filename){
           var userBlob = this.get('userBlob')
           , fs = userBlob.get("fs")
-          , fsLocation = this.get("fsLocation")
-          , folder = userBlob.getFile(fs, fsLocation)
-          , childFiles = userBlob.ls(fs, fsLocation)
-          , parentFsLocation = fsLocation.split('/')
+          , parentFolder = userBlob.getFile(fs, fsLocation)
+          , folder = parentFolder.value[filename]
+          , childFiles = _.values(folder.values)
 
           //check to see if it is the root 
           if (folder.name && folder.name == "root") {
@@ -134,14 +133,11 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
           //remove all the files inside the folder
           _.each(childFiles, function(fileObj){ this.removeFile(fsLocation, fileObj.filename) }, this)
 
-          parentFsLocation.splice(1) //get rid of the current folder in the fsLocation
-          parentFsLocation = '/' + _.without(parentFsLocation,"").join('/') // recreate the original path
-
-          fs = userBlob.deleteFolder(fs, parentFsLocation, folder.filename)
+          fs = userBlob.deleteFolder(fs, fsLocation, folder.filename)
           userBlob.set('fs',fs)
           userBlob.saveBlob()
 
-          this.set('fsLocation', parentFsLocation)
+          this.set('fsLocation', fsLocation)
 
           //let listeners know that the fs has changed
           this.trigger('change:fs')
@@ -156,7 +152,7 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
 
           //use the deleteFolder directive if the file is a fodler
           if (file.type == "folder"){
-              return this.deleteFolder()
+              return this.deleteFolder(fsLocation, filename)
           }
 
           fs = _.clone(fs) //get a copy so we don't modify the original

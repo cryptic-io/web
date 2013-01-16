@@ -174,6 +174,14 @@ define(["apiEndPoints", "models/File"],function(api, File){
 
     }
 
+    , getParentFsLocation: function(fsLocation){
+          var  parentFsLocation = fsLocation.split('/')
+          parentFsLocation.splice(1) //get rid of the current folder in the fsLocation
+          parentFsLocation = '/' + _.without(parentFsLocation,"").join('/') // recreate the original path
+
+          return parentFsLocation
+    }
+
     // Given a fs and location, return an array of all the files inside
     , getFile: function(fs, loc){
         var locationArray = _.without(loc.split('/'), "")
