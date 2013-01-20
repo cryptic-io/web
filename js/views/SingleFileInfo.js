@@ -12,7 +12,6 @@ define(["jade!templates/SingleFileInfo", "tools/humanReadableByteLength"], funct
         render: function(args) {
             this.file = args.file
 
-            debugger;
             var bytes = args.file.size
             , sizeUnit = hrByteLength.calcHumanReadableSize(bytes)
             , size = hrByteLength.truncateBytes(bytes)
@@ -31,7 +30,7 @@ define(["jade!templates/SingleFileInfo", "tools/humanReadableByteLength"], funct
         },
 
         downloadFile : function(){
-            window.open(location.origin+'/#download/'+this.file.link)
+            window.open(location.origin+'/#download/'+this.model.getFile().link)
         },
 
         deleteFile : function(){
