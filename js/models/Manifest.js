@@ -8,9 +8,13 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
             , lastChunkKeyTimestamp : 0
             , chunkKeyTimeout: 30e3 //timeout in ms
             , maxKeysPerRequest: 20
+            , encryptionVersion: "1.0" //This will map to encryption methods, and eventually a different chunks file will support different encryption versions.
+            // Older chunks will re encrypt to new format if necessary.
+            // 
         /** These are what the manifest object would look like
            name: coolFileBro.txt
            type: 'text/plain'
+           encryptionVersion: "1.0"
            size: 1e6 //1 MB
            linkName: 'jeJDxkie'
            chunks: {

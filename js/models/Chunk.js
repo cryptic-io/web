@@ -4,7 +4,8 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
     return Backbone.Model.extend({
 
         defaults: {
-           encryptor: sjcl.mode.betterCBC,
+            //This chunk uses the 1.0 version of enryption, future chunks may have different versions
+            encryptionVersion: "1.0"
 
            chunkSize: 10e6  //Specify how big the chunk should be. ******  THIS HAS TO BE DIVISBLE BY 16 ****** (the reason so that we only need pad the last chunk)
            //chunksize is 10MB
