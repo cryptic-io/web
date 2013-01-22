@@ -13,7 +13,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
             */
 
            webworkers: true
-           , maxWorkers: 2
+           , maxWorkers: 3
 
         },
 
@@ -79,34 +79,18 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
                     }
 
-                    this.getArrayBufferChunk(start, end, _.bind(function(padding, buffer){
 
-                        if (padding){
-                            var copierDest = new Uint8Array(paddedSize)
-                            var copierSource = new Uint8Array(buffer)
-                            _.each(copierSource, function(byte, index){ copierDest[index] = byte })
-                            buffer = copierDest.buffer;
-                        }
+                    if( this.get('webworkers') ){
+                        var chunk = new ChunkWorkerInterface()
+                    }else{
+                        //create the new chunk without a buffer, we'll just give it the necessary info for the buffer, it will only copy the buffer when necessary
+                        var chunk = new Chunk()
+                    }
+                    chunk.saveBufferInfo(this, start, end, padding)
+                    chunks.push(chunk)
 
-                        if (this.get('webworkers')){
-                            chunks.push(
-                                new ChunkWorkerInterface({buffer:buffer})
-                            )
-                        }else{
-                            chunks.push(
-                                new Chunk({buffer:buffer})
-                            )
-                        }
-
-                        /**
-                        chunks[chunks.length-1].attachProgressListener(_.bind(function(i, progressObj){
-                            console.log('================================> chunk',i,'is ',progressObj.event,'and',progressObj.progress,'% done')
-                        },this,chunks.length))
-                        */
-
-                        //start splitting the next chunk
-                        splitNext.apply(this);
-                    },this, padding))
+                    //start splitting the next chunk
+                    splitNext.apply(this);
 
                 }else{
                     this.set('chunks', chunks);
@@ -263,7 +247,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                         //spawn the number of maxWorkers
                         _.map(_.range(this.get('maxWorkers')), _.bind(this.recursivelyDownloadChunks, this, chunksStack, writePositionObj))
 
-                        //spawn a single writing worker
+                        //spawn a single writing worker, single because it needs to be sequential
                         this.recursivelyWriteChunks(writePositionObj, callback)
 
                         //this.downloadChunk(chunk, chunkKeys, asyncCallback)
@@ -277,6 +261,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
         },
 
         recursivelyDownloadChunks : function(chunks, writePositionObj){
+
             //nothing left to process
             if (chunks.length == 0){
                 return;
@@ -293,6 +278,10 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                 return
             }
 
+            var chunkNo = chunks.length
+            console.log('chunk:',chunkIndex,'downloading')
+
+
             //we want the chunk, so lets pop it off the stack
             chunk = chunks.pop()
 
@@ -306,10 +295,16 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                         linkName: chunk.get('chunkInfo')['linkName']
                         , linkKey: linkKey
                         , IVKey: chunk.get('chunkInfo')['IVKey']
-                    }, function(decryptedBuffer){
+                    }, _.bind(function(decryptedBuffer){
+                        console.log('chunk:',chunkIndex,'downloaded')
                         //Here we put it on the map to be written by the main thread
                         writePositionObj.downloadedChunks[chunkIndex]=chunk
-                    })
+
+                        // Using a dirty hack to place the recursive call at the top of Javascript's call stack  
+                        // We want to place it at the top because it gives the writer a chance to catch up
+                        _.defer(_.bind(this.recursivelyDownloadChunks, this, chunks, writePositionObj))
+
+                    },this))
                 }else{
                     //not using webworkers
                     //We need to break it up into multiple steps (something the webworker does to save messages)
@@ -323,12 +318,14 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                     chunk.download(_.bind(function(decryptedBuffer){
                         //Here we put it on the map to be written by the main thread
                         writePositionObj.downloadedChunks[chunkIndex]=chunk
+
+                        // Using a dirty hack to place the recursive call at the top of Javascript's call stack  
+                        // We want to place it at the top because it gives the writer a chance to catch up
+                        _.defer(_.bind(this.recursivelyDownloadChunks, this, chunks, writePositionObj))
                     },this) )
                 }
 
-                // Using a dirty hack to place the recursive call at the top of Javascript's call stack  
-                // We want to place it at the top because it gives the writer a chance to catch up
-                _.defer(_.bind(this.recursivelyDownloadChunks, this, chunks, writePositionObj))},this))
+            },this))
         },
 
         recursivelyWriteChunks : function(writePositionObj, writeCompleteCallback){
@@ -353,14 +350,24 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                 return
             }
 
+
             //So we have a chunk that is ready to be written
             var chunk = downloadedChunks[writePosition]
+            console.log('chunk:',writePosition,'writing')
+            console.log('chunk:',chunk.get('chunkInfo').part,'writing')
             this.appendToFile(chunk, _.bind(function(){
+                console.log('chunk:',writePosition,'written')
+                console.log('chunk:',chunk.get('chunkInfo').part,'writing')
                 writePositionObj.writePosition++; //Increment the writePositionObj
+
+                if (this.get('webworkers')){
+                    chunk.terminate()
+                }
 
                 // Make the recursive call
                 // Using a dirty hack to place the recursive call at the top of Javascript's call stack  
                 _.defer(_.bind(this.recursivelyWriteChunks, this, writePositionObj, writeCompleteCallback))
+                //setTimeout(_.bind(this.recursivelyWriteChunks, this, writePositionObj, writeCompleteCallback), 1e3)
             },this));
         },
 

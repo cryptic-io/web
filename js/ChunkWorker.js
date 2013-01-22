@@ -17,7 +17,7 @@ require({
             initializeChunk: function(args){
                 var entropy = args.entropy;
                 sjcl.random.addEntropy(entropy,256)
-                this.chunk = new Chunk() 
+                this.chunk = new Chunk(args.chunkOpts) 
                 this.postMessage({
                     command:"initializeChunk",
                     status:"success"
@@ -130,8 +130,6 @@ require({
 
 
         self.onmessage = function(event) {
-            self.postMessage('Hello World!')
-
             //route the commands appropriately
             if (event.data.command){
                 command[event.data.command].apply(this, [ event.data ])

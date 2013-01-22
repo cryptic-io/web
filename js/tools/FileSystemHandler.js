@@ -99,7 +99,9 @@ var FileSystemHandler = {
                     var blob = new Blob([options.data], {type: options.type})
 
                     fileWriter.write(blob)
-                    options.successCallback();
+                    
+                    //execute callback when done writing file
+                    fileWriter.onwriteend = options.successCallback
 
                 }, options.errorCallback)
             }, options.errorCallback)

@@ -11,6 +11,35 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
            //chunksize is 10MB
         },
 
+
+        //gets the buffer from the file model, along with a start, and end position, and if padding is required
+        getBuffer: function(fileModel, start, end, padding, callback){
+            fileModel.getArrayBufferChunk(start, end, _.bind(function(buffer){
+
+                if (padding){
+                    var copierDest = new Uint8Array(paddedSize)
+                    var copierSource = new Uint8Array(buffer)
+                    _.each(copierSource, function(byte, index){ copierDest[index] = byte })
+                    buffer = copierDest.buffer;
+                }
+
+                //save the buffer
+                this.set('buffer',buffer)
+                callback()
+
+            },this))
+        },
+
+        //save the buffer info so we know how get the correct chunk when we really need it.
+        saveBufferInfo: function(fileModel, start, end, padding){
+            this.set('bufferInfo',[fileModel, start, end, padding])
+        },
+
+        getBufferFromState: function(callback){
+            //call getBuffer with the bufferInfo  as args
+            this.getBuffer.apply(this,this.get('bufferInfo').concat(callback))
+        },
+
         initialize:  function(options){
             this.generateKey()
         },
@@ -18,8 +47,10 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
         // Generate the initial keys
         generateKey: function(){
-            this.set('iv',sjcl.random.randomWords(4));
-            this.set('key',sjcl.random.randomWords(4));
+            if ( !this.has('iv') || !this.has('key')){
+                this.set('iv',sjcl.random.randomWords(4));
+                this.set('key',sjcl.random.randomWords(4));
+            }
         },
 
         /*
@@ -102,6 +133,15 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
         //The callback will contain the linkName
         upload: function(callback){
+
+            // We need to check to see if we even have the buffer that we need to upload
+            // If we don't have it we need to get it and comeback to this funciton
+            if ( !this.has('buffer')){
+                debugger;
+                this.getBufferFromState(_.bind(this.upload,this,callback))
+                return
+            }
+
             var location = api.uploadFile
             var linkName = Math.random().toString(36).substring(2);
             var chunkData = this.serializeChunk(this.get('buffer'))
