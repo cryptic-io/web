@@ -49,6 +49,19 @@ define(["config", "apiEndPoints"],function(config, api){
             }
           };
 
+          var downloadFile = this.downloadFile
+          , that = this
+          xhr.onerror = function(e){
+              console.error("there was an error",e)
+              downloadFile.apply(that,[linkname, key, progressListener, callback])
+          }
+          xhr.onprogress = function(e){
+              if (e.lengthComputable){
+                  var progress = (e.loaded / e.total) * 100;
+                  if (progressListener) progressListener({event:"Downloading", progress:progress});
+              }
+          }
+  
           xhr.send( JSON.stringify(request) );
           //$.post(nemo,request, xhr.onload); 
           

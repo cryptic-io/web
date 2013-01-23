@@ -137,7 +137,6 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
             // We need to check to see if we even have the buffer that we need to upload
             // If we don't have it we need to get it and comeback to this funciton
             if ( !this.has('buffer')){
-                debugger;
                 this.getBufferFromState(_.bind(this.upload,this,callback))
                 return
             }

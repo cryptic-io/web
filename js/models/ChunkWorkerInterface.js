@@ -91,7 +91,6 @@ define(['models/Chunk'],function(Chunk){
 
         getBufferFromState: function(callback){
             //call getBuffer with the bufferInfo  as args
-            debugger;
             this.getBuffer.apply(this,this.get('bufferInfo').concat(callback))
         },
 
@@ -154,7 +153,6 @@ define(['models/Chunk'],function(Chunk){
                 this.setBuffer( _.bind(arguments.callee, this, callback), false)
                 return 
             }
-            debugger;
 
             var command = "upload"
 
