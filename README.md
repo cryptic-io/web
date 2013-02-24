@@ -1,7 +1,7 @@
-#Cryptic Candy - A Tale in 4 Acts
+#cryptic.io- A Tale in 4 Acts
 
 #Prelude - Encrypted Cloud Storage
-Cryptic Candy is an extremely simple solution to a difficult problem. How do we securely store files?
+cryptic.io is an extremely simple solution to a difficult problem. How do we securely store files?
 
 We place so much trust in other people, hoping nothing bad will happen with the information we share, but what if we could change that?
 What if we could give you back control of your data? What if you were the only person with viewing rights to your data?
