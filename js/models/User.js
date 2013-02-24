@@ -15,10 +15,20 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
           //this.login("abc", "123")
       }
 
+      , createSecretKey : function(){
+          var base32 = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","2","3","4","5","6","7"]
+          return _.map(sjcl.random.randomWords(16), function(randomNum){ return base32[Math.abs(randomNum)%32] } ).join('');
+      }
 
-      , register: function(username, password){
+
+      , register: function(username, password, use2step){
           var userBlob = this.get('userBlob')
+          , secretKey = use2step ? this.createSecretKey() : '' //set the secret to nothing if we arent using it
   
+
+          //tell anyone who cares that the secret key was made 
+          this.trigger('secretKeyCreated', secretKey);
+
           userBlob = new UserBlob(
               {username:username
                , password: password
@@ -35,6 +45,7 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
                   { username:username
                     , publickey_n: publickey_n
                     , publickey_e: publickey_e
+                    , secret_key : secretKey
                     , blob : encryptedBlob} )
               , _.bind(this.registerCallback, this))
       }
@@ -43,14 +54,15 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
       }
   
   
-      , login: function(username, password){
+      , login: function(username, password, auth_attempt){
           this.set('username',username)
           var userBlob = new UserBlob({username:username, password:password})
           this.set('userBlob', userBlob)
   
           $.post(api.getUserBlobs 
                  , JSON.stringify(
-                     { username: username})
+                     { username: username
+                       , auth_attempt: auth_attempt})
                  , _.bind(this.loginCallback,this))
       }
   

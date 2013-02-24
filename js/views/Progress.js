@@ -10,8 +10,12 @@ define(["jade!templates/Progress"], function(ProgressTemplate){
         },
 
         render:function(){
-            this.$el.html(this.template({percentComplete:this.percentComplete}))
+            this.$el.html(this.template())
             this.options.container.append(this.$el)
+            this.pBar = this.$el.find('#innerProgress')[0]
+            this.pBar.max=100
+            this.endingPercentage=0
+            this.smoothlyIncreasePercentage(0)
         },
 
         remove:function(){
@@ -21,7 +25,17 @@ define(["jade!templates/Progress"], function(ProgressTemplate){
         },
 
         updatePercentage: function(){
-            this.$el.find('#innerProgress').anim({'width':this.percentComplete+'%'},1,'linear')
+            // this.$el.find('#innerProgress').anim({'width':this.percentComplete+'%'},1,'linear')
+            this.endingPercentage = this.percentComplete
+        },
+
+        smoothlyIncreasePercentage: function(currentPercentage){
+            debugger;
+            this.pBar.value = currentPercentage + .05
+            //continuously update the percentage every 
+            if (currentPercentage + 1 < this.pBar.max){
+                _.delay(_.bind(this.smoothlyIncreasePercentage, this, currentPercentage+1, this.endingPercentage), 10)
+            }
         },
 
         changePercentage: function(newPercentage){
@@ -36,6 +50,7 @@ define(["jade!templates/Progress"], function(ProgressTemplate){
 
         //erases the bar and shows a message
         displayLink: function(link){
+            debugger;
 
             var html = '<input type=text style="width:100%" value="'+ link +'"></input>'
             this.$el.html(html)

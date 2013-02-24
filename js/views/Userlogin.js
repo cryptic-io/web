@@ -30,16 +30,26 @@ define(["jade!templates/Userlogin"], function(Logintemplate, UserBlob){
         register: function(){
             var username = this.$el.find('#usernameInput > input').val()
             ,  password = this.$el.find('#passwordInput > input').val()
+            ,  use2step = this.$el.find('#use2StepAuth > input').is(':checked')
 
-            this.model.register(username, password)
+            debugger;
+
+            this.model.once('secretKeyCreated', function(secretKey){
+                console.log('secret is:', secretKey);
+                console.log('https://www.google.com/chart?chs=200x200&chld=M|0&cht=qr&chl=otpauth://totp/'+username+'@cryptic.io%3Fsecret%3D'+secretKey);
+            },this.model)
+
+            this.model.register(username, password, use2step)
+
         },
 
         login: function(){
             var username = this.$el.find('#usernameInput > input').val()
             , password = this.$el.find('#passwordInput > input').val()
+            , auth_attempt = this.$el.find('#twoStepAuthInput > input').val()
   
 
-            this.model.login(username, password)
+            this.model.login(username, password, auth_attempt)
         },
 
         renderOptions: function(){
