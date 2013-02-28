@@ -341,8 +341,8 @@ p {
 .header a.title {
 	width:300px;
 	height:60px;
-	background:url('/images/cc-logo-black-long.png') top left no-repeat;
-	background-size:100% 100%;
+  background: url('/images/cc-logo.png') 0 -185px;
+  background-size: 100% 250px;
 	display:inline-block;
 	text-decoration:none;
 	-webkit-transition: all 0.5s linear;
@@ -351,8 +351,6 @@ p {
 }
 
 .header a.title:hover {
-	background:url('/images/cc-logo-long.png') top left no-repeat;
-	background-size:100% 100%;
 }
 	
 

@@ -32,8 +32,6 @@ define(["jade!templates/Userlogin"], function(Logintemplate, UserBlob){
             ,  password = this.$el.find('#passwordInput > input').val()
             ,  use2step = this.$el.find('#use2StepAuth > input').is(':checked')
 
-            debugger;
-
             this.model.once('secretKeyCreated', function(secretKey){
                 console.log('secret is:', secretKey);
                 console.log('https://www.google.com/chart?chs=200x200&chld=M|0&cht=qr&chl=otpauth://totp/'+username+'@cryptic.io%3Fsecret%3D'+secretKey);
