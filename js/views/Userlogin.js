@@ -33,8 +33,10 @@ define(["jade!templates/Userlogin"], function(Logintemplate, UserBlob){
             ,  use2step = this.$el.find('#use2StepAuth > input').is(':checked')
 
             this.model.once('secretKeyCreated', function(secretKey){
+                if (!use2step) return;
                 console.log('secret is:', secretKey);
-                console.log('https://www.google.com/chart?chs=200x200&chld=M|0&cht=qr&chl=otpauth://totp/'+username+'@cryptic.io%3Fsecret%3D'+secretKey);
+                var qrURL = 'https://www.google.com/chart?chs=200x200&chld=M|0&cht=qr&chl=otpauth://totp/'+username+'@cryptic.io%3Fsecret%3D'+secretKey;
+                alert("Open this link in another tab to view to code you need to scan with the Google Authenticator app: "+qrURL)
             },this.model)
 
             this.model.register(username, password, use2step)
