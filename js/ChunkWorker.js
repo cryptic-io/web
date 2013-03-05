@@ -1,142 +1,156 @@
-importScripts('./require.js','./core/underscore.js','./core/backbone.js','./crypt/sjcl.js','./crypt/betterCBC.js')
+importScripts('./require.js', './core/underscore.js', './core/backbone.js', './crypt/sjcl.js', './crypt/betterCBC.js');
 
-
-require({
-    baseUrl:'./'
+//check to see if browser supports transferable buffers in messages
+var postMessageFunc = self.webkitPostMessage || self.postMessage, //try to use webkitPostMessage
+    SUPPORTS_TRANSFERS = false;
+try {
+    var testAB = new ArrayBuffer(1);
+    self.postMessage({buffer: testAB}, [testAB]);
+    if (!testAB.byteLength) { //if there is no byteLength then it was transferred
+        SUPPORTS_TRANSFERS = true;
     }
-    , [
-        'require'
-        , 'models/Chunk'
-      ]
-    , function(require, Chunk){
+} catch(e) {}
+if (SUPPORTS_TRANSFERS) {
+    self.postMessage = postMessageFunc;
+} else {
+    self.postMessage = function(obj) { //ignore the array on the end
+        postMessageFunc(obj);
+    };
+}
 
-        chunkHandle = {}
-
+require({baseUrl:'./'},
+    [
+        'require',
+        'models/Chunk'
+    ],
+    function(require, Chunk){
+        var chunkHandle = {},
+            currentChunk;
 
         var command = {
             initializeChunk: function(args){
                 var entropy = args.entropy;
-                sjcl.random.addEntropy(entropy,256)
-                this.chunk = new Chunk(args.chunkOpts) 
-                this.postMessage({
-                    command:"initializeChunk",
-                    status:"success"
-                })
+                sjcl.random.addEntropy(entropy, 256);
+                currentChunk = new Chunk();
+                self.postMessage({
+                    command: "initializeChunk",
+                    status: "success"
+                });
             },
 
             setBuffer: function(args){
-                this.chunk.set('buffer',args.arrayBuffer)
-                this.postMessage({
-                    command:"setBuffer",
-                    status:"success"
-                })
+                currentChunk.set('buffer', args.arrayBuffer);
+                self.postMessage({
+                    command: "setBuffer",
+                    status: "success"
+                });
             },
 
             newEmptyChunk: function(args){
                 var entropy = args.entropy;
-                sjcl.random.addEntropy(entropy,256)
+                sjcl.random.addEntropy(entropy, 256);
 
-                this.chunk = new Chunk() 
-                this.postMessage({
-                    command:"newEmptyChunk"
-                    , status:"success"
-                })
+                currentChunk = new Chunk();
+                self.postMessage({
+                    command: "newEmptyChunk",
+                    status: "success"
+                });
             },
 
             upload: function(){
                 //the callback returns the linkName
-                this.chunk.upload(function(linkName){
-                    this.postMessage({
-                        command:"upload",
-                        status:"success",
-                        result:linkName
-                    })
-                })
+                currentChunk.upload(function(linkName){
+                    self.postMessage({
+                        command: "upload",
+                        status: "success",
+                        result: linkName
+                    });
+                });
             },
 
             download: function(args){
-                this.chunk.set({'linkName':args.linkName, 'linkKey':args.linkKey})
-                this.chunk.decodeIVKey(args.IVKey)
+                currentChunk.set({
+                    linkName: args.linkName,
+                    linkKey: args.linkKey
+                });
+                currentChunk.decodeIVKey(args.IVKey);
 
-                this.chunk.download(function(decryptedBuffer){
-                    this.postMessage({
-                        command:"download"
-                        , status:"success"
-                        , result:decryptedBuffer
-                    })
-                })
+                currentChunk.download(function(decryptedBuffer) {
+                    self.postMessage({
+                        command: "download",
+                        status: "success",
+                        result: decryptedBuffer
+                    }, [decryptedBuffer]);
+                });
             },
 
             encryptChunk:function(){
-                this.chunk.encryptChunk()
-                this.postMessage({
-                    command:"encryptChunk",
-                    status:"success"
-                })
+                currentChunk.encryptChunk();
+                self.postMessage({
+                    command: "encryptChunk",
+                    status: "success"
+                });
             },
 
             decryptChunk: function(){
-                var buffer = this.chunk.decrypt().buffer
+                var buffer = currentChunk.decrypt().buffer;
 
-                this.postMessage({
-                    command:"decryptChunk",
-                    status:"success",
-                    result:serializedBuffer
-                })
+                self.postMessage({
+                    command: "decryptChunk",
+                    status: "success",
+                    result: buffer
+                }, [buffer]);
             },
 
             encodeIVKey: function(){
-                var ivKey = this.chunk.encodeIVKey()
-
-                this.postMessage({
-                    command:"encodeIVKey",
-                    status:"success",
-                    result:ivKey
-                })
-
+                var ivKey = currentChunk.encodeIVKey();
+                self.postMessage({
+                    command: "encodeIVKey",
+                    status: "success",
+                    result: ivKey
+                });
             },
 
             writeToFile: function(args){
-                this.chunk.set('chunkInfo',args.chunkInfo)
-                this.chunk.writeToFile(args.fileSystem, args.manifest
-                   //successCallback
-                   , _.bind(function(){
-                        this.postMessage({
-                            command:"writeToFile"
-                            , status: "success"
-                        })
-                   },this)
-                   //failureCallback
-                   , _.bind(function(){
-                        this.postMessage({
-                            command:"writeToFile"
-                            , status: "error" })
-                   },this)
-              )
+                currentChunk.set('chunkInfo', args.chunkInfo);
+                currentChunk.writeToFile(args.fileSystem, args.manifest,
+                    //successCallback
+                    function(){
+                        self.postMessage({
+                            command:"writeToFile",
+                            status: "success"
+                        });
+                    },
+                    //failureCallback
+                    function(){
+                        self.postMessage({
+                            command:"writeToFile",
+                            status: "error"
+                        });
+                    }
+                );
             },
 
             //setup a callback to be called when the progress changes
             attachProgressListener: function(){
-                this.chunk.attachProgressListener(_.bind(function(progress){
-                    this.postMessage({
-                        command:"attachProgressListener",
-                        status:"success",
-                        result:progress
-                    })
-                }, this))
+                currentChunk.attachProgressListener(function(progress){
+                    self.postMessage({
+                        command: "attachProgressListener",
+                        status: "success",
+                        result: progress
+                    });
+                });
             }
 
-        }
+        };
 
 
         self.onmessage = function(event) {
             //route the commands appropriately
             if (event.data.command){
-                command[event.data.command].apply(this, [ event.data ])
+                command[event.data.command](event.data);
             }
-        }
-
-    
+        };
 
     }
 );
