@@ -54,7 +54,9 @@ define(['models/Chunk'],function(Chunk){
                 if (!testAB.byteLength) { //if there is no byteLength then it was transferred
                     SUPPORTS_TRANSFERS = true;
                 }
-            } catch(e) {}
+            } catch(e) {
+              debugger
+            }
             if (SUPPORTS_TRANSFERS) {
                 worker.postMessage = postMessageFunc;
             } else {
@@ -78,8 +80,7 @@ define(['models/Chunk'],function(Chunk){
             }
 
             this.placedBuffer = true;
-            var command = "setBuffer",
-                buffer = this.get('buffer');
+            var command = "setBuffer"
             this.worker.postMessage({
                 command: command,
                 arrayBuffer: buffer

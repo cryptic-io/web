@@ -30,17 +30,20 @@ define(["jade!templates/Progress"], function(ProgressTemplate){
         },
 
         smoothlyIncreasePercentage: function(currentPercentage){
-            debugger;
-            this.pBar.value = currentPercentage + .05
+            if (currentPercentage < this.endingPercentage){
+              this.pBar.value = currentPercentage + .05
+              currentPercentage += .05
+            }
             //continuously update the percentage every 
             if (currentPercentage + 1 < this.pBar.max){
-                _.delay(_.bind(this.smoothlyIncreasePercentage, this, currentPercentage+1, this.endingPercentage), 10)
+                _.delay(_.bind(this.smoothlyIncreasePercentage, this, currentPercentage, this.endingPercentage), 10)
             }
         },
 
         changePercentage: function(newPercentage){
             this.percentComplete = newPercentage
             this.updatePercentage()
+            debugger
         },
 
         increasePercentage: function(newDeltaPercentage){
@@ -50,8 +53,6 @@ define(["jade!templates/Progress"], function(ProgressTemplate){
 
         //erases the bar and shows a message
         displayLink: function(link){
-            debugger;
-
             var html = '<input type=text style="width:100%" value="'+ link +'"></input>'
             this.$el.html(html)
             this.$el.find('input')[0].focus()
