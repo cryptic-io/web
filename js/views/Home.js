@@ -1,14 +1,10 @@
-//returns the Home view
-define(["jade!templates/Home"], function(HomeTemplate){ 
+//returns the home view
+define(["jade!templates/Home", "views/User"], function(homeTemplate, UserView){ 
     return Backbone.View.extend({
-        template: HomeTemplate,
+        template: homeTemplate,
 
         initialize: function(){
-            //user login info would be here
-            //
-            //user = new User()
         },
-
 
         render: function() {
             this.$el.html(this.template());

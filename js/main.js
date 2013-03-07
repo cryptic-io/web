@@ -59,35 +59,52 @@ dependencies, function(require){
     
 
     require( 
-        ['models/File','views/File','views/MusicPlayer','test/test','routes/Home','models/ChunkWorkerInterface','tools/downloader', 'models/UserBlob'],
-        function(FileModel, FileView, MusicPlayer, test, HomeRouter, ChunkWorkerInterface, Downloader, UserBlob) {
+        ['models/File','views/File','test/test','routes/Home','models/ChunkWorkerInterface','tools/downloader', 'models/UserBlob'],
+        function(FileModel, FileView, test, HomeRouter, ChunkWorkerInterface, Downloader, UserBlob) {
+
+            (function ($) {
+              $.fn.slideDown = function (duration) {    
+                // get old position to restore it then
+                var position = this.css('position');
+                
+                // show element if it is hidden (it is needed if display is none)
+                this.show();
+                
+                // place it so it displays as usually but hidden
+                this.css({
+                  position: 'absolute',
+                  visibility: 'hidden'
+                });
+
+                // get naturally height
+                var height = this.height();
+                
+                // set initial css for animation
+                this.css({
+                  position: position,
+                  visibility: 'visible',
+                  overflow: 'hidden',
+                  height: 0
+                });
+
+                // animate to gotten height
+                this.animate({
+                  height: height
+                }, {
+                    duration:duration,
+                    complete: function(){$(this).css('height','')}
+                })
+                
+              };
+            })(Zepto);
+
+
             userBlob = UserBlob;
-            dler = new Downloader()
             
             router = new HomeRouter();
             var givenPage = Backbone.history.start()
             if (!givenPage){
                 router.navigate('home',{trigger:true})
-            }
-
-            ballz = test
-            
-            wi = ChunkWorkerInterface;
-
-            worker = new ChunkWorkerInterface({buffer:test.buffer})
-
-            testUpload = function(){
-                test.upload(function(result){
-                    console.log('finished uploading and the result was', result);
-                })
-            }
-
-
-            playMusic = function(){
-                fileView.model.getDataURL(function(data){
-                    var musicPlayer = new MusicPlayer({dataURL : data})
-                    $('#musicPlayer').append(musicPlayer.render());
-                })
             }
 
             psuedoSlice = function(start, end){

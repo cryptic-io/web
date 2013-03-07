@@ -6,13 +6,16 @@ define(["jade!templates/Progress"], function(ProgressTemplate){
         id: "progressBar", 
 
         initialize: function(){
-            $('#progressBar').remove()
             this.percentComplete = this.options.percentComplete || 0;
         },
 
         render:function(){
-            this.$el.html(this.template({percentComplete:this.percentComplete}))
+            this.$el.html(this.template())
             this.options.container.append(this.$el)
+            this.pBar = this.$el.find('#innerProgress')[0]
+            this.pBar.max=100
+            this.endingPercentage=0
+            this.smoothlyIncreasePercentage(0)
         },
 
         remove:function(){
@@ -22,17 +25,37 @@ define(["jade!templates/Progress"], function(ProgressTemplate){
         },
 
         updatePercentage: function(){
-            this.$el.find('#innerProgress').anim({'width':this.percentComplete+'%'},1,'linear')
+            // this.$el.find('#innerProgress').anim({'width':this.percentComplete+'%'},1,'linear')
+            this.endingPercentage = this.percentComplete
+        },
+
+        smoothlyIncreasePercentage: function(currentPercentage){
+            if (currentPercentage < this.endingPercentage){
+              this.pBar.value = currentPercentage + .05
+              currentPercentage += .05
+            }
+            //continuously update the percentage every 
+            if (currentPercentage + 1 < this.pBar.max){
+                _.delay(_.bind(this.smoothlyIncreasePercentage, this, currentPercentage, this.endingPercentage), 10)
+            }
         },
 
         changePercentage: function(newPercentage){
             this.percentComplete = newPercentage
             this.updatePercentage()
+            debugger
         },
 
         increasePercentage: function(newDeltaPercentage){
             this.percentComplete += newDeltaPercentage
             this.updatePercentage()
         },
+
+        //erases the bar and shows a message
+        displayLink: function(link){
+            var html = '<input type=text style="width:100%" value="'+ link +'"></input>'
+            this.$el.html(html)
+            this.$el.find('input')[0].focus()
+        }
     })
 });

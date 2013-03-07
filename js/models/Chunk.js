@@ -1,13 +1,43 @@
 //Define the chunk model
-define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/FileSystem'],function(Uploader, Downloader, FileSystemHandler, FileSystem){ 
+define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/FileSystem', 'apiEndPoints'],function(Uploader, Downloader, FileSystemHandler, FileSystem, api){ 
 
     return Backbone.Model.extend({
 
         defaults: {
-           encryptor: sjcl.mode.betterCBC,
+            //This chunk uses the 1.0 version of enryption, future chunks may have different versions
+            encryptionVersion: "1.0",
 
-           chunkSize: 10e6  //Specify how big the chunk should be. ******  THIS HAS TO BE DIVISBLE BY 16 ****** (the reason so that we only need pad the last chunk)
-           //chunksize is 10MB
+           chunkSize: 4194304  //Specify how big the chunk should be. ******  THIS HAS TO BE DIVISBLE BY 16 ****** (the reason so that we only need pad the last chunk)
+           //chunksize is 4MB
+        },
+
+
+        //gets the buffer from the file model, along with a start, and end position, and if padding is required
+        getBuffer: function(fileModel, start, end, padding, callback){
+            fileModel.getArrayBufferChunk(start, end, _.bind(function(buffer){
+
+                if (padding){
+                    var copierDest = new Uint8Array(paddedSize)
+                    var copierSource = new Uint8Array(buffer)
+                    _.each(copierSource, function(byte, index){ copierDest[index] = byte })
+                    buffer = copierDest.buffer;
+                }
+
+                //save the buffer
+                this.set('buffer',buffer)
+                callback()
+
+            },this))
+        },
+
+        //save the buffer info so we know how get the correct chunk when we really need it.
+        saveBufferInfo: function(fileModel, start, end, padding){
+            this.set('bufferInfo',[fileModel, start, end, padding])
+        },
+
+        getBufferFromState: function(callback){
+            //call getBuffer with the bufferInfo  as args
+            this.getBuffer.apply(this,this.get('bufferInfo').concat(callback))
         },
 
         initialize:  function(options){
@@ -17,8 +47,10 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
         // Generate the initial keys
         generateKey: function(){
-            this.set('iv',sjcl.random.randomWords(4));
-            this.set('key',sjcl.random.randomWords(4));
+            if ( !this.has('iv') || !this.has('key')){
+                this.set('iv',sjcl.random.randomWords(4));
+                this.set('key',sjcl.random.randomWords(4));
+            }
         },
 
         /*
@@ -101,7 +133,15 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
         //The callback will contain the linkName
         upload: function(callback){
-            var location = '/api/uploadFile'
+
+            // We need to check to see if we even have the buffer that we need to upload
+            // If we don't have it we need to get it and comeback to this funciton
+            if ( !this.has('buffer')){
+                this.getBufferFromState(_.bind(this.upload,this,callback))
+                return
+            }
+
+            var location = api.uploadFile
             var linkName = Math.random().toString(36).substring(2);
             var chunkData = this.serializeChunk(this.get('buffer'))
 

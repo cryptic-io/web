@@ -1,0 +1,20 @@
+if loggedIn 
+  #userInfo
+    .usernameContainer
+      span signed in as 
+      #username= username
+      button#userOptionsButton Options
+else 
+  #loginBox
+    #usernameInput Username:
+      input(type="text") 
+    #passwordInput Password:
+      input(type="password")
+    #twoStepAuthInput Enter 2 step authentication code:
+      input(type="text")
+    #use2StepAuth Use 2 step authentication?
+      input(type="checkbox")
+    #loginButton
+      button Login
+    #registerButton
+      button Register

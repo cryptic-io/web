@@ -1,6 +1,6 @@
 //helper tool to download
 //define for requirejs
-define(["config"],function(config){
+define(["config", "apiEndPoints"],function(config, api){
   var nemo = "http://"+config.NEMO_LOCATION+":"+config.NEMO_PORT
   var Downloader = function() {
   };
@@ -10,7 +10,7 @@ define(["config"],function(config){
           var request = {filenames:linknames}
 
           var xhr = new XMLHttpRequest();
-          xhr.open('POST', '/api/getFileKeys', true);
+          xhr.open('POST', api.getFileKeys, true);
           xhr.responseType = 'text';
           xhr.onload = function(e) {
             if (this.status == 200) {
@@ -49,6 +49,19 @@ define(["config"],function(config){
             }
           };
 
+          var downloadFile = this.downloadFile
+          , that = this
+          xhr.onerror = function(e){
+              console.error("there was an error",e)
+              downloadFile.apply(that,[linkname, key, progressListener, callback])
+          }
+          xhr.onprogress = function(e){
+              if (e.lengthComputable){
+                  var progress = (e.loaded / e.total) * 100;
+                  if (progressListener) progressListener({event:"Downloading", progress:progress});
+              }
+          }
+  
           xhr.send( JSON.stringify(request) );
           //$.post(nemo,request, xhr.onload); 
           
