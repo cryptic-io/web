@@ -139,7 +139,7 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
         //read the file from the input
         loadFile: function(event){
             var fileObj = this.fileInput.files[0];
-            this.model = new FileModel({file: fileObj});
+            this.model = new FileModel({file: fileObj, user:this.get('user')});
             model = this.model;
         },
 

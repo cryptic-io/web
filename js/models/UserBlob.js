@@ -61,7 +61,7 @@ define(["apiEndPoints", "models/File"],function(api, File){
 
     // Simple shortcut, we are just gonna use the excellent work in the sjcl library
     // Returns an JSON string with ciphertext and some info to decrypt (iv, salt)
-    , encryptBlob: function(userBlob, password){
+    , encryptBlob: function(password, userBlob){
       if (password){
         userBlob = JSON.stringify(userBlob)
         return sjcl.encrypt(password, userBlob)
@@ -246,7 +246,7 @@ define(["apiEndPoints", "models/File"],function(api, File){
       , username = this.get('username')
       , password = this.get('password')
       , id = userBlob.id
-      , encryptedBlob = this.encryptBlob(userBlob, password)
+      , encryptedBlob = this.encryptBlob(password, userBlob)
       , signature = this.signMessage(encryptedBlob)
 
       $.post(api.updateUserBlob

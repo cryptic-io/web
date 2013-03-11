@@ -1,5 +1,5 @@
 //Define the chunk model
-define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/FileSystem', 'apiEndPoints'],function(Uploader, Downloader, FileSystemHandler, FileSystem, api){ 
+define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/FileSystem', 'models/UserBlob', 'apiEndPoints'],function(Uploader, Downloader, FileSystemHandler, FileSystem, UserBlob, api){ 
 
     return Backbone.Model.extend({
 
@@ -41,6 +41,11 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         },
 
         initialize:  function(options){
+            // create the userblob object
+            var userBlobObj = this.get('userBlob')
+            , userBlob = new UserBlob()
+            userBlob.setBlob(userBlobObj)
+            this.set('userBlob',userBlob)
             this.generateKey()
         },
 
@@ -140,6 +145,16 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
                 this.getBufferFromState(_.bind(this.upload,this,callback))
                 return
             }
+
+            //The username is now required for chunks
+            //As well as the hash of the chunk
+            //As well as the Signed hash of the chunk
+
+            var userblob = this.get('userBlob')
+            , username = userblob.get('username')
+            , hash = "SWEET HASH BRO!!"
+            , sig = userblob.signMessage(hash)
+
 
             var location = api.uploadFile
             var linkName = Math.random().toString(36).substring(2);

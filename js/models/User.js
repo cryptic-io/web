@@ -38,7 +38,7 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
           var userBlobJSON = userBlob.getBlob()
           , publickey_n = userBlobJSON.pub_key
           , publickey_e = userBlobJSON.rsa_e
-          , encryptedBlob = userBlob.encryptBlob(userBlobJSON, password)
+          , encryptedBlob = userBlob.encryptBlob(password, userBlobJSON)
   
           $.post(api.createUser 
               , JSON.stringify(
@@ -58,11 +58,14 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
           this.set('username',username)
           var userBlob = new UserBlob({username:username, password:password})
           this.set('userBlob', userBlob)
+          var loginReq = {username:username}
+          if (auth_attempt.length !== 0){
+              loginReq["auth_attempt"]=auth_attempt
+          } 
+
   
           $.post(api.getUserBlobs 
-                 , JSON.stringify(
-                     { username: username
-                       , auth_attempt: auth_attempt})
+                 , JSON.stringify(loginReq)
                  , _.bind(this.loginCallback,this))
       }
   

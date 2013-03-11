@@ -12,7 +12,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
              *
             */
 
-           webworkers: true
+           webworkers: false
            , maxWorkers: 3
 
         },
@@ -215,9 +215,9 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
             //create the chunk workers
             if (this.get('webworkers')){
-                chunks = _.map(chunks, function(chunk){ return (new ChunkWorkerInterface({chunkInfo:chunk})) } )
+                chunks = _.map(chunks, function(chunk){ return (new ChunkWorkerInterface({chunkInfo:chunk, userBlob:this.get('user').get('userBlob').getBlob()})) } )
             }else{
-                chunks = _.map(chunks, function(chunk){ return (new Chunk({chunkInfo:chunk})) } )
+                chunks = _.map(chunks, function(chunk){ return (new Chunk({chunkInfo:chunk, userBlob:this.get('user').get('userBlob').getBlob()})) } )
             }
 
             this.set('chunks',chunks)

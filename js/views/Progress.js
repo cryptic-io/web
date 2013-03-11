@@ -43,7 +43,6 @@ define(["jade!templates/Progress"], function(ProgressTemplate){
         changePercentage: function(newPercentage){
             this.percentComplete = newPercentage
             this.updatePercentage()
-            debugger
         },
 
         increasePercentage: function(newDeltaPercentage){
