@@ -1,5 +1,5 @@
 //Define the chunk model
-define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/FileSystem', 'models/UserBlob', 'apiEndPoints'],function(Uploader, Downloader, FileSystemHandler, FileSystem, UserBlob, api){ 
+define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/FileSystem', 'models/UserBlob', 'apiEndPoints', 'tools/sha1Hash'],function(Uploader, Downloader, FileSystemHandler, FileSystem, UserBlob, api, sha1Hash){ 
 
     return Backbone.Model.extend({
 
