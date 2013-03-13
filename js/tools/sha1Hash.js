@@ -74,7 +74,7 @@ sha1Hash =  function(arraybuffer){
         //return (((word<<1) | ((0x80000000&word)>>31)) & 0xFFFFFFFF) // The idea here is to shift the byte to the left, then OR it's previous MSB. We AND 0xFFFFFFFF to keep the correct length
         var bitString = word.toString(2)
         bitString = bitString.length == 32 ? bitString : (_.reduce(_.range(32-bitString.length),function(m){return m+'0'},''))+bitString
-        return parseInt(bitString.toString(2).substring(1)+bitString.toString(2).charAt(0),2)
+        return parseInt(bitString.substring(1)+bitString.charAt(0),2)
     }
 
     var leftRotate32BitWordNtimes = function(word, times){
