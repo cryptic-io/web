@@ -17,8 +17,8 @@ sha1Hash =  function(arraybuffer){
     , originalMessageLengthHex = originalMessageLength.toString('16')
     , originalMessageLengthHex = originalMessageLengthHex.length == 16 ? originalMessageLengthHex : zeroPad(16-originalMessageLengthHex.length)+originalMessageLengthHex
     //lets fake shift everything left 4bits
-    , hi_length_bits = '0x'+originalMessageLengthHex.substring(4,12)
-    , lo_length_bits = '0x'+originalMessageLengthHex.substring(12)+"0000"
+    , hi_length_bits = '0x'+originalMessageLengthHex.substring(1,9)
+    , lo_length_bits = '0x'+originalMessageLengthHex.substring(9)+"0"
 
 
     var messageLength = new Uint32Array(2)
@@ -35,28 +35,46 @@ sha1Hash =  function(arraybuffer){
     messageLength[0]>>=1
 
 
-    var message = new Uint32Array(arraybuffer)
+    var message = new Uint8Array(arraybuffer)
 
     var paddedBuffer = new ArrayBuffer(byteLength+padding+messageLength.byteLength)
 
     //represent the padded message as 32 bit numbers, we are still sharing the data from the origin padded message
     var paddedMessage32bit = new Uint32Array(paddedBuffer)
+    ,   paddedMessage8bit = new Uint8Array(paddedBuffer)
+
+
+    //copy the original message part
+    for (var index=0;index<message.length;index+=4){
+      //since the 8 bit bytes translate to the 32bit array as little endian we need to copy it so (e.g. 8bit [0x1,0x2,0x3,0x4] == 32bit [0x04030201]
+      var i = 0
+      , max = 4
+      if (message.length < 4+index) max=message.length%4;
+
+      //copy the bytes downward
+      while( i < max){
+        paddedMessage8bit[(3-i) + index] = message[i+index]
+        i++
+      }
+
+      //we are done here
+      if (i+index === message.length){
+        // If the message didn't end early we need to put it on the next 32bit chunk at the very front which happens to be i+3 bytes since the order mentioned above
+        if (i === 4){
+          paddedMessage8bit[3+i + index]=0x80
+        }else{
+          // if it did end early we can just tak it on
+          paddedMessage8bit[(3-i) + index]=0x80
+        }
+      }
+    }
+
+
+    //The rest are will automatically be zeros so we don't need to explicitly create the padding
 
     //set the end message bytes
     paddedMessage32bit[paddedMessage32bit.length-1] = messageLength[1]
     paddedMessage32bit[paddedMessage32bit.length-2] = messageLength[0]
-
-    //copy the original message part
-    for (var index=0;index<message.length;index++){
-        paddedMessage32bit[index] = message[index]
-    }
-
-    //add the end message byte
-    paddedMessage32bit[arraybuffer.byteLength] = 0x80000000
-
-    //The rest are will automatically be zeros so we don't need to explicitly create the padding
-
-    //We will define the end message bytes later
 
 
     var leftRotate32BitWordNtimes = function(word, times){
