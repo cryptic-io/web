@@ -25,13 +25,12 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User"]
                                             , userFilesContainer:$('#userFilesContainer')
                                             , userSpaceContainer:$('#userSpaceContainer')})
 
-                this.userView.listenTo(fileView, 'fileUploaded', this.userView.fileUploaded)
 
                 var fileView = new FileView({el:$('#uploadBoxContainer'), user:this.userView.model});
+                this.userView.listenTo(fileView, 'fileUploaded', this.userView.fileUploaded)
                 this.userView.render()
 
                 this.listenTo(this.userView.model, 'loggedIn', function(a, b, c){
-                    debugger;
                     $('#uploadBoxContainer').css('margin-left','0px')
                     
                     $('#uploadBoxContainer').css('display','inline-block')

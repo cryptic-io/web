@@ -152,7 +152,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
             var userblob = this.get('userBlob')
             , username = userblob.get('username')
-            , hash = "SWEET HASH BRO!!"
+            , hash = sha1Hash(this.get('buffer'))
             , sig = userblob.signMessage(hash)
 
 
@@ -167,6 +167,10 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
             uploader.send(location, this.get('buffer'), linkName, this.get('progressListener'), function(response){
                 result = JSON.parse(response)
                 callback(result.return)
+            }, {
+              username : username
+              , hash : hash 
+              , signature: sig
             })
         },
 

@@ -139,12 +139,12 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
         //read the file from the input
         loadFile: function(event){
             var fileObj = this.fileInput.files[0];
-            this.model = new FileModel({file: fileObj, user:this.get('user')});
+            this.model = new FileModel({file: fileObj, user:this.options.user});
             model = this.model;
         },
 
         uploadFiles: function(){
-            var files = _.map(this.fileList, function(file){ return (new FileModel({file:file}))})
+            var files = _.map(this.fileList, _.bind(function(file){ return (new FileModel({file:file, user:this.options.user}))},this))
             , progressBars = this.$el.find('.files > .row .progress')
 
             //remember the filemodels so we can destroy them if we want to cancel the upload

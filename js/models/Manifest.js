@@ -69,7 +69,7 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
         //The Callback will be supplied with an object containing linkName and IVKey
         uploadManifest: function(callback){
             var buffer = this.manifestToBuffer()
-            manifestChunk = new Chunk({buffer:buffer})
+            manifestChunk = new Chunk({buffer:buffer, userBlob:this.get('userBlob')})
             if(debug){
                 manifestChunk.hexDump()
             }

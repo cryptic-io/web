@@ -1,5 +1,4 @@
 //returns the file model
-totalText=[]
 define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/FileSystem', 'tools/FileSystemHandler'],function(Chunk, Manifest, ChunkWorkerInterface, FileSystem, FileSystemHandler){ 
     return Backbone.Model.extend({
 
@@ -20,12 +19,17 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
         fileSystem: new FileSystem(),
 
         initialize: function(){
+            var userBlob = this.get('user').get('userBlob').getBlob()
+            , manifestOptions = _.pick( this.get('file'), 'name', 'type', 'size' ) 
+
+            this.set('userBlob',userBlob)
+            manifestOptions.userBlob = userBlob
 
             //Unfortunately somethings have vendor prefixes so we'll get that sorted right here and now
             File.prototype.slice = File.prototype.slice ? File.prototype.slice : File.prototype.mozSlice;
 
             if (this.has('file')){
-                this.manifest = new Manifest( _.pick( this.get('file'), 'name', 'type', 'size' ) );
+                this.manifest = new Manifest( manifestOptions )
             }else{
                 this.manifest = new Manifest();
             }
@@ -80,11 +84,12 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                     }
 
 
+
                     if( this.get('webworkers') ){
-                        var chunk = new ChunkWorkerInterface()
+                        var chunk = new ChunkWorkerInterface({userBlob:this.get('userBlob')})
                     }else{
                         //create the new chunk without a buffer, we'll just give it the necessary info for the buffer, it will only copy the buffer when necessary
-                        var chunk = new Chunk()
+                        var chunk = new Chunk({userBlob:this.get('userBlob')})
                     }
                     chunk.saveBufferInfo(this, start, end, padding)
                     chunks.push(chunk)
@@ -215,9 +220,9 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
             //create the chunk workers
             if (this.get('webworkers')){
-                chunks = _.map(chunks, function(chunk){ return (new ChunkWorkerInterface({chunkInfo:chunk, userBlob:this.get('user').get('userBlob').getBlob()})) } )
+                chunks = _.map(chunks, function(chunk){ return (new ChunkWorkerInterface({chunkInfo:chunk, userBlob:this.get('userBlog')})) } )
             }else{
-                chunks = _.map(chunks, function(chunk){ return (new Chunk({chunkInfo:chunk, userBlob:this.get('user').get('userBlob').getBlob()})) } )
+                chunks = _.map(chunks, function(chunk){ return (new Chunk({chunkInfo:chunk, userBlob:this.get('userBlob')})) } )
             }
 
             this.set('chunks',chunks)
