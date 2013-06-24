@@ -1,61 +1,22 @@
 //returns the file view
-define(["jade!templates/Progress"], function(ProgressTemplate){ 
+define([], function(ProgressTemplate){ 
     return Backbone.View.extend({
-        template: ProgressTemplate,
-        tagName: "div",
-        id: "progressBar", 
-
-        initialize: function(){
-            this.percentComplete = this.options.percentComplete || 0;
+        percentage: function(percentage){
+          //redirect to css's percentage
+          return $().css.apply(this.$el.find(".innerBar"),["width",percentage])
         },
-
-        render:function(){
-            this.$el.html(this.template())
-            this.options.container.append(this.$el)
-            this.pBar = this.$el.find('#innerProgress')[0]
-            this.pBar.max=100
-            this.endingPercentage=0
-            this.smoothlyIncreasePercentage(0)
+        text : function(text){
+          //just redirect to zepto's text
+          return $().text.apply(this.$el.find("p.barText"),[text])
         },
-
-        remove:function(){
-            this.$el.remove()
-            //null the render call so we don't render when this should have been removed
-            this.render = function(){};
-        },
-
-        updatePercentage: function(){
-            // this.$el.find('#innerProgress').anim({'width':this.percentComplete+'%'},1,'linear')
-            this.endingPercentage = this.percentComplete
-        },
-
-        smoothlyIncreasePercentage: function(currentPercentage){
-            if (currentPercentage < this.endingPercentage){
-              currentPercentage += 0.5
-              this.pBar.value = currentPercentage
-            }
-            //continuously update the percentage every 
-            if (currentPercentage < this.pBar.max){
-                _.delay(_.bind(this.smoothlyIncreasePercentage, this, currentPercentage), 10)
-                return;
-            }
-        },
-
-        changePercentage: function(newPercentage){
-            this.percentComplete = newPercentage
-            this.updatePercentage()
-        },
-
-        increasePercentage: function(newDeltaPercentage){
-            this.percentComplete += newDeltaPercentage
-            this.updatePercentage()
-        },
-
-        //erases the bar and shows a message
-        displayLink: function(link){
-            var html = '<input type=text style="width:100%" value="'+ link +'"></input>'
-            this.$el.html(html)
-            this.$el.find('input')[0].focus()
+        link: function(link, text){
+          this.$el.find(".barLink")
+                .attr("href",link)
+                .text(text)
+                .show()
         }
+
+
+
     })
 });

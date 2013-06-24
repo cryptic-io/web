@@ -92,7 +92,7 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
 
         downloadManifest: function(linkName, passcode, callback){
             Downloader.prototype.getKeyAndDownload(linkName, _.bind(function(buffer){
-                var manifestChunk = new Chunk({buffer:buffer});
+                var manifestChunk = new Chunk({buffer:buffer, userBlob:this.get('userBlob')});
                 manifestChunk.decodeIVKey(passcode)
                 if(debug){
                     console.log('downloaded, dumping hex')

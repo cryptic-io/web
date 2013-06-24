@@ -1,11 +1,10 @@
 //returns routes that will be used in the Home page (so most pages)
 
-define(["views/Home","views/Info", "views/File", "views/Progress", "views/User", "views/ProgressBars", "views/ViewportHandler", "views/UserFiles", "jade!templates/SingleFileInfo"  ]
-, function(HomeView, InfoView, FileView, ProgressView, UserView, ProgressBars, ViewportHandler, UserFilesView, singleFileInfoTemplate){ 
+define(["views/Home", "views/File", "views/Progress", "views/User", "views/ProgressBars", "views/ViewportHandler", "views/UserFiles", "jade!templates/SingleFileInfo"  ]
+, function(HomeView, FileView, ProgressView, UserView, ProgressBars, ViewportHandler, UserFilesView, singleFileInfoTemplate){ 
     return Backbone.Router.extend({
         routes: {
-              "info" : "info"
-            , "demo" :"demo"
+            "demo" :"demo"
             , "home" : "home"
             , "user/fs/*fileLocation" : "openUserFile"
             , "user/fs" : "user"
@@ -17,6 +16,7 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User",
 
         
         // demo for the viewport placing of elements
+        // This will illustrate how the viewport works
         demo : function (){
           var home = new HomeView({el:$('#mainContainer')})
           home.render()
@@ -24,14 +24,14 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User",
           bars = new ProgressBars(
           {
             el:$("#barsContainer")
-            , model : (new Backbone.Model(
+            , bars : 
               {
                 "title":"Uploading...", items: [
                                                 {text:"Frank's Taxes", percent:"100%"}
                                                 , {text:"Green Card", percent:"84%"}
                                                 , {text:"Taxes", percent:"34%"}
                                                 ]
-              }))
+              }
           })
 
           bars.render()
@@ -91,47 +91,9 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User",
 
           viewport.placeLeftOfCenter(userFiles.el) 
             .placeRightOfCenter(bars.el)
-            .hideButtonLeft()
             .placeButtonRightDown("Upload",["emerald", "blackText", "withOffsetFromBottom"])
             .then(showVaultHideBars)
 
-
-        },
-
-        user: function(){
-            if (!this.userView) {
-                console.log('starting user home')
-                var home = new HomeView({el:$('#mainContainer')})
-                home.render()
-
-
-                //check to see if we need to create it
-                this.userView = new UserView({userLoginContainer:$('#userLogin')
-                                            , userFilesContainer:$('#userFilesContainer')
-                                            , userSpaceContainer:$('#userSpaceContainer')})
-
-
-                var fileView = new FileView({el:$('#uploadBoxContainer'), user:this.userView.model});
-                this.userView.listenTo(fileView, 'fileUploaded', this.userView.fileUploaded)
-                this.userView.render()
-
-                this.listenTo(this.userView.model, 'loggedIn', function(a, b, c){
-                    $('#uploadBoxContainer').css('margin-left','0px')
-                    
-                    $('#uploadBoxContainer').css('display','inline-block')
-                })
-
-                fileView.render()
-
-                //change the url according to the fsLocation on the model
-                this.listenTo(this.userView.model, 'change:fsLocation', function(model){
-                    this.navigate('/user/fs/'+model.get('fsLocation').substr(1))
-                })
-                
-            }else{
-                //We already have the page built, we just need to go to the root directory
-                this.userView.model.set('fsLocation','/')
-            }
 
         },
 
@@ -146,39 +108,136 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User",
 
 
         home: function() {
-            console.log('starting home')
+          console.log('starting home')
+          var home = new HomeView({el:$('#mainContainer')})
+          home.render()
+          var barsContainer = home.$el.find("#barsContainer")[0]
+          , viewport = new ViewportHandler({el:$(".body")})
+
+          this.userView = new UserView({userLoginContainer:$('#userLogin')
+                                      , userFilesContainer:$('#userFilesContainer')
+                                      , userSpaceContainer:$('#userSpaceContainer')})
+
+          //var fileView = new FileView({el:$('#uploadBoxContainer')});
+          var fileView = new FileView({el:$('#uploadBoxContainer'), user:this.userView.model, progressBarContainer: barsContainer });
+
+
+          this.userView.model.once('loggedIn', function(){
+            fileView.render()
+          })
+
+          fileView.uploadDeffered.promise.then(function(){
+            viewport.placeLeftOfCenter(fileView.el)
+                    .placeRightOfCenter(barsContainer)
+          })
+
+          viewport
+            .toggleAnimate(this.userView.userFileView.el)
+            .placeLeftOffScreen(this.userView.userFileView.el)
+            .toggleAnimate(fileView.el) //we don't want to show an animation at the begginning
+            .placeCenter(fileView.el) 
+            .toggleAnimate(fileView.el) //but we do want animations later
+            .placeRightOffScreen(barsContainer)
+
+
+        },
+
+        user: function(){
+          var that=this
+          if (!this.userView) {
+            console.log('starting user home')
+
+
             var home = new HomeView({el:$('#mainContainer')})
             home.render()
 
-            var fileView = new FileView({el:$('#uploadBoxContainer')});
+            var barsContainer = home.$el.find("#barsContainer")[0]
+
+            var viewport = new ViewportHandler({el:$(".body")})
+
+
+            this.userView = new UserView({userLoginContainer:$('#userLogin')
+                                        , userFilesContainer:$('#userFilesContainer')
+                                        , userSpaceContainer:$('#userSpaceContainer')})
+
+
+            var fileView = new FileView({el:$('#uploadBoxContainer'), user:this.userView.model, progressBarContainer: barsContainer });
+            this.userView.listenTo(fileView, 'fileUploaded', this.userView.fileUploaded)
+            this.userView.render()
+
+            fileView.uploadDeffered.promise.then(function(){
+              viewport.placeLeftOffScreen(that.userView.userFileView.el)
+                      .placeLeftOfCenter(fileView.el)
+                      .placeRightOfCenter(barsContainer)
+            })
+
+            //this.listenTo(this.userView.model, 'loggedIn', function(a, b, c){})
+
             fileView.render()
+
+            this.userView.model.once('loggedIn', function(){
+              viewport.placeLeftOfCenter(that.userView.userFileView.el)
+                .placeRightOfCenter(fileView.el)
+                .placeRightOffScreen(barsContainer)
+            })
+
+
+            //change the url according to the fsLocation on the model
+            this.listenTo(this.userView.model, 'change:fsLocation', function(model){
+                this.navigate('/user/fs/'+model.get('fsLocation').substr(1))
+            })
+              
+          }else{
+            //We already have the page built, we just need to go to the root directory
+            this.userView.model.set('fsLocation','/')
+          }
+
         },
 
-        info: function() {
-            info = new InfoView({el:$('#mainContainer')})
-            info.render()
-        },
 
         download: function(linkNameAndPasscode){
-            var home = new HomeView({el:$('#mainContainer')})
-            home.render()
+          var home = new HomeView({el:$('#mainContainer')})
+          home.render()
 
-            var linkName = linkNameAndPasscode.split('/')[0]
-            var passcode = linkNameAndPasscode.split('/')[1]
+          viewport = new ViewportHandler({el:$(".body")})
 
-            fileView = new FileView({el:$('#uploadBoxContainer'),template:"download"});
-            fileView.render()
+          //reference the barsContainer div
+          var barsContainer = home.$el.find("#barsContainer")[0]
+          , progressView
+
+          var linkName = linkNameAndPasscode.split('/')[0]
+          var passcode = linkNameAndPasscode.split('/')[1]
+
+          this.userView = new UserView({userLoginContainer:$('#userLogin')
+                                      , userFilesContainer:$('#userFilesContainer')
+                                      , userSpaceContainer:$('#userSpaceContainer')})
+
+
+          fileView = new FileView({el:$('#uploadBoxContainer'),template:"download", progressBarContainer: barsContainer, user:this.userView.model});
+
+
+          fileView.downloadDeffered.promise.then(function(progressView){
+            progressView = progressView
+            viewport.toggleAnimate(barsContainer)
+              .placeCenter(barsContainer)
+
+          })
+
+          this.userView.model.once('loggedIn', function(){
             fileView.downloadFile(linkName, passcode, function(){
                 console.log('woohoo downloaded the file!');
                 fileView.createDownloadLink();
             });
+          })
+
+          viewport.toggleAnimate(this.userView.userFileView.el)
+                  .placeLeftOffScreen(this.userView.userFileView.el)
 
         },
 
         test: function(){
-            console.log('starting test')
-
-            jas = require(['test/jasmine'])
+          console.log('starting test')
+          jas = require(['test/jasmine'])
         },
 
 

@@ -12,7 +12,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
             */
 
            webworkers: false
-           , maxWorkers: 3
+           , maxWorkers: 1
 
         },
 
@@ -20,18 +20,18 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
         initialize: function(){
             var userBlob = this.get('user').get('userBlob').getBlob()
-            , manifestOptions = _.pick( this.get('file'), 'name', 'type', 'size' ) 
 
             this.set('userBlob',userBlob)
-            manifestOptions.userBlob = userBlob
 
             //Unfortunately somethings have vendor prefixes so we'll get that sorted right here and now
             File.prototype.slice = File.prototype.slice ? File.prototype.slice : File.prototype.mozSlice;
 
             if (this.has('file')){
+                var manifestOptions = _.pick( this.get('file'), 'name', 'type', 'size' ) 
+                manifestOptions.userBlob = userBlob
                 this.manifest = new Manifest( manifestOptions )
             }else{
-                this.manifest = new Manifest();
+                this.manifest = new Manifest({userBlob:userBlob});
             }
         },
 
@@ -67,7 +67,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                     counter += chunkSize;
                     var end = counter < file.size ? counter : file.size;
 
-                    //It has to fit withing 32*4 because 32 bits is the int size used in data encryption and 4 because AES operates on 4 ints at a time for decryption
+                    //It has to fit within 32*4 because 32 bits is the int size used in data encryption and 4 because AES operates on 4 ints at a time for decryption
                     //Then it has to divide by 8 because 8 bits in a byte
                     //so 2^5 * 2^2 / 2^3  == 16
                     if ( (end - start)%(16) != 0){
@@ -144,7 +144,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                     totalChunkProgress = totalChunkProgress/(numberOfChunks*numberOfUpdateEventsPerChunk)
                     console.log('total progress:',totalChunkProgress)
 
-                    progressView.changePercentage(totalChunkProgress)
+                    progressView.percentage(totalChunkProgress+"%")
                 }
             }
 
@@ -200,6 +200,9 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
             this.manifest.downloadManifest(linkName, passcode, _.bind(function(manifest){
                 console.log('we got the manifest!');
+                //add the name to the download bar
+                this.get("progressView").text(manifest.get("name"))
+
                 this.manifest = manifest
                 this.createChunksFromManifest()
                 this.attachProgressListenerToChunks();
@@ -212,7 +215,8 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
         },
 
         createChunksFromManifest: function(){
-            var chunks = _.clone(this.manifest.get('chunks'));
+            var chunks = _.clone(this.manifest.get('chunks'))
+            , that = this
             //convert the chunks obj into an array 
             chunks = _.values(chunks)
             //Sort the array 
@@ -220,9 +224,9 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
             //create the chunk workers
             if (this.get('webworkers')){
-                chunks = _.map(chunks, function(chunk){ return (new ChunkWorkerInterface({chunkInfo:chunk, userBlob:this.get('userBlog')})) } )
+                chunks = _.map(chunks, function(chunk){ return (new ChunkWorkerInterface({chunkInfo:chunk, userBlob:that.get('userBlob')})) } )
             }else{
-                chunks = _.map(chunks, function(chunk){ return (new Chunk({chunkInfo:chunk, userBlob:this.get('userBlob')})) } )
+                chunks = _.map(chunks, function(chunk){ return (new Chunk({chunkInfo:chunk, userBlob:that.get('userBlob')})) } )
             }
 
             this.set('chunks',chunks)

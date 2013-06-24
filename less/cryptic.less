@@ -12,11 +12,10 @@
 css3 calc
 */
 
-.calc(@properties) {
-  height: -webkit-calc( @properties );
-  height: -moz-calc( @properties );
-  height: -o-calc( @properties );
-  height: calc( @properties );
+.handleOverflow() {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 
@@ -76,18 +75,24 @@ css3 calc
     color: black !important;
 }
 
-.alizarin.topBox {
-  //background-color: @btn-danger;
+.alizarinBtn {
+  background-color: @alizarin;
   .swap-button-color(@danger, @button-danger-hover, @button-danger-active);
 }
 
-.carrot.topBox {
+.carrotBtn {
+  background-color: @carrot;
   .swap-button-color(@carrot, #E59255, #E56D13);
 }
 
-.peter-river.topBox:hover {
-  //background-color: @btn-danger;
-  .swap-button-color(@info, @button-info-hover, @button-info-active);
+.peter-riverBtn.topBox{
+
+
+  background-color: @peter-river;
+
+  &:hover {
+      .swap-button-color(@info, @button-info-hover, @button-info-active);
+  }
 }
 
 .topBox {
@@ -107,7 +112,7 @@ css3 calc
     }
 
     &:hover {
-        width: @top-box-width+20px;
+        // width: @top-box-width+20px;
     }
 }
 
@@ -132,7 +137,6 @@ body {
 #mainContainer {
     position:relative;
 }
-
 
 /* vault */
 #vault {
@@ -165,6 +169,7 @@ body {
     p {
         font-family: @base-font-family;
         font-size: 24pt;
+        color: black;
         text-align: center;
         line-height: 260px;
     }
@@ -191,6 +196,9 @@ body {
 .bars {
 }
 
+@barHeight:  40px;
+@barWidth : 400px;
+
 .barText {
     font-family: @base-font-family;
     font-size: 20pt;
@@ -198,9 +206,19 @@ body {
     position:relative;
     color: black;
     z-index:2;
+    width: @barWidth - 20;
+    height: @barHeight;
+    .handleOverflow();
 }
 
-@barHeight : 40px;
+.barLink {
+    display:none;
+    position:absolute;
+    top:0px;
+    .handleOverflow()
+
+}
+
 .outerBar {
     width: 400px;
     height: @barHeight;
@@ -297,11 +315,17 @@ p.fileBarText{
 .floatingContainer{
     position: absolute;
     .transition(1s);
+    min-width: 400px;
+}
+
+
+.noAnimate{
+    .transition(0s) !important;
 }
 
 /* side buttons */
 .sideBtn {
-    cursor: pointer;
+    cursor: pointer
     height: 50px;
     width: 150px;
     background-color: black;

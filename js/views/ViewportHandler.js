@@ -6,7 +6,7 @@ define([], function(){
 
     offsetFromCenter: 100
     
-    , bottomMargin: 200
+    , bottomMargin: 50
 
     , buttonMargin: 80
      
@@ -96,6 +96,23 @@ define([], function(){
       this.resizeHeight();
 
     }
+
+    //show and hide for chaining convienence
+    , show: function(element){
+      $(element).show()
+      return this
+    }
+
+    , hide: function(element){
+      $(element).hide()
+      return this
+    }
+
+    , toggleAnimate : function(element){
+      $(element).toggleClass('noAnimate')
+      return this
+    }
+
 
     //rebuilding is a variable that tells the function to not track the element since we are using the tracked elements.
     , placeCenter: function(element, rebuilding){
