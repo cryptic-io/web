@@ -1,9 +1,11 @@
 //returns routes that will be used in the Home page (so most pages)
 
-define(["views/Home","views/Info", "views/File", "views/Progress", "views/User"],function(HomeView, InfoView, FileView, ProgressView, UserView){ 
+define(["views/Home","views/Info", "views/File", "views/Progress", "views/User", "views/ProgressBars", "views/ViewportHandler", "views/UserFiles", "jade!templates/SingleFileInfo"  ]
+, function(HomeView, InfoView, FileView, ProgressView, UserView, ProgressBars, ViewportHandler, UserFilesView, singleFileInfoTemplate){ 
     return Backbone.Router.extend({
         routes: {
               "info" : "info"
+            , "demo" :"demo"
             , "home" : "home"
             , "user/fs/*fileLocation" : "openUserFile"
             , "user/fs" : "user"
@@ -11,6 +13,89 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User"]
             , "user" : "user"
             , "test" : "test"
             , "download/*linkNameAndPasscode" : "download"
+        },
+
+        
+        // demo for the viewport placing of elements
+        demo : function (){
+          var home = new HomeView({el:$('#mainContainer')})
+          home.render()
+
+          bars = new ProgressBars(
+          {
+            el:$("#barsContainer")
+            , model : (new Backbone.Model(
+              {
+                "title":"Uploading...", items: [
+                                                {text:"Frank's Taxes", percent:"100%"}
+                                                , {text:"Green Card", percent:"84%"}
+                                                , {text:"Taxes", percent:"34%"}
+                                                ]
+              }))
+          })
+
+          bars.render()
+
+          fileView = new FileView({el:$('#uploadBoxContainer')});
+          fileView.render()
+
+          userFiles = new UserFilesView({el:$("#userFilesContainer"), model:new Backbone.Model()})
+          userFiles.render({
+            fsLocation:"foo/bar"
+            , files:[
+              {"filename":"boobs"}
+            , {"filename":"Frank's Taxes", selected:true}
+            , {"filename":"foo bar"}
+            , {"filename":"Important Stuff"}]
+          })
+
+          singleFileEl = $("#singleFileContainer")[0]
+
+          $(singleFileEl).html(singleFileInfoTemplate({file:{filename:"Frank's Taxes",type:"text"}, size:2, sizeUnit:"MB", downloadLink:"http://cryptic.io/#download/jfexijf/asdjfe"}))
+
+
+          viewport = new ViewportHandler({el:$(".body")})
+
+          var showBarsHideVault 
+          , showVaultHideBars
+
+          //buttons showing and hiding the vault
+          showBarsHideVault = function(){
+              viewport.placeRightOfCenter(bars.el)
+                .placeRightDownOffScreen(fileView.el, true)
+                .hideButtonRight()
+                .placeButtonRightDown("Upload",["emerald", "blackText", "withOffsetFromBottom"])
+                .then(showVaultHideBars)
+          }
+
+          showVaultHideBars = function(){
+              viewport.placeRightOffScreen(bars.el)
+                .placeRightOfCenter(fileView.el)
+                .hideButtonRightDown()
+                .placeButtonRight("Progress", ["clouds", "blackText"])
+                .then(showBarsHideVault)
+          }
+
+          // show a button on the left down part of screen, when clicked move the userFiles left off screen, place single file info left of center, hide the button
+          viewport.placeButtonLeftDown("File Info", ["clouds", "blackText"])
+            .then(function(){
+              viewport.placeLeftOffScreen(userFiles.el)
+                .placeLeftOfCenter(singleFileEl)
+                .hideButtonLeftDown()
+            })
+
+          //place the vault hidden, but not completely. 
+          //also place the singleFileEl left down off screen but completely hidden
+          viewport.placeRightDownOffScreen(fileView.el, true)
+            .placeLeftDownOffScreen(singleFileEl)
+
+          viewport.placeLeftOfCenter(userFiles.el) 
+            .placeRightOfCenter(bars.el)
+            .hideButtonLeft()
+            .placeButtonRightDown("Upload",["emerald", "blackText", "withOffsetFromBottom"])
+            .then(showVaultHideBars)
+
+
         },
 
         user: function(){
@@ -66,7 +151,6 @@ define(["views/Home","views/Info", "views/File", "views/Progress", "views/User"]
             home.render()
 
             var fileView = new FileView({el:$('#uploadBoxContainer')});
-            $('#uploadBoxContainer').css('display','block')
             fileView.render()
         },
 

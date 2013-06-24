@@ -1,39 +1,30 @@
+#vault
+    .inner-border#upload
+        p Drop a file in
+
 //
-  #headerText Drag and Drop a file in!
-  #dragDropUpload 
-      #progressBarContainer
-      #dndInfo About to encrypt and upload:
-      #filename nothing, currently.
-      input#downloadLink(type="text")
-      button#uploadFile UPLOAD
-      button#uploadAnother OK
+    .upload-message Drag files here to add to queue.
+    #upload.upload
+    .upload-controls
+      .upload-panel
+        span.btn.start#uploadFiles
+          i.icon 
+          span Start Upload
+        span.btn.delete#removeFiles
+          i.icon
+          span Remove
+      .upload-add-files
+        span.btn.open
+          i.icon 
+          span Add Files
+          input(type="file",multiple="multiple")
 
-.upload-message Drag files here to add to queue.
-#upload.upload
-.upload-controls
-  .upload-panel
-    span.btn.start#uploadFiles
-      i.icon 
-      span Start Upload
-    //
-      span.btn.cancel#cancelUpload
-        i.icon 
-        span Cancel
-    span.btn.delete#removeFiles
-      i.icon
-      span Remove
-  .upload-add-files
-    span.btn.open
-      i.icon 
-      span Add Files
-      input(type="file",multiple="multiple")
-
-.file-table
-  .row.top
-    div: input#topCheckbox(type="checkbox")
-    div Filename
-    div Size
-    div Status
-  .files
+    .file-table
+      .row.top
+        div: input#topCheckbox(type="checkbox")
+        div Filename
+        div Size
+        div Status
+      .files
 
 

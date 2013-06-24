@@ -9,6 +9,7 @@
         <script src="/js/core/zepto.js" type="text/javascript"></script>
         <script src="/js/core/underscore.js" type="text/javascript"></script>
         <script src="/js/core/backbone.js" type="text/javascript"></script>
+        <script src="/js/core/q.js" type="text/javascript"></script>
 
         <!-- crypt stuff that is important -->
         <script src="/js/crypt/sjcl.js" type="text/javascript"></script>
@@ -30,39 +31,43 @@
         <!-- Require JS -->
         <script data-main="js/main.js" src="js/require.js"></script>
 
-        <!-- Stylesheets -->
-        <link href='css/main.css' rel='stylesheet' type='text/css'>
+        <!-- Bootstrap -->
+        <link href='bootstrap/css/bootstrap.css' rel='stylesheet' type='text/css'>
+
+        <!-- flat-ui -->
+        <link rel="stylesheet/less" type="text/css" href="less/flat/flat-ui.less" />
+
+        <!-- cryptic less -->
+        <link rel="stylesheet/less" type="text/css" href="less/cryptic.less" />
+
+        <!-- Less script -->
+        <script src="js/core/less.js" type="text/javascript"></script>
+
+
+
 		
 
 	</head>
 
 <body>
-	<div class=header>
-		<a class=title href="/"></a>
-		<ul class=nav>
-			<li><a href='/#/about'>About</a></li>
-			<li><a href='/#/blog'>Blog</a></li>
-			<li><a href='/#user'>Login</a></li>
-		</ul>
+	<div class="row" id="header">
+        <div class="span2" id="logo"></div>
+        <div class="pull-right" id="topBar">
+            <div class="topBox carrot span" > 
+                <p> About </p> 
+            </div> 
+            <div class="topBox alizarin span" > 
+                <p> Register </p> 
+            </div> 
+            <div class="topBox peter-river span" > 
+                <p> Login </p> 
+            </div> 
+        </div>
 	</div>
 	<div class=body>
-		<div id="mainContainer"></div>
+		<div id="mainContainer">
+        </div>
 	</div>
 </body>
-
-<!-- Google Analytics -->
-<script type="text/javascript">
-
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-37613839-1']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
-</script>
 
 </html>

@@ -1,0 +1,342 @@
+// Loading config with variables (changing them leads to changing a color scheme)
+@import "flat/config";
+
+// Utility mixins for greater good
+@import "flat/mixins";
+
+@header-height : 50px;
+@top-box-width : 150px;
+
+
+/*
+css3 calc
+*/
+
+.calc(@properties) {
+  height: -webkit-calc( @properties );
+  height: -moz-calc( @properties );
+  height: -o-calc( @properties );
+  height: calc( @properties );
+}
+
+
+/** 
+
+------ Top Bar ------------
+
+*/
+
+#header {
+    background-color: #ECF0F1;
+    width: 100%;
+    height: @header-height;
+    margin: 0;
+}
+#logo {
+    width: @top-box-width;
+    height: 100%;
+    background-image: url("/images/cryptic.png");
+    background-size: 100%;
+    background-repeat: no-repeat;
+    background-position-y: -2px;
+}
+
+#topBar {
+    height: 100%;
+}
+
+/* colors! */
+.carrot {
+    background-color: @carrot !important;
+}
+.alizarin {
+    background-color: @alizarin !important;
+}
+.peter-river {
+    background-color: @peter-river !important;
+}
+
+.emerald{
+    background-color: @emerland !important;
+}
+
+.clouds{
+    background-color: @clouds !important;
+}
+
+.nephritis {
+    background-color: @nephritis !important;
+}
+
+.pomegranate {
+    background-color: @pomegranate !important;
+}
+
+.blackText p{
+    color: black !important;
+}
+
+.alizarin.topBox {
+  //background-color: @btn-danger;
+  .swap-button-color(@danger, @button-danger-hover, @button-danger-active);
+}
+
+.carrot.topBox {
+  .swap-button-color(@carrot, #E59255, #E56D13);
+}
+
+.peter-river.topBox:hover {
+  //background-color: @btn-danger;
+  .swap-button-color(@info, @button-info-hover, @button-info-active);
+}
+
+.topBox {
+    cursor:pointer; 
+    .transition(0.25s);
+    height:100%;
+    width: @top-box-width;
+
+    margin-left: 0px;
+
+    p {
+        font-family: @base-font-family;
+        font-size : 20pt;
+        color: @cryo;
+        line-height: @header-height;
+        text-align: center;
+    }
+
+    &:hover {
+        width: @top-box-width+20px;
+    }
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    min-width: 1100px;
+    height: 100%;
+}
+
+@body-padding : 50px;
+.body {
+    height : ~'calc(100% - 100px)';
+    margin-top: @body-padding;
+    overflow: hidden;
+    min-height: 500px;
+    position:relative;
+}
+
+#mainContainer {
+    position:relative;
+}
+
+
+/* vault */
+#vault {
+    background-image: url("/images/vault.svg");
+    background-size: 100%;
+    height: 400px;
+    width: 340px;
+    background-repeat: no-repeat;
+    margin: auto;
+    .transition(1s);
+
+
+    .inner-border {
+        margin: 0px 30px;
+        border: black;
+        border-style: dashed;
+        border-radius: 10px;
+        height: 290px;
+        top: 30px;
+        position: relative;
+        border-width: 3px;
+        border-color: black;
+        .transition(.25s);
+
+        &.dragEnter{
+            border-color: @sun-flower;
+        }
+    }
+
+    p {
+        font-family: @base-font-family;
+        font-size: 24pt;
+        text-align: center;
+        line-height: 260px;
+    }
+}
+
+
+/* Progress Bars */
+
+.progressBars {
+    position:relative;
+}
+
+.barTitle {
+
+    p {
+        font-family: @base-font-family;
+        font-size: 34pt;
+        font-weight: bold;
+        color: black;
+    }
+
+}
+
+.bars {
+}
+
+.barText {
+    font-family: @base-font-family;
+    font-size: 20pt;
+    text-align: center;
+    position:relative;
+    color: black;
+    z-index:2;
+}
+
+@barHeight : 40px;
+.outerBar {
+    width: 400px;
+    height: @barHeight;
+    background-color: @clouds;
+    position:relative;
+
+    margin-bottom: 4px;
+
+    .delete {
+        position: absolute;
+        right: 10px;
+        top: 2px;
+        font-size:20pt;
+        z-index:2;
+    }
+}
+
+.innerBar {
+    width: 40%;
+    height: 40px;
+    margin-left: 0px;
+    background-color: @emerland;
+    position:absolute;
+    top:0px;
+    z-index:1;
+    .transition(1s);
+}
+
+/* user files */
+
+#filePath {
+    height: 109px;
+
+    p {
+        font-family: @base-font-family;
+        font-size: 44pt;
+        font-weight: bold;
+        color: black;
+    }
+
+    .filePart {
+        margin-left: 5px;
+    }
+
+    
+}
+
+.selectedFile {
+    background-color: @green-sea !important;
+}
+
+#createFolder {
+    background-color: @asbestos;
+}
+
+p.fileBarText{
+        text-align: left;
+        padding-left: 20px;
+        color: white;
+        line-height: @barHeight;
+}
+
+.file.outerBar{
+    background-color: @wet-asphalt;
+}
+
+/* file info */
+
+#fileInfo {
+    .filename {
+        font-family:@base-font-family;
+        color: black;
+        font-size:44pt;
+
+    }
+
+    .outerBar {
+        background-color: @asbestos;
+
+         p {
+             text-align: left;
+             line-height: @barHeight;
+             color: white;
+             padding-left: 20px;
+         }
+    }
+
+}
+
+
+
+
+/* containers */
+.floatingContainer{
+    position: absolute;
+    .transition(1s);
+}
+
+/* side buttons */
+.sideBtn {
+    cursor: pointer;
+    height: 50px;
+    width: 150px;
+    background-color: black;
+    margin-top: 50px;
+    z-index:4;
+
+
+    p {
+        font-family: @base-font-family;
+        font-size : 20pt;
+        color: @cryo;
+        line-height: @header-height;
+        text-align: center;
+    }
+
+    position: absolute;
+
+    display:none;
+}
+
+#leftBtn {
+    .transform(rotate(90deg));
+}
+#rightBtn {
+    .transform(rotate(-90deg));
+}
+
+.rightDownBtn {
+    margin-left: 90px;
+}
+
+.leftDownBtn {
+}
+
+.withOffsetFromBottom {
+    margin-top: -10px;
+}
+

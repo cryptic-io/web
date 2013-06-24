@@ -79,9 +79,10 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
         },
 
         handleFileDrop: function(evt){
+            console.log("drag dropped")
             evt.stopPropagation();
             evt.preventDefault();
-            $(evt.target).removeClass("dragEnter");
+            $(evt.target).parent().removeClass("dragEnter");
 
 
             var files = evt.dataTransfer.files
@@ -127,12 +128,14 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
 
         handleDragEnter: function(e){
             console.log("dragenter");
-            $(e.target).addClass("dragEnter");
+            // It references the p elem instead of the inner border elem we want
+            $(e.target).parent().addClass("dragEnter");
         },
 
         handleDragLeave: function(e){
             console.log("dragleave");
-            $(e.target).removeClass("dragEnter");
+            // It references the p elem instead of the inner border elem we want
+            $(e.target).parent().removeClass("dragEnter");
         },
 
 
@@ -170,14 +173,16 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
         uploadFile: function(fileModel, progressBarEl, callback){
 
             var progressView = new ProgressView({container:$(progressBarEl)})
+            , origin = window.location.protocol + "//" + window.location.host
+
             fileModel.set('progressView',progressView)
             progressView.render()
             fileModel.upload(_.bind(function(linkData){
                 console.log('an alert would have happened here','#download/'+linkData.linkName+'/'+linkData.IVKey)
                 fileModel.destroy()
 
-                console.log('download link',location.origin+'/#download/'+linkData.linkName+'/'+linkData.IVKey)
-                progressView.displayLink(location.origin+'/#download/'+linkData.linkName+'/'+linkData.IVKey)
+                console.log('download link',origin+'/#download/'+linkData.linkName+'/'+linkData.IVKey)
+                progressView.displayLink(origin+'/#download/'+linkData.linkName+'/'+linkData.IVKey)
 
                 //trigger the file uploaded event
                 this.trigger('fileUploaded',
@@ -246,6 +251,7 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
         displayDownloadLink:function(link){
             var dragDropUpload = this.$el.find('#dragDropUpload');
             var downloadLink = this.$el.find('#downloadLink')
+            debugger;
 
             downloadLink.show();
 

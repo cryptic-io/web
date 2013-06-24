@@ -29,7 +29,7 @@ define(["apiEndPoints", "models/File"],function(api, File){
     }
 
     , getBlob: function(){
-        var userBlob = _.pick(this.toJSON(),["fs", "version", "id"])
+        var userBlob = _.pick(this.toJSON(),["fs", "version", "id", "username"])
 
         //store RSA values in base64 likaboss
         userBlob["pub_key"] = hex2b64(this.get('rsa').n.toString(16))

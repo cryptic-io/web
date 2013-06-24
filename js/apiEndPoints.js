@@ -6,4 +6,5 @@ define({
     , getFileKeys  :   "/api/getFileKeys"
     , uploadFile   :   "/api/uploadFile"
     , removeFile   :   "/api/removeFiles"
+    , multipass    :   "/api/getMultipass"
 })

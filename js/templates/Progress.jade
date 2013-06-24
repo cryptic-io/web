@@ -1,1 +1,9 @@
-progress#innerProgress
+.progressBars
+    .barTitle
+        p= title 
+    .bars
+        each item in items
+            .outerBar
+                p.barText= item.text
+                p.delete ✕
+                .innerBar(style="width:#{item.percent};")

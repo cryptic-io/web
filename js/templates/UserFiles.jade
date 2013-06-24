@@ -1,17 +1,28 @@
-.page#UserFiles Here are your files: 
-  #folderButtons
-    span#newFolder
-      button New Folder
-    span#deleteFolder
-      button Delete Folder
+.page#UserFiles 
+  //
+    #folderButtons
+      span#newFolder
+        button New Folder
+      span#deleteFolder
+        button Delete Folder
 
+  #filePath
+    - var fsParts = fsLocation.replace(/^\//g,'').split("/")
+    each fsPart in fsParts
+      .span.filePart
+        p / 
+      .span.filePart
+        p= fsPart
   #deleteButton
   .files 
+    .outerBar#createFolder
+      p.barText.fileBarText Create Folder
     .file#folderNameInput(style="display:none")
       input(placeholder="Folder Name")
     each file in files
-      .file
-        .filename
-          a.folder(href="#user/fs#{fsLocation}#{file.filename}")= file.filename
-
-        
+      if file.selected
+        .file.outerBar.selectedFile
+          p.fileBarText.barText(path="#{fsLocation}#{file.filename}")= file.filename
+      else
+        .file.outerBar
+          p.fileBarText.barText(path="#{fsLocation}#{file.filename}")= file.filename

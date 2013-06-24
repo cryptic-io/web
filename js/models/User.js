@@ -23,7 +23,7 @@ define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){
 
       , register: function(username, password, use2step){
           var userBlob = this.get('userBlob')
-          , secretKey = use2step ? this.createSecretKey() : '' //set the secret to nothing if we arent using it
+          , secretKey = use2step ? this.createSecretKey() : undefined //set the secret to nothing if we arent using it
   
 
           //tell anyone who cares that the secret key was made 

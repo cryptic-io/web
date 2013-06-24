@@ -31,12 +31,13 @@ define(["jade!templates/Progress"], function(ProgressTemplate){
 
         smoothlyIncreasePercentage: function(currentPercentage){
             if (currentPercentage < this.endingPercentage){
-              this.pBar.value = currentPercentage + .05
-              currentPercentage += .05
+              currentPercentage += 0.5
+              this.pBar.value = currentPercentage
             }
             //continuously update the percentage every 
-            if (currentPercentage + 1 < this.pBar.max){
-                _.delay(_.bind(this.smoothlyIncreasePercentage, this, currentPercentage, this.endingPercentage), 10)
+            if (currentPercentage < this.pBar.max){
+                _.delay(_.bind(this.smoothlyIncreasePercentage, this, currentPercentage), 10)
+                return;
             }
         },
 

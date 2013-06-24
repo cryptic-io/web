@@ -1,6 +1,7 @@
 //returns a filesystem singleton 
 define([],function(){ 
-    requestFileSystem = webkitRequestFileSystem 
+    window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+
 
 
     FileSystem = function(){

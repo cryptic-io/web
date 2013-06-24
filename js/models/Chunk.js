@@ -150,10 +150,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
             //As well as the hash of the chunk
             //As well as the Signed hash of the chunk
 
-            var userblob = this.get('userBlob')
-            , username = userblob.get('username')
-            , hash = sha1Hash(this.get('buffer'))
-            , sig = userblob.signMessage(hash)
+
 
 
             var location = api.uploadFile
@@ -163,6 +160,13 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
             var uploader = new Uploader();
 
             this.encryptChunk();
+
+            var userblob = this.get('userBlob')
+            , username = userblob.get('username')
+            , hash = sha1Hash(this.get('buffer'))
+            , sig = userblob.signMessage(hash)
+
+            console.log('hash was',hash)
 
             uploader.send(location, this.get('buffer'), linkName, this.get('progressListener'), function(response){
                 result = JSON.parse(response)
