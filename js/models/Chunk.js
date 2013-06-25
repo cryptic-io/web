@@ -1,13 +1,19 @@
 //Define the chunk model
-define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/FileSystem', 'models/UserBlob', 'apiEndPoints', 'tools/sha1Hash'],function(Uploader, Downloader, FileSystemHandler, FileSystem, UserBlob, api, sha1Hash){ 
+define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/FileSystem', 'models/RSA', 'apiEndPoints', 'tools/sha1Hash'],function(Uploader, Downloader, FileSystemHandler, FileSystem, RSAModel, api, sha1Hash){ 
     return Backbone.Model.extend({
 
         defaults: {
             //This chunk uses the 1.0 version of enryption, future chunks may have different versions
             encryptionVersion: "1.0",
 
-           chunkSize: 4194304  //Specify how big the chunk should be. ******  THIS HAS TO BE DIVISBLE BY 16 ****** (the reason so that we only need pad the last chunk)
+           chunkSize: 4194304,  //Specify how big the chunk should be. ******  THIS HAS TO BE DIVISBLE BY 16 ****** (the reason so that we only need pad the last chunk)
            //chunksize is 4MB
+           
+           //required params to be passed in
+           /*
+           username: "anon",
+           RSAObject : {"pub_key":...} 
+           */
         },
 
 
@@ -24,7 +30,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
                 //save the buffer
                 this.set('buffer',buffer)
-                callback()
+                callback(buffer)
 
             },this))
         },
@@ -40,11 +46,13 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         },
 
         initialize:  function(options){
-            // create the userblob object
-            var userBlobObj = this.get('userBlob')
-            , userBlob = new UserBlob()
-            userBlob.setBlob(userBlobObj)
-            this.set('userBlob',userBlob)
+
+            //create the RSA model 
+            var rsa = new RSAModel()
+            rsa.setRSAObject(this.get('RSAObject'))
+            this.set('rsa',rsa)
+
+            //generate initial set of keys
             this.generateKey()
         },
 
@@ -140,6 +148,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
             // We need to check to see if we even have the buffer that we need to upload
             // If we don't have it we need to get it and comeback to this funciton
+            debugger;
             if ( !this.has('buffer')){
                 this.getBufferFromState(_.bind(this.upload,this,callback))
                 return
@@ -160,12 +169,10 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
             this.encryptChunk();
 
-            var userblob = this.get('userBlob')
-            , username = userblob.get('username')
+            var rsa = this.get('rsa')
+            , username = this.get('username')
             , hash = sha1Hash(this.get('buffer'))
-            , sig = userblob.signMessage(hash)
-
-            console.log('hash was',hash)
+            , sig = rsa.signMessage(hash)
 
             uploader.send(location, this.get('buffer'), linkName, this.get('progressListener'), function(response){
                 result = JSON.parse(response)

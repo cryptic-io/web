@@ -10,7 +10,6 @@ define(["jade!templates/Progress", "views/Progress"], function(ProgressTemplates
       // this.model.get("title")
 
       this.$el.html(ProgressTemplates(this.options.bars))
-      debugger
     },
 
     // this will return an array of objects that can control the percantage and filename of each progress bar 

@@ -22,11 +22,20 @@ define(['models/Chunk'],function(Chunk){
 
         //setup a new worker
         createWorker: function(callback){
-            var command = "initializeChunk"
-
             this.worker = new Worker(this.get('workerScript'))
             this.setupPostMessage(this.worker)
             this.worker.onmessage = _.bind(this.callbackHandler,this)
+            //we cannot just create the worker and send it messages,
+            //we need to wait until it is finished spawning
+            var workerMessageOnComplete = "readyToRock" //this is what the worker will send when it's ready to start doing stuff
+
+
+            //setup the callback handler
+            this.bindSuccess(workerMessageOnComplete, _.bind(this.initializeChunk, this, callback))
+        },
+
+        initializeChunk : function(callback){
+            var command = "initializeChunk"
 
             this.worker.postMessage({
                 command : command
@@ -34,6 +43,8 @@ define(['models/Chunk'],function(Chunk){
                 , chunkOpts: {
                     iv:this.get('iv')
                     , key:this.get('key')
+                    , username : this.get('username')
+                    , RSAObject : this.get('RSAObject')
                 }
 
             })
@@ -67,55 +78,35 @@ define(['models/Chunk'],function(Chunk){
         },
 
         //have the ability to call this only when really necessary. Be lazy ;)
-        setBuffer: function(callback, buffer){
+        setBuffer: function(callback, hasBuffer){
             if (_.isUndefined(this.worker)){
                 //we don't have a worker yet, lets make one
-                this.createWorker(_.bind(this.setBuffer, this, callback))
+                this.createWorker(_.bind(this.setBuffer, this, callback, hasBuffer))
                 return
             }
 
-            if ( !buffer ){
-                this.getBufferFromState(_.bind(this.setBuffer, this, callback))
+            if ( !hasBuffer ){
+                this.getBufferFromState(_.bind(this.setBuffer, this, callback, true))
                 return
             }
 
             this.placedBuffer = true;
             var command = "setBuffer"
+            , buffer = this.get("buffer")
             this.worker.postMessage({
                 command: command,
                 arrayBuffer: buffer
             }, [buffer]);
+            debugger;
 
             this.unset('buffer')
             this.bindSuccess(command, callback);
-        },
-
-        //gets the buffer from the file model, along with a start, and end position, and if padding is required
-        getBuffer: function(fileModel, start, end, padding, callback){
-            fileModel.getArrayBufferChunk(start, end, _.bind(function(buffer){
-
-                if (padding){
-                    var copierDest = new Uint8Array(paddedSize)
-                    var copierSource = new Uint8Array(buffer)
-                    _.each(copierSource, function(byte, index){ copierDest[index] = byte })
-                    buffer = copierDest.buffer;
-                }
-
-                callback(buffer)
-
-            },this))
         },
 
         //save the buffer info so we know how get the correct chunk when we really need it.
         saveBufferInfo: function(fileModel, start, end, padding){
             this.set('bufferInfo',[fileModel, start, end, padding])
         },
-
-        getBufferFromState: function(callback){
-            //call getBuffer with the bufferInfo  as args
-            this.getBuffer.apply(this,this.get('bufferInfo').concat(callback))
-        },
-
 
         bindSuccess: function(command, callback) {
             //Only want this to happen once
@@ -138,7 +129,7 @@ define(['models/Chunk'],function(Chunk){
         encryptChunk: function(callback) {
             //Check to see if the worker has a copy of the buffer, if not, give it one
             if (!this.placedBuffer){
-                this.setBuffer(_.bind(this.encryptChunk, this, callback), false)
+                this.setBuffer(_.bind(this.encryptChunk, this, callback), false) //this is set to false to let the function figure out where the buffer is
                 return 
             }
 
@@ -177,10 +168,12 @@ define(['models/Chunk'],function(Chunk){
             //Check to see if the worker has a copy of the buffer, if not, give it one
             if (!this.placedBuffer){
                 this.setBuffer( _.bind(this.upload, this, callback), false)
+                debugger
                 return 
             }
 
             var command = "upload";
+            debugger;
 
             this.worker.postMessage({
                 command: command

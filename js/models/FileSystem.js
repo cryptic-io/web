@@ -1,5 +1,10 @@
 //returns a filesystem singleton 
 define([],function(){ 
+    //precent webworkers from crashing because they try to access the filesystem
+    if (typeof(window) === "undefined"){
+      return {}
+    }
+
     window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
 
 

@@ -1,27 +1,12 @@
 //Define the User Blob model
-define(["apiEndPoints", "models/File"],function(api, File){ 
-
-
+define(["apiEndPoints", "models/File", "models/RSA"],function(api, File, RSAModel){ 
   return Backbone.Model.extend({
-    defaults: {
-      version : 1.0
-      , e_rsa: "1337" //this is actually hex for 4919
-      , bits_rsa: 512
-      , iterations_hash: 1337
-      , bytes_hash: 16
-      , fs : {name:"root", type:"folder", value:{}}
-      , sane: true //simple check to see if a blob has been decrypted
-    }
-
-    , initialize: function(){
+    initialize: function(){
+      this.set('rsa', new RSAModel())
     }
 
     , generateRSA: function(){
-      var rsa = new RSAKey()
-      rsa.generate(this.get('bits_rsa'), this.get('e_rsa'))
-      this.set('rsa',rsa)
-      this.set('pub_key', rsa.n)
-
+      this.get("rsa").generateRSA()
     }
 
     , isIVKeySet: function(){
@@ -31,26 +16,23 @@ define(["apiEndPoints", "models/File"],function(api, File){
     , getBlob: function(){
         var userBlob = _.pick(this.toJSON(),["fs", "version", "id", "username"])
 
-        //store RSA values in base64 likaboss
-        userBlob["pub_key"] = hex2b64(this.get('rsa').n.toString(16))
-        userBlob["private_key"] = hex2b64(this.get('rsa').d.toString(16))
-        userBlob["rsa_e"] = hex2b64(this.get('rsa').e.toString(16))
-
+        //return a serialized json version of the RSA info
+        userBlob["RSAObject"] = this.get("rsa").getRSAObject()
+        
         return userBlob
     }
 
-    , setBlob: function(userBlob){
-        
-        this.set(userBlob)
-        var rsa = new RSAKey()
-        //keys for the N, E, D components of the rsa
-        var NEDkeys = [userBlob.pub_key, userBlob.rsa_e, userBlob.private_key]
-        //transform the keys to hex from b64
-        NEDkeys = _.map(NEDkeys, b64tohex)
+    , checkUserBlobCompat : function(userBlob){
+      if (!userBlob.RSAObject) userBlob.RSAObject = _.pick(userBlob, ["pub_key" , "private_key" , "rsa_e" ])
+      return userBlob
+    }
 
-        //set the value to the rsa
-        rsa.setPrivate.apply(rsa, NEDkeys)
-        this.set('rsa',rsa)
+    , setBlob: function(userBlob){
+        this.set(userBlob)
+        this.checkUserBlobCompat(userBlob)
+
+        //save the RSA info
+        this.get('rsa').setRSAObject(userBlob.RSAObject)
     }
 
     //Merge multiple userBlobs into one, prevents a user from accidently overwriting his data
@@ -211,23 +193,8 @@ define(["apiEndPoints", "models/File"],function(api, File){
     }
     
     , signMessage: function(messageString){
-      //first lets hash the message
-      var hash = sjcl.hash.sha256.hash(messageString)
-      , rsa = this.get('rsa')
-      hash = sjcl.codec.base64.fromBits(hash) //convert to b64
-
-      //Sign the hash
-      //We sign the hash by encrypting the hash with the private key, so it will later be decrypted with a public key to compare
-      //the computed hash with the given, signed hash
-      //Place the padding
-      padded_hash = pkcs1pad2(hash, (rsa.n.bitLength()+7)>>3)
-      //Encrypt the hash using the private key
-      signed_hash = padded_hash.modPow(rsa.d, rsa.n)
-      
-      //b64 encode
-      var sig = hex2b64(signed_hash.toString(16))
-
-      return sig
+      //redirect to the rsa model's implementation
+      return this.get('RSA').signMessage(messageString)
     }
 
     , hashArrayBuffer: function(arrayBuffer){

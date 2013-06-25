@@ -162,7 +162,6 @@ define(
             , progressBarsView = new ProgressBarsView({el:barsContainer, bars:{title:"Uploading...", items:barItems}}) //create a new view for all the bars
             , progressBars = progressBarsView.getIndividualProgressViews() //return individual views for each bars, this will allow greater control of each bar
 
-            debugger;
 
             progressBarsView.render()
             var progressBars = progressBarsView.getIndividualProgressViews() //return individual views for each bars, this will allow greater control of each bar

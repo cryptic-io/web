@@ -1,22 +1,4 @@
-importScripts('./require.js', './core/underscore.js', './core/backbone.js', './crypt/sjcl.js', './crypt/betterCBC.js');
-
-//check to see if browser supports transferable buffers in messages
-var postMessageFunc = self.webkitPostMessage || self.postMessage, //try to use webkitPostMessage
-    SUPPORTS_TRANSFERS = false;
-try {
-    var testAB = new ArrayBuffer(1);
-    self.postMessage({buffer: testAB}, [testAB]);
-    if (!testAB.byteLength) { //if there is no byteLength then it was transferred
-        SUPPORTS_TRANSFERS = true;
-    }
-} catch(e) {}
-if (SUPPORTS_TRANSFERS) {
-    self.postMessage = postMessageFunc;
-} else {
-    self.postMessage = function(obj) { //ignore the array on the end
-        postMessageFunc(obj);
-    };
-}
+importScripts('./require.js', './core/underscore.js', './core/backbone.js', './crypt/sjcl.js', './crypt/betterCBC.js', "./crypt/rsa/base64.js" , "./crypt/rsa/jsbn.js" , "./crypt/rsa/jsbn2.js" , "./crypt/rsa/rsa.js" , "./crypt/rsa/rsa2.js" , "./crypt/rsa/prng4.js" , "./crypt/rsa/rng.js");
 
 require({baseUrl:'./'},
     [
@@ -24,6 +6,25 @@ require({baseUrl:'./'},
         'models/Chunk'
     ],
     function(require, Chunk){
+
+        //check to see if browser supports transferable buffers in messages
+        var postMessageFunc = self.webkitPostMessage || self.postMessage, //try to use webkitPostMessage
+            SUPPORTS_TRANSFERS = false;
+        try {
+            var testAB = new ArrayBuffer(1);
+            self.postMessage({buffer: testAB}, [testAB]);
+            if (!testAB.byteLength) { //if there is no byteLength then it was transferred
+                SUPPORTS_TRANSFERS = true;
+            }
+        } catch(e) {}
+        if (SUPPORTS_TRANSFERS) {
+            self.postMessage = postMessageFunc;
+        } else {
+            self.postMessage = function(obj) { //ignore the array on the end
+                postMessageFunc(obj);
+            };
+        }
+
         var chunkHandle = {},
             currentChunk;
 
@@ -31,7 +32,7 @@ require({baseUrl:'./'},
             initializeChunk: function(args){
                 var entropy = args.entropy;
                 sjcl.random.addEntropy(entropy, 256);
-                currentChunk = new Chunk();
+                currentChunk = new Chunk(args.chunkOpts);
                 self.postMessage({
                     command: "initializeChunk",
                     status: "success"
@@ -151,6 +152,8 @@ require({baseUrl:'./'},
                 command[event.data.command](event.data);
             }
         };
+
+        self.postMessage({command:"readyToRock", status:"success"})
 
     }
 );

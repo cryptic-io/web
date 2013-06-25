@@ -11,7 +11,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
              *
             */
 
-           webworkers: false
+           webworkers: true
            , maxWorkers: 1
 
         },
@@ -84,12 +84,13 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                     }
 
 
+                    var usernameAndRSA = _.pick(this.get('userBlob'), ["username", "RSAObject"]) 
 
                     if( this.get('webworkers') ){
-                        var chunk = new ChunkWorkerInterface({userBlob:this.get('userBlob')})
+                        var chunk = new ChunkWorkerInterface(usernameAndRSA)
                     }else{
                         //create the new chunk without a buffer, we'll just give it the necessary info for the buffer, it will only copy the buffer when necessary
-                        var chunk = new Chunk({userBlob:this.get('userBlob')})
+                        var chunk = new Chunk(usernameAndRSA)
                     }
                     chunk.saveBufferInfo(this, start, end, padding)
                     chunks.push(chunk)
@@ -177,7 +178,9 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
         },
 
         recursivelyUploadChunks: function(chunks){
+          //stopping condition
           if (!chunks.length) return;
+
           var chunk = chunks.pop()
           chunk.upload(_.bind(function(index,linkName){
             if(this.get('webworkers')){
@@ -216,6 +219,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
         createChunksFromManifest: function(){
             var chunks = _.clone(this.manifest.get('chunks'))
+            , usernameAndRSA = _.pick(this.get('userBlob'), ["username", "RSAObject"]) 
             , that = this
             //convert the chunks obj into an array 
             chunks = _.values(chunks)
@@ -224,9 +228,9 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
             //create the chunk workers
             if (this.get('webworkers')){
-                chunks = _.map(chunks, function(chunk){ return (new ChunkWorkerInterface({chunkInfo:chunk, userBlob:that.get('userBlob')})) } )
+                chunks = _.map(chunks, function(chunk){ return (new ChunkWorkerInterface(_.defaults({chunkInfo:chunk}, usernameAndRSA))) } )
             }else{
-                chunks = _.map(chunks, function(chunk){ return (new Chunk({chunkInfo:chunk, userBlob:that.get('userBlob')})) } )
+                chunks = _.map(chunks, function(chunk){ return (new Chunk(_.defaults({chunkInfo:chunk}, usernameAndRSA) ) ) } )
             }
 
             this.set('chunks',chunks)
