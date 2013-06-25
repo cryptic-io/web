@@ -53,9 +53,9 @@ define([], function(){
       //get information on the tallest visible element on the page
       var element = this.findTallestVisibleElement()
       , elementHeight = $(element).height()
-      , browserHeight = _.max([$("body").height(), this.minHeight]) //information on the browser's size
-      , oldHeight = this.$el.height() 
-      , oldCSSHeight = this.$el.css("height") //this might be different since it can be "auto"
+      , browserHeight = $("html").height()-100 //this is what the default height would be
+      , oldHeight = parseInt(this.$el.css("height"),10) 
+      , oldCSSHeight = this.$el.css("height") //this might be different since it can be "auto" or the default "calc(...)"height
       , newHeight  // we are going to need this to determine if we need to update the position of the elements
 
       // we have 2 cases to consider
