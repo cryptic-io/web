@@ -31,6 +31,13 @@ css3 calc
     height: @header-height;
     margin: 0;
 }
+
+#header > .row {
+    width: 80%;
+    height: @header-height;
+    margin: auto;
+}
+
 #logo {
     width: @top-box-width;
     height: 100%;
@@ -123,15 +130,40 @@ html {
 body {
     min-width: 1100px;
     height: 100%;
+    //#newdesign 
+    background: #f6f8f8;
+
+}
+
+#footer {
+    text-align: center;
+    height: 100px;
+    line-height: 100px;
+}
+
+#footer a {
+    padding: 0 20px 0 20px;
 }
 
 @body-padding : 50px;
 .body {
     height : ~'calc(100% - 100px)';
     margin-top: @body-padding;
+    padding-top: @body-padding;
     overflow: hidden;
     min-height: 500px;
+    min-width: 800px;
     position:relative;
+    border: solid;
+    width: 80%;
+    margin: 50px auto auto;
+    border-top: 1px solid #F1F1F1;
+    border-right: 1px solid #E7E6E6;
+    border-left: 1px solid #E7E6E6;
+    background: white;
+    padding-bottom: 30px;
+    border-radius: 6px;
+    border-bottom: 1px solid #CFCFCF;
 }
 
 #mainContainer {
@@ -316,6 +348,10 @@ p.fileBarText{
     position: absolute;
     .transition(1s);
     min-width: 400px;
+}
+
+#uploadBoxContainer{
+    margin-top:50px;
 }
 
 
