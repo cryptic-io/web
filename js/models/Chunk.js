@@ -11,6 +11,8 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
            
            //required params to be passed in
            /*
+            * This is needed so that the chunks can upload their own data
+            * but in order to do that they need to sign for it, and then the server needs to verify the signature with their username+stored public_key
            username: "anon",
            RSAObject : {"pub_key":...} 
            */
@@ -47,12 +49,14 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
         initialize:  function(options){
 
-            //create the RSA model 
-            var rsa = new RSAModel()
-            rsa.setRSAObject(this.get('RSAObject'))
-            this.set('rsa',rsa)
+            //create the RSA model if we have the necessary info
+            if (this.has('RSAObject')){
+              var rsa = new RSAModel()
+              rsa.setRSAObject(this.get('RSAObject'))
+              this.set('rsa',rsa)
+            }
 
-            //generate initial set of keys
+            //generate initial set of keys, this doesn't take long but it's nice to know we have them
             this.generateKey()
         },
 
@@ -154,10 +158,6 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
                 return
             }
 
-            //The username is now required for chunks
-            //As well as the hash of the chunk
-            //As well as the Signed hash of the chunk
-
 
 
 
@@ -169,19 +169,35 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
             this.encryptChunk();
 
-            var rsa = this.get('rsa')
-            , username = this.get('username')
-            , hash = sha1Hash(this.get('buffer'))
-            , sig = rsa.signMessage(hash)
+            //this is going to be a signed user upload as opposed to an anonymous upload
+            //The username is required for chunks that are signed so the server can verify the sig
+            //As well as the hash of the chunk
+            //As well as the Signed hash of the chunk 
+            if (this.has('rsa') ) {
+              var rsa = this.get('rsa')
+              , username = this.get('username')
+              , hash = sha1Hash(this.get('buffer'))
+              , sig = rsa.signMessage(hash)
 
-            uploader.send(location, this.get('buffer'), linkName, this.get('progressListener'), function(response){
-                result = JSON.parse(response)
-                callback(result.return)
-            }, {
-              username : username
-              , hash : hash 
-              , signature: sig
-            })
+              uploader.send(location, this.get('buffer'), linkName, this.get('progressListener'), function(response){
+                  result = JSON.parse(response)
+                  callback(result.return)
+              }, {
+                username : username
+                , hash : hash 
+                , signature: sig
+              })
+            }else{
+              var hash = sha1Hash(this.get('buffer'))
+              uploader.send(api.anonUploadFile, this.get('buffer'), linkName, this.get('progressListener'), function(response){
+                  result = JSON.parse(response)
+                  callback(result.return)
+              }, {
+                username : username
+                , hash : hash 
+                , signature: sig
+              })
+            }
         },
 
         //callback will return the binary data 

@@ -114,17 +114,9 @@ define(["views/Home", "views/File", "views/Progress", "views/User", "views/Progr
           var barsContainer = home.$el.find("#barsContainer")[0]
           , viewport = new ViewportHandler({el:$(".body")})
 
-          this.userView = new UserView({userLoginContainer:$('#userLogin')
-                                      , userFilesContainer:$('#userFilesContainer')
-                                      , userSpaceContainer:$('#userSpaceContainer')})
-
           //var fileView = new FileView({el:$('#uploadBoxContainer')});
-          var fileView = new FileView({el:$('#uploadBoxContainer'), user:this.userView.model, progressBarContainer: barsContainer });
-
-
-          this.userView.model.once('loggedIn', function(){
-            fileView.render()
-          })
+          var fileView = new FileView({el:$('#uploadBoxContainer'), progressBarContainer: barsContainer });
+          fileView.render()
 
           fileView.uploadDeffered.promise.then(function(){
             viewport.placeLeftOfCenter(fileView.el)
@@ -132,13 +124,10 @@ define(["views/Home", "views/File", "views/Progress", "views/User", "views/Progr
           })
 
           viewport
-            .toggleAnimate(this.userView.userFileView.el)
-            .placeLeftOffScreen(this.userView.userFileView.el)
             .toggleAnimate(fileView.el) //we don't want to show an animation at the begginning
             .placeCenter(fileView.el) 
             .toggleAnimate(fileView.el) //but we do want animations later
             .placeRightOffScreen(barsContainer)
-
 
         },
 
@@ -208,12 +197,8 @@ define(["views/Home", "views/File", "views/Progress", "views/User", "views/Progr
           var linkName = linkNameAndPasscode.split('/')[0]
           var passcode = linkNameAndPasscode.split('/')[1]
 
-          this.userView = new UserView({userLoginContainer:$('#userLogin')
-                                      , userFilesContainer:$('#userFilesContainer')
-                                      , userSpaceContainer:$('#userSpaceContainer')})
 
-
-          fileView = new FileView({el:$('#uploadBoxContainer'),template:"download", progressBarContainer: barsContainer, user:this.userView.model});
+          fileView = new FileView({el:$('#uploadBoxContainer'),template:"download", progressBarContainer: barsContainer});
 
 
           fileView.downloadDeffered.promise.then(function(progressView){
@@ -223,15 +208,10 @@ define(["views/Home", "views/File", "views/Progress", "views/User", "views/Progr
 
           })
 
-          this.userView.model.once('loggedIn', function(){
-            fileView.downloadFile(linkName, passcode, function(){
-                console.log('woohoo downloaded the file!');
-                fileView.createDownloadLink();
-            });
-          })
-
-          viewport.toggleAnimate(this.userView.userFileView.el)
-                  .placeLeftOffScreen(this.userView.userFileView.el)
+          fileView.downloadFile(linkName, passcode, function(){
+              console.log('woohoo downloaded the file!');
+              fileView.createDownloadLink();
+          });
 
         },
 

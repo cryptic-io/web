@@ -69,7 +69,10 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
         //The Callback will be supplied with an object containing linkName and IVKey
         uploadManifest: function(callback){
             var buffer = this.manifestToBuffer()
-            , usernameAndRSA = _.pick(this.get('userBlob'), ["username", "RSAObject"]) 
+            , usernameAndRSA = {}
+            if (this.has('userBlob')){
+              usernameAndRSA = _.pick(this.get('userBlob'), ["username", "RSAObject"]) 
+            }
 
             manifestChunk = new Chunk(_.defaults({buffer:buffer}, usernameAndRSA))
             if(debug){
@@ -94,8 +97,7 @@ define(["models/Chunk","tools/downloader"],function(Chunk, Downloader){
 
         downloadManifest: function(linkName, passcode, callback){
             Downloader.prototype.getKeyAndDownload(linkName, _.bind(function(buffer){
-                var usernameAndRSA = _.pick(this.get('userBlob'), ["username", "RSAObject"]) 
-                , manifestChunk = new Chunk(_.defaults({buffer:buffer}, usernameAndRSA))
+                var manifestChunk = new Chunk({buffer:buffer})
 
                 manifestChunk.decodeIVKey(passcode)
                 if(debug){

@@ -11,7 +11,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
              *
             */
 
-           webworkers: true
+           webworkers: false
            , maxWorkers: 1
 
         },
@@ -19,20 +19,23 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
         fileSystem: new FileSystem(),
 
         initialize: function(){
-            var userBlob = this.get('user').get('userBlob').getBlob()
-
-            this.set('userBlob',userBlob)
-
             //Unfortunately somethings have vendor prefixes so we'll get that sorted right here and now
             File.prototype.slice = File.prototype.slice ? File.prototype.slice : File.prototype.mozSlice;
 
-            if (this.has('file')){
-                var manifestOptions = _.pick( this.get('file'), 'name', 'type', 'size' ) 
-                manifestOptions.userBlob = userBlob
-                this.manifest = new Manifest( manifestOptions )
+            var user = this.get('user')
+            if (_.isUndefined(user)){
+              
             }else{
-                this.manifest = new Manifest({userBlob:userBlob});
+              var userBlob = user.get('userBlob').getBlob()
+              this.set('userBlob',userBlob)
             }
+
+
+            var manifestOptions = {userBlob:userBlob}
+            if (this.has('file')){
+                manifestOptions = _.defaults(manifestOptions,_.pick( this.get('file'), 'name', 'type', 'size' )) 
+            }
+            this.manifest = new Manifest( manifestOptions )
         },
 
         //splits the file into several chunks of size specified by the argument ( in bytes )
@@ -84,7 +87,10 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                     }
 
 
-                    var usernameAndRSA = _.pick(this.get('userBlob'), ["username", "RSAObject"]) 
+                    var usernameAndRSA = {}
+                    if ( this.has("userBlob") ) {
+                      usernameAndRSA = _.pick(this.get('userBlob'), ["username", "RSAObject"]) 
+                    }
 
                     if( this.get('webworkers') ){
                         var chunk = new ChunkWorkerInterface(usernameAndRSA)
@@ -219,8 +225,12 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
         createChunksFromManifest: function(){
             var chunks = _.clone(this.manifest.get('chunks'))
-            , usernameAndRSA = _.pick(this.get('userBlob'), ["username", "RSAObject"]) 
+            , usernameAndRSA = {}
             , that = this
+
+            if (this.has('userBlob')){
+              _.pick(this.get('userBlob'), ["username", "RSAObject"]) 
+            }
             //convert the chunks obj into an array 
             chunks = _.values(chunks)
             //Sort the array 
