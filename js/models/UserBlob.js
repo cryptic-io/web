@@ -194,7 +194,7 @@ define(["apiEndPoints", "models/File", "models/RSA"],function(api, File, RSAMode
     
     , signMessage: function(messageString){
       //redirect to the rsa model's implementation
-      return this.get('RSA').signMessage(messageString)
+      return this.get('rsa').signMessage(messageString)
     }
 
     , hashArrayBuffer: function(arrayBuffer){

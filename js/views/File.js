@@ -1,7 +1,7 @@
 //returns the file view
 define(
-    ["models/File","views/ProgressBars", "jade!templates/FileUpload", "jade!templates/FileDownload", "jade!templates/UploadingFileRows", "tools/humanReadableByteLength"]
-    , function(FileModel, ProgressBarsView, fileUploadTemplate, fileDownloadTemplate, uploadingFileRowsTemplate, hrByteLength){ 
+    ["core/q", "models/File","views/ProgressBars", "jade!templates/FileUpload", "jade!templates/FileDownload", "jade!templates/UploadingFileRows", "tools/humanReadableByteLength"]
+    , function(Q, FileModel, ProgressBarsView, fileUploadTemplate, fileDownloadTemplate, uploadingFileRowsTemplate, hrByteLength){ 
     return Backbone.View.extend({
 
         tagName: "div",
