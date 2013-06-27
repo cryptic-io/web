@@ -12,13 +12,12 @@ define([], function(){
      
     , minHeight : 500
 
-    , defaultHeight :"calc(100% - 100px)"
+    , defaultHeight : "calc(100% - 300px)"
 
     , visibleElements : {} //this is a set of elments that are visible, to keep it fast it's implemented as a hashmap with the key being the elements and value being isVisble or not
     
     , initialize : function(){
       //vector of vectors containing the element and the position function to run (e.g. [[$("#vault"), _.bind(this.placeCenter,this)]...])
-      //
 
       window.onresize = _.debounce(_.bind(function(){ console.log("resizing"); this.rebuildElements()},this), 100)
     }
@@ -53,7 +52,7 @@ define([], function(){
       //get information on the tallest visible element on the page
       var element = this.findTallestVisibleElement()
       , elementHeight = $(element).height()
-      , browserHeight = $("html").height()-100 //this is what the default height would be
+      , browserHeight = $("html").height()-300 //this is what the default height would be
       , oldHeight = parseInt(this.$el.css("height"),10) 
       , oldCSSHeight = this.$el.css("height") //this might be different since it can be "auto" or the default "calc(...)"height
       , newHeight  // we are going to need this to determine if we need to update the position of the elements

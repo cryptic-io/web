@@ -5,7 +5,7 @@ define({
     , getUserBlobs :   "/api/getUserBlobs"
     , getFileKeys  :   "/api/getFileKeys"
     , uploadFile   :   "/api/uploadFile"
-    , anonUploadFile   :   "/api/anonUploadFile"
+    , anonUploadFile : "/api/anonUploadFile"
     , removeFile   :   "/api/removeFiles"
     , multipass    :   "/api/getMultipass"
 })

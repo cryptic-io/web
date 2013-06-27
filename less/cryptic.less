@@ -87,6 +87,14 @@ css3 calc
   .swap-button-color(@danger, @button-danger-hover, @button-danger-active);
 }
 
+.asphaltBtn {
+  .swap-button-color(@wet-asphalt, @button-inverse-hover, @button-inverse-active);
+}
+
+.emeraldBtn {
+  .swap-button-color(@success, @button-success-hover, @button-success-active);
+}
+
 .carrotBtn {
   background-color: @carrot;
   .swap-button-color(@carrot, #E59255, #E56D13);
@@ -102,19 +110,30 @@ css3 calc
   }
 }
 
+
+
+@selectedBarHeight : 5px;
 .topBox {
     cursor:pointer; 
     .transition(0.25s);
     height:100%;
     width: @top-box-width;
+    position:relative;
 
     margin-left: 0px;
+
+    .selectedBar {
+        position:absolute;
+        bottom:0px;
+        width: @top-box-width;
+        height: @selectedBarHeight;
+    }
 
     p {
         font-family: @base-font-family;
         font-size : 20pt;
         color: @cryo;
-        line-height: @header-height;
+        line-height: @header-height - @selectedBarHeight;
         text-align: center;
     }
 
@@ -122,6 +141,27 @@ css3 calc
         // width: @top-box-width+20px;
     }
 }
+
+// lets define the colors for the bars that indicate which view we are on 
+.selectedBar{
+    display:none;
+    &.emeraldSelected {
+        background-color: #60E69A;
+    }
+
+    &.carrotSelected {
+        background-color: #F3A158;
+    }
+
+    &.asphaltSelected {
+        background-color: #7492AF;
+    }
+
+    &.riverSelected {
+        background-color: #65B8ED;
+    }
+}
+
 
 html {
     height: 100%;
@@ -147,7 +187,7 @@ body {
 
 @body-padding : 50px;
 .body {
-    height : ~'calc(100% - 100px)';
+    height : ~'calc(100% - 300px)';
     margin-top: @body-padding;
     padding-top: @body-padding;
     overflow: hidden;
