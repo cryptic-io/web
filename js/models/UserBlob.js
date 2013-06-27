@@ -46,6 +46,7 @@ define(["apiEndPoints", "models/File", "models/RSA"],function(api, File, RSAMode
     , encryptBlob: function(password, userBlob){
       if (password){
         userBlob = JSON.stringify(userBlob)
+        //We use the sjcl encrypt defined in convience.js of the sjcl library. it does pbkdf2 hashing on the password and chooses a random salt, everything we would have done! so thanks sjcl! 
         return sjcl.encrypt(password, userBlob)
       }else{
           this.errorHandler({error:"password not set yet"})

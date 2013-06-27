@@ -1,12 +1,35 @@
-importScripts('./require.js', './core/underscore.js', './core/backbone.js', './crypt/sjcl.js', './crypt/betterCBC.js', "./crypt/rsa/base64.js" , "./crypt/rsa/jsbn.js" , "./crypt/rsa/jsbn2.js" , "./crypt/rsa/rsa.js" , "./crypt/rsa/rsa2.js" , "./crypt/rsa/prng4.js" , "./crypt/rsa/rng.js");
+// This is the file that defines the webworker
+// Whether web workers are used at all, and how many should be used in parallel are defined under models/File.js
 
-require({baseUrl:'./'},
-    [
-        'require',
-        'models/Chunk'
-    ],
-    function(require, Chunk){
+//we need require to do everything else
+importScripts('./require.js');
 
+requirejs({
+      //lets set up a jade template loader
+      shim: {
+        'core/backbone' : {
+          deps : ['core/underscore'], //zepto isn't here because this is a webworker that cannot talk to the dom
+          exports : 'Backbone'
+        },
+        'crypt/betterCBC' : {
+          deps:  ['crypt/sjcl'],
+          exports : 'sjcl'
+        },
+        'crypt/rsa/rsa2' : {
+          deps:  ["crypt/rsa/base64" , 
+                  "crypt/rsa/jsbn"   , 
+                  "crypt/rsa/jsbn2"  , 
+                  "crypt/rsa/prng4"  , 
+                  "crypt/rsa/rng"    , 
+                  "crypt/rsa/rsa"], 
+          exports : 'RSAKey'
+        }
+    }
+  },
+  //we need all these dependencies before we load the Chunk model since that model assumes these are in the global context
+  ["require" , "core/backbone" , "crypt/sjcl" , "crypt/betterCBC" , "crypt/rsa/rsa2"], 
+  function(require, Chunk){
+      require(["models/Chunk"], function(Chunk){
         //check to see if browser supports transferable buffers in messages
         var postMessageFunc = self.webkitPostMessage || self.postMessage, //try to use webkitPostMessage
             SUPPORTS_TRANSFERS = false;
@@ -25,8 +48,7 @@ require({baseUrl:'./'},
             };
         }
 
-        var chunkHandle = {},
-            currentChunk;
+        var currentChunk;
 
         var command = {
             initializeChunk: function(args){
@@ -153,9 +175,10 @@ require({baseUrl:'./'},
             }
         };
 
+        //let the client know that the web worker is ready
         self.postMessage({command:"readyToRock", status:"success"})
-
-    }
+    })
+  }
 );
 
 

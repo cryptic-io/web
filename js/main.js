@@ -22,9 +22,6 @@ var dependencies = [
     */ 
 ]
 
-requirejs.config({
-})
-
 requirejs({
     //lets set up a jade template loader
     paths: { 
