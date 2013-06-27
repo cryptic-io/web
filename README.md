@@ -1,6 +1,6 @@
-#cryptic.io- A Tale in 4 Acts
+# cryptic.io - A Tale in 4 Acts
 
-#Prelude - Encrypted Cloud Storage
+# Prelude - Encrypted Cloud Storage
 cryptic.io is an extremely simple solution to a difficult problem. How do we securely store files?
 
 We place so much trust in other people, hoping nothing bad will happen with the information we share, but what if we could change that?
@@ -20,13 +20,13 @@ So here it is, our wall. Open sourced for the whole world to see!
   
   
     
-###Files:
+### Files:
   * Files are broken up into chunks (whose size is specified in models/Chunk.js under ChunkSize)
   * Each file has a manifest file which contains the order, links, and passwords for the chunks
   * The url for the file is actually the link to the manifest file and the manifest's password.
   * The manifest itself is a chunk
   
-###Chunks:
+### Chunks:
   * Chunks are essentially key/values on the server. 
   * linkName refers to the key of the file on the server.
   * Chunks are individually Encrypted and Uploaded (or Downloaded and Decrypted)
@@ -34,7 +34,7 @@ So here it is, our wall. Open sourced for the whole world to see!
   * Chunks can be implemented transperantly using webworkers (change the boolean in models/File.js)
   * Each chunks has a randomly generated passphrase associated with it
 
-###User Accounts:
+### User Accounts:
   * Users are given a public/private key
   * User passwords are never sent over the wire (not even the hash)
   * Users have a blob, or an object containing there hashed password, private/public key, and a list of file links
