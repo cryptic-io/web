@@ -1,5 +1,7 @@
 //returns the file view
-define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templates/FileDownload", "jade!templates/UploadingFileRows", "tools/humanReadableByteLength"], function(FileModel, ProgressView, fileUploadTemplate, fileDownloadTemplate, uploadingFileRowsTemplate, hrByteLength){ 
+define(
+    ["core/q", "models/File","views/ProgressBars", "jade!templates/FileUpload", "jade!templates/FileDownload", "jade!templates/UploadingFileRows", "tools/humanReadableByteLength"]
+    , function(Q, FileModel, ProgressBarsView, fileUploadTemplate, fileDownloadTemplate, uploadingFileRowsTemplate, hrByteLength){ 
     return Backbone.View.extend({
 
         tagName: "div",
@@ -9,6 +11,14 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
         initialize: function(){
 
             this.fileList = []
+
+            //because the progress bars are rendered inside here, lets keep a promise when the user begins to upload a file
+            //this is so that we can easily know when a user begins uploading
+            
+            this.uploadDeffered = Q.defer()
+
+            // do the same thing as above but for download
+            this.downloadDeffered = Q.defer()
 
             if (this.options.template == "download") this.template = fileDownloadTemplate
             else this.template = fileUploadTemplate
@@ -79,13 +89,14 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
         },
 
         handleFileDrop: function(evt){
+            console.log("drag dropped")
             evt.stopPropagation();
             evt.preventDefault();
-            $(evt.target).removeClass("dragEnter");
+            $(evt.target).parent().removeClass("dragEnter");
 
 
             var files = evt.dataTransfer.files
-            this.processFiles(files)
+            this.uploadFiles(files)
 
         },
 
@@ -127,25 +138,35 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
 
         handleDragEnter: function(e){
             console.log("dragenter");
-            $(e.target).addClass("dragEnter");
+            // It references the p elem instead of the inner border elem we want
+            $(e.target).parent().addClass("dragEnter");
         },
 
         handleDragLeave: function(e){
             console.log("dragleave");
-            $(e.target).removeClass("dragEnter");
+            // It references the p elem instead of the inner border elem we want
+            $(e.target).parent().removeClass("dragEnter");
         },
 
 
         //read the file from the input
         loadFile: function(event){
             var fileObj = this.fileInput.files[0];
-            this.model = new FileModel({file: fileObj});
+            this.model = new FileModel({file: fileObj, user:this.options.user});
             model = this.model;
         },
 
-        uploadFiles: function(){
-            var files = _.map(this.fileList, function(file){ return (new FileModel({file:file}))})
-            , progressBars = this.$el.find('.files > .row .progress')
+        uploadFiles: function(files){
+            files = _.map(files, _.bind(function(file){ return (new FileModel({file:file, user:this.options.user}))},this))
+            , barItems = _.map(files, function(file){ return {text:file.get("file").name, percent:"0%"}})
+            , progressBarsView = new ProgressBarsView({el:barsContainer, bars:{title:"Uploading...", items:barItems}}) //create a new view for all the bars
+            , progressBars = progressBarsView.getIndividualProgressViews() //return individual views for each bars, this will allow greater control of each bar
+
+
+            progressBarsView.render()
+            var progressBars = progressBarsView.getIndividualProgressViews() //return individual views for each bars, this will allow greater control of each bar
+
+            this.uploadDeffered.resolve()
 
             //remember the filemodels so we can destroy them if we want to cancel the upload
             this.fileModels = files
@@ -167,17 +188,20 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
             this.uploadFile(files[0], progressBars[0], _.bind(this.uploadFilesRecursively, this, _.rest(files), _.rest(progressBars)))
         },
 
-        uploadFile: function(fileModel, progressBarEl, callback){
+        uploadFile: function(fileModel, progressView, callback){
 
-            var progressView = new ProgressView({container:$(progressBarEl)})
+            var origin = window.location.protocol + "//" + window.location.host
+
             fileModel.set('progressView',progressView)
-            progressView.render()
             fileModel.upload(_.bind(function(linkData){
                 console.log('an alert would have happened here','#download/'+linkData.linkName+'/'+linkData.IVKey)
                 fileModel.destroy()
+                var downloadLink = origin+'/#download/'+linkData.linkName+'/'+linkData.IVKey
 
-                console.log('download link',location.origin+'/#download/'+linkData.linkName+'/'+linkData.IVKey)
-                progressView.displayLink(location.origin+'/#download/'+linkData.linkName+'/'+linkData.IVKey)
+                console.log('download link',downloadLink)
+                var originalBarText =  progressView.text()
+                progressView.link(downloadLink, originalBarText + "")
+                progressView.text("")
 
                 //trigger the file uploaded event
                 this.trigger('fileUploaded',
@@ -197,9 +221,15 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
                 , height: "20px"
             })
 
-            var progressView = new ProgressView({container:$("#progressBarContainer")})
-            progressView.render()
-            this.model = new FileModel()
+            var progressBarsView = new ProgressBarsView({el:barsContainer, bars:{title:"Downloading...", items:[{text:"", percent:"0%"}]}}) //create a new view for all the bars
+            progressBarsView.render()
+            progressView = progressBarsView.getIndividualProgressViews()[0] //only care about the first one since we are only downloading one thing
+
+            this.downloadProgressView = progressView
+
+            this.downloadDeffered.resolve(progressView)
+
+            this.model = new FileModel({user:this.options.user})
             this.model.set('progressView',progressView)
             this.model.download(linkName, passcode, callback)
         },
@@ -207,15 +237,10 @@ define(["models/File","views/Progress", "jade!templates/FileUpload", "jade!templ
 
         createDownloadLink: function(){
             this.model.getFileEntry(_.bind(function(fileEntry){
-                var a = document.createElement('a')
-                a.download = this.model.manifest.get('name')
-                a.href = fileEntry.toURL()
-                a.innerText='DOWNLOAD FILE'
-
-                //place it in the html
-                this.$el.find('#downloadFile').html(a)
-
-
+                var filename = this.downloadProgressView.text()
+                this.downloadProgressView.link(fileEntry.toURL(), "Save "+filename)
+                //clear the old text
+                this.downloadProgressView.text("")
             },this))
 
         },

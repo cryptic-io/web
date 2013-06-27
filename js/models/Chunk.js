@@ -1,14 +1,21 @@
 //Define the chunk model
-define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/FileSystem', 'apiEndPoints'],function(Uploader, Downloader, FileSystemHandler, FileSystem, api){ 
-
+define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/FileSystem', 'models/RSA', 'apiEndPoints', 'tools/sha1Hash'],function(Uploader, Downloader, FileSystemHandler, FileSystem, RSAModel, api, sha1Hash){ 
     return Backbone.Model.extend({
 
         defaults: {
             //This chunk uses the 1.0 version of enryption, future chunks may have different versions
             encryptionVersion: "1.0",
 
-           chunkSize: 4194304  //Specify how big the chunk should be. ******  THIS HAS TO BE DIVISBLE BY 16 ****** (the reason so that we only need pad the last chunk)
+           chunkSize: 4194304,  //Specify how big the chunk should be. ******  THIS HAS TO BE DIVISBLE BY 16 ****** (the reason so that we only need pad the last chunk)
            //chunksize is 4MB
+           
+           //required params to be passed in
+           /*
+            * This is needed so that the chunks can upload their own data
+            * but in order to do that they need to sign for it, and then the server needs to verify the signature with their username+stored public_key
+           username: "anon",
+           RSAObject : {"pub_key":...} 
+           */
         },
 
 
@@ -25,7 +32,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
                 //save the buffer
                 this.set('buffer',buffer)
-                callback()
+                callback(buffer)
 
             },this))
         },
@@ -41,6 +48,15 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         },
 
         initialize:  function(options){
+
+            //create the RSA model if we have the necessary info
+            if (this.has('RSAObject')){
+              var rsa = new RSAModel()
+              rsa.setRSAObject(this.get('RSAObject'))
+              this.set('rsa',rsa)
+            }
+
+            //generate initial set of keys, this doesn't take long but it's nice to know we have them
             this.generateKey()
         },
 
@@ -136,10 +152,14 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
             // We need to check to see if we even have the buffer that we need to upload
             // If we don't have it we need to get it and comeback to this funciton
+            debugger;
             if ( !this.has('buffer')){
                 this.getBufferFromState(_.bind(this.upload,this,callback))
                 return
             }
+
+
+
 
             var location = api.uploadFile
             var linkName = Math.random().toString(36).substring(2);
@@ -149,10 +169,35 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
             this.encryptChunk();
 
-            uploader.send(location, this.get('buffer'), linkName, this.get('progressListener'), function(response){
-                result = JSON.parse(response)
-                callback(result.return)
-            })
+            //this is going to be a signed user upload as opposed to an anonymous upload
+            //The username is required for chunks that are signed so the server can verify the sig
+            //As well as the hash of the chunk
+            //As well as the Signed hash of the chunk 
+            if (this.has('rsa') ) {
+              var rsa = this.get('rsa')
+              , username = this.get('username')
+              , hash = sha1Hash(this.get('buffer'))
+              , sig = rsa.signMessage(hash)
+
+              uploader.send(location, this.get('buffer'), linkName, this.get('progressListener'), function(response){
+                  result = JSON.parse(response)
+                  callback(result.return)
+              }, {
+                username : username
+                , hash : hash 
+                , signature: sig
+              })
+            }else{
+              var hash = sha1Hash(this.get('buffer'))
+              uploader.send(api.anonUploadFile, this.get('buffer'), linkName, this.get('progressListener'), function(response){
+                  result = JSON.parse(response)
+                  callback(result.return)
+              }, {
+                username : username
+                , hash : hash 
+                , signature: sig
+              })
+            }
         },
 
         //callback will return the binary data 

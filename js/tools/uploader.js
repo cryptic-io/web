@@ -4,7 +4,8 @@ var Uploader = function() {
 
 Uploader.prototype = {
 
-    send : function(location, arraybuffer, fileName, progressListener, callback) {
+    // Extra options will be thrown into the X-Extra-Data header
+    send : function(location, arraybuffer, fileName, progressListener, callback, extraOptions) {
         if (progressListener) progressListener({event:"Uploading", progress:0});
 
         var xhr = new XMLHttpRequest();
@@ -32,6 +33,10 @@ Uploader.prototype = {
                 if (progressListener) progressListener({event:"Uploading", progress:progress});
             }
         }
+
+        // Put in the extra data!!!
+        xhr.setRequestHeader("X-Extra-Data", JSON.stringify(extraOptions))
+        
 
         // finally send the request as binary data (really an arraybuffer)
         xhr.send(arraybuffer)

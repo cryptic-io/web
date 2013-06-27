@@ -20,7 +20,6 @@ define(["jade!templates/User", "models/User", "views/Userlogin", "views/UserFile
             this.userOptions = new UserOptions({el:this.options.userFilesContainer, model:this.model})
 
 
-
             this.setupListeners()
         },
 
@@ -41,13 +40,7 @@ define(["jade!templates/User", "models/User", "views/Userlogin", "views/UserFile
         },
 
 
-        render: function(args) {
-            args = args || {}
-
-            lolTEST=this
-
-
-            //this.$el.html(this.template());
+        render: function() {
         },
 
         //call this function when the file has been uploaded succefully

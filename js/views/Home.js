@@ -4,6 +4,8 @@ define(["jade!templates/Home", "views/User"], function(homeTemplate, UserView){
         template: homeTemplate,
 
         initialize: function(){
+          console.log("Starting entropy collector")
+          sjcl.random.startCollectors()
         },
 
         render: function() {

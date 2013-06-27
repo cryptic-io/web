@@ -1,0 +1,442 @@
+// Loading config with variables (changing them leads to changing a color scheme)
+@import "flat/config";
+
+// Utility mixins for greater good
+@import "flat/mixins";
+
+@header-height : 50px;
+@top-box-width : 150px;
+
+
+/*
+css3 calc
+*/
+
+.handleOverflow() {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+
+/** 
+
+------ Top Bar ------------
+
+*/
+
+#header {
+    background-color: #ECF0F1;
+    width: 100%;
+    height: @header-height;
+    margin: 0;
+}
+
+#header > .row {
+    width: 80%;
+    height: @header-height;
+    margin: auto;
+}
+
+#logo {
+    width: @top-box-width;
+    height: 100%;
+    background-image: url("/images/cryptic.png");
+    background-size: 100%;
+    background-repeat: no-repeat;
+    background-position-y: -2px;
+}
+
+#topBar {
+    height: 100%;
+}
+
+/* colors! */
+.carrot {
+    background-color: @carrot !important;
+}
+.alizarin {
+    background-color: @alizarin !important;
+}
+.peter-river {
+    background-color: @peter-river !important;
+}
+
+.emerald{
+    background-color: @emerland !important;
+}
+
+.clouds{
+    background-color: @clouds !important;
+}
+
+.nephritis {
+    background-color: @nephritis !important;
+}
+
+.pomegranate {
+    background-color: @pomegranate !important;
+}
+
+.blackText p{
+    color: black !important;
+}
+
+.alizarinBtn {
+  background-color: @alizarin;
+  .swap-button-color(@danger, @button-danger-hover, @button-danger-active);
+}
+
+.asphaltBtn {
+  .swap-button-color(@wet-asphalt, @button-inverse-hover, @button-inverse-active);
+}
+
+.emeraldBtn {
+  .swap-button-color(@success, @button-success-hover, @button-success-active);
+}
+
+.carrotBtn {
+  background-color: @carrot;
+  .swap-button-color(@carrot, #E59255, #E56D13);
+}
+
+.peter-riverBtn.topBox{
+
+
+  background-color: @peter-river;
+
+  &:hover {
+      .swap-button-color(@info, @button-info-hover, @button-info-active);
+  }
+}
+
+
+
+@selectedBarHeight : 5px;
+.topBox {
+    cursor:pointer; 
+    .transition(0.25s);
+    height:100%;
+    width: @top-box-width;
+    position:relative;
+
+    margin-left: 0px;
+
+    .selectedBar {
+        position:absolute;
+        bottom:0px;
+        width: @top-box-width;
+        height: @selectedBarHeight;
+    }
+
+    p {
+        font-family: @base-font-family;
+        font-size : 20pt;
+        color: @cryo;
+        line-height: @header-height - @selectedBarHeight;
+        text-align: center;
+    }
+
+    &:hover {
+        // width: @top-box-width+20px;
+    }
+}
+
+// lets define the colors for the bars that indicate which view we are on 
+.selectedBar{
+    display:none;
+    &.emeraldSelected {
+        background-color: #60E69A;
+    }
+
+    &.carrotSelected {
+        background-color: #F3A158;
+    }
+
+    &.asphaltSelected {
+        background-color: #7492AF;
+    }
+
+    &.riverSelected {
+        background-color: #65B8ED;
+    }
+}
+
+
+html {
+    height: 100%;
+}
+
+body {
+    min-width: 1100px;
+    height: 100%;
+    //#newdesign 
+    background: #f6f8f8;
+
+}
+
+#footer {
+    text-align: center;
+    height: 100px;
+    line-height: 100px;
+}
+
+#footer a {
+    padding: 0 20px 0 20px;
+}
+
+@body-padding : 50px;
+.body {
+    height : ~'calc(100% - 300px)'; // for my laziness, make sure to change the defaultHeight in views/ViewportHandler.js when you change this
+    margin-top: @body-padding;
+    padding-top: @body-padding;
+    overflow: hidden;
+    min-height: 500px;
+    min-width: 800px;
+    position:relative;
+    border: solid;
+    width: 80%;
+    margin: 50px auto auto;
+    border-top: 1px solid #F1F1F1;
+    border-right: 1px solid #E7E6E6;
+    border-left: 1px solid #E7E6E6;
+    background: white;
+    padding-bottom: 30px;
+    border-radius: 6px;
+    border-bottom: 1px solid #CFCFCF;
+}
+
+#mainContainer {
+    position:relative;
+}
+
+/* vault */
+#vault {
+    background-image: url("/images/vault.svg");
+    background-size: 100%;
+    height: 400px;
+    width: 340px;
+    background-repeat: no-repeat;
+    margin: auto;
+    .transition(1s);
+
+
+    .inner-border {
+        margin: 0px 30px;
+        border: black;
+        border-style: dashed;
+        border-radius: 10px;
+        height: 290px;
+        top: 30px;
+        position: relative;
+        border-width: 3px;
+        border-color: black;
+        .transition(.25s);
+
+        &.dragEnter{
+            border-color: @sun-flower;
+        }
+    }
+
+    p {
+        font-family: @base-font-family;
+        font-size: 24pt;
+        color: black;
+        text-align: center;
+        line-height: 260px;
+    }
+}
+
+
+/* Progress Bars */
+
+.progressBars {
+    position:relative;
+}
+
+.barTitle {
+
+    p {
+        font-family: @base-font-family;
+        font-size: 34pt;
+        font-weight: bold;
+        color: black;
+    }
+
+}
+
+.bars {
+}
+
+@barHeight:  40px;
+@barWidth : 400px;
+
+.barText {
+    font-family: @base-font-family;
+    font-size: 20pt;
+    text-align: center;
+    position:relative;
+    color: black;
+    z-index:2;
+    width: @barWidth - 20;
+    height: @barHeight;
+    .handleOverflow();
+}
+
+.barLink {
+    display:none;
+    position:absolute;
+    top:0px;
+    .handleOverflow()
+
+}
+
+.outerBar {
+    width: 400px;
+    height: @barHeight;
+    background-color: @clouds;
+    position:relative;
+
+    margin-bottom: 4px;
+
+    .delete {
+        position: absolute;
+        right: 10px;
+        top: 2px;
+        font-size:20pt;
+        z-index:2;
+    }
+}
+
+.innerBar {
+    width: 40%;
+    height: 40px;
+    margin-left: 0px;
+    background-color: @emerland;
+    position:absolute;
+    top:0px;
+    z-index:1;
+    .transition(1s);
+}
+
+/* user files */
+
+#filePath {
+    height: 109px;
+
+    p {
+        font-family: @base-font-family;
+        font-size: 44pt;
+        font-weight: bold;
+        color: black;
+    }
+
+    .filePart {
+        margin-left: 5px;
+    }
+
+    
+}
+
+.selectedFile {
+    background-color: @green-sea !important;
+}
+
+#createFolder {
+    background-color: @asbestos;
+}
+
+p.fileBarText{
+        text-align: left;
+        padding-left: 20px;
+        color: white;
+        line-height: @barHeight;
+}
+
+.file.outerBar{
+    background-color: @wet-asphalt;
+}
+
+/* file info */
+
+#fileInfo {
+    .filename {
+        font-family:@base-font-family;
+        color: black;
+        font-size:44pt;
+
+    }
+
+    .outerBar {
+        background-color: @asbestos;
+
+         p {
+             text-align: left;
+             line-height: @barHeight;
+             color: white;
+             padding-left: 20px;
+         }
+    }
+
+}
+
+
+
+
+/* containers */
+.floatingContainer{
+    position: absolute;
+    .transition(1s);
+    min-width: 400px;
+}
+
+#uploadBoxContainer{
+    margin-top:50px;
+}
+
+
+.noAnimate{
+    .transition(0s) !important;
+}
+
+/* side buttons */
+.sideBtn {
+    cursor: pointer
+    height: 50px;
+    width: 150px;
+    background-color: black;
+    margin-top: 50px;
+    z-index:4;
+
+
+    p {
+        font-family: @base-font-family;
+        font-size : 20pt;
+        color: @cryo;
+        line-height: @header-height;
+        text-align: center;
+    }
+
+    position: absolute;
+
+    display:none;
+}
+
+#leftBtn {
+    .transform(rotate(90deg));
+}
+#rightBtn {
+    .transform(rotate(-90deg));
+}
+
+.rightDownBtn {
+    margin-left: 90px;
+}
+
+.leftDownBtn {
+}
+
+.withOffsetFromBottom {
+    margin-top: -10px;
+}
+

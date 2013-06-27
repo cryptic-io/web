@@ -1,5 +1,4 @@
 //returns the file model
-totalText=[]
 define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/FileSystem', 'tools/FileSystemHandler'],function(Chunk, Manifest, ChunkWorkerInterface, FileSystem, FileSystemHandler){ 
     return Backbone.Model.extend({
 
@@ -20,15 +19,23 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
         fileSystem: new FileSystem(),
 
         initialize: function(){
-
             //Unfortunately somethings have vendor prefixes so we'll get that sorted right here and now
             File.prototype.slice = File.prototype.slice ? File.prototype.slice : File.prototype.mozSlice;
 
-            if (this.has('file')){
-                this.manifest = new Manifest( _.pick( this.get('file'), 'name', 'type', 'size' ) );
+            var user = this.get('user')
+            if (_.isUndefined(user)){
+              
             }else{
-                this.manifest = new Manifest();
+              var userBlob = user.get('userBlob').getBlob()
+              this.set('userBlob',userBlob)
             }
+
+
+            var manifestOptions = {userBlob:userBlob}
+            if (this.has('file')){
+                manifestOptions = _.defaults(manifestOptions,_.pick( this.get('file'), 'name', 'type', 'size' )) 
+            }
+            this.manifest = new Manifest( manifestOptions )
         },
 
         //splits the file into several chunks of size specified by the argument ( in bytes )
@@ -63,7 +70,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                     counter += chunkSize;
                     var end = counter < file.size ? counter : file.size;
 
-                    //It has to fit withing 32*4 because 32 bits is the int size used in data encryption and 4 because AES operates on 4 ints at a time for decryption
+                    //It has to fit within 32*4 because 32 bits is the int size used in data encryption and 4 because AES operates on 4 ints at a time for decryption
                     //Then it has to divide by 8 because 8 bits in a byte
                     //so 2^5 * 2^2 / 2^3  == 16
                     if ( (end - start)%(16) != 0){
@@ -80,11 +87,16 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                     }
 
 
+                    var usernameAndRSA = {}
+                    if ( this.has("userBlob") ) {
+                      usernameAndRSA = _.pick(this.get('userBlob'), ["username", "RSAObject"]) 
+                    }
+
                     if( this.get('webworkers') ){
-                        var chunk = new ChunkWorkerInterface()
+                        var chunk = new ChunkWorkerInterface(usernameAndRSA)
                     }else{
                         //create the new chunk without a buffer, we'll just give it the necessary info for the buffer, it will only copy the buffer when necessary
-                        var chunk = new Chunk()
+                        var chunk = new Chunk(usernameAndRSA)
                     }
                     chunk.saveBufferInfo(this, start, end, padding)
                     chunks.push(chunk)
@@ -139,7 +151,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                     totalChunkProgress = totalChunkProgress/(numberOfChunks*numberOfUpdateEventsPerChunk)
                     console.log('total progress:',totalChunkProgress)
 
-                    progressView.changePercentage(totalChunkProgress)
+                    progressView.percentage(totalChunkProgress+"%")
                 }
             }
 
@@ -172,7 +184,9 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
         },
 
         recursivelyUploadChunks: function(chunks){
+          //stopping condition
           if (!chunks.length) return;
+
           var chunk = chunks.pop()
           chunk.upload(_.bind(function(index,linkName){
             if(this.get('webworkers')){
@@ -195,6 +209,9 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
             this.manifest.downloadManifest(linkName, passcode, _.bind(function(manifest){
                 console.log('we got the manifest!');
+                //add the name to the download bar
+                this.get("progressView").text(manifest.get("name"))
+
                 this.manifest = manifest
                 this.createChunksFromManifest()
                 this.attachProgressListenerToChunks();
@@ -207,7 +224,13 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
         },
 
         createChunksFromManifest: function(){
-            var chunks = _.clone(this.manifest.get('chunks'));
+            var chunks = _.clone(this.manifest.get('chunks'))
+            , usernameAndRSA = {}
+            , that = this
+
+            if (this.has('userBlob')){
+              _.pick(this.get('userBlob'), ["username", "RSAObject"]) 
+            }
             //convert the chunks obj into an array 
             chunks = _.values(chunks)
             //Sort the array 
@@ -215,9 +238,9 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
             //create the chunk workers
             if (this.get('webworkers')){
-                chunks = _.map(chunks, function(chunk){ return (new ChunkWorkerInterface({chunkInfo:chunk})) } )
+                chunks = _.map(chunks, function(chunk){ return (new ChunkWorkerInterface(_.defaults({chunkInfo:chunk}, usernameAndRSA))) } )
             }else{
-                chunks = _.map(chunks, function(chunk){ return (new Chunk({chunkInfo:chunk})) } )
+                chunks = _.map(chunks, function(chunk){ return (new Chunk(_.defaults({chunkInfo:chunk}, usernameAndRSA) ) ) } )
             }
 
             this.set('chunks',chunks)
