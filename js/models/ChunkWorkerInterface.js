@@ -66,7 +66,6 @@ define(['models/Chunk'],function(Chunk){
                     SUPPORTS_TRANSFERS = true;
                 }
             } catch(e) {
-              debugger
             }
             if (SUPPORTS_TRANSFERS) {
                 worker.postMessage = postMessageFunc;
@@ -97,7 +96,6 @@ define(['models/Chunk'],function(Chunk){
                 command: command,
                 arrayBuffer: buffer
             }, [buffer]);
-            debugger;
 
             this.unset('buffer')
             this.bindSuccess(command, callback);
@@ -168,12 +166,10 @@ define(['models/Chunk'],function(Chunk){
             //Check to see if the worker has a copy of the buffer, if not, give it one
             if (!this.placedBuffer){
                 this.setBuffer( _.bind(this.upload, this, callback), false)
-                debugger
                 return 
             }
 
             var command = "upload";
-            debugger;
 
             this.worker.postMessage({
                 command: command

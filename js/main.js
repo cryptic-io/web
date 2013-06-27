@@ -5,21 +5,7 @@ less = { env: 'development' };
  */
 
 var dependencies = [
-    "require"
-  , "core/backbone"
-  , "crypt/sjcl"
-  , "crypt/betterCBC"
-  , "crypt/rsa/rsa2"
-    /** crypt libraries **/
-    //, "crypt/sjcl"
-    //, "tools/uploader"
-    //
-    //
-    //sjcl dependencies
-    //These are separted to aid in debugging sjcl, usually just the minified version will be needed
-    /*
-    , "crypt/core/sjcl" , "crypt/core/aes" , "crypt/core/bitArray" , "crypt/core/codecString" , "crypt/core/codecHex" , "crypt/core/codecBase64" , "crypt/core/codecBytes" , "crypt/core/sha256" , "crypt/core/sha1" , "crypt/core/ccm" , "crypt/core/cbc" , "crypt/core/ocb2" , "crypt/core/hmac" , "crypt/core/pbkdf2" , "crypt/core/random" , "crypt/core/convenience" , "crypt/core/bn" , "crypt/core/ecc" , "crypt/core/srp" , "crypt/sjcl" , "crypt/betterCBC" 
-    */ 
+    "require" , "core/backbone" , "crypt/sjcl" , "crypt/betterCBC" , "crypt/rsa/rsa2"
 ]
 
 requirejs({
