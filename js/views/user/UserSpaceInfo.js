@@ -1,5 +1,5 @@
 //returns the User View, this contains the fs and is the parent to the userLogin
-define(["jade!templates/UserSpaceInfo", "tools/humanReadableByteLength"], function(userSpaceTemplate, hrByteLength){ 
+define(["jade!templates/user/UserSpaceInfo", "tools/humanReadableByteLength"], function(userSpaceTemplate, hrByteLength){ 
     return Backbone.View.extend({
         template : userSpaceTemplate
 

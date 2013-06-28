@@ -1,5 +1,5 @@
 //returns the Userfiles view, responsible for the look of the fs
-define(["jade!templates/UserFiles", "views/SingleFileInfo"], function(filesTemplate, SingleFileInfo){ 
+define(["jade!templates/user/UserFiles", "views/user/SingleFileInfo"], function(filesTemplate, SingleFileInfo){ 
     return Backbone.View.extend({
         template: filesTemplate,
 

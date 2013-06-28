@@ -1,7 +1,7 @@
 //returns the file view
 define(
-    ["core/q", "models/File","views/ProgressBars", "jade!templates/FileUpload", "jade!templates/FileDownload", "jade!templates/UploadingFileRows", "tools/humanReadableByteLength"]
-    , function(Q, FileModel, ProgressBarsView, fileUploadTemplate, fileDownloadTemplate, uploadingFileRowsTemplate, hrByteLength){ 
+    ["core/q", "models/File","views/ProgressBars", "jade!templates/FileUpload", "tools/humanReadableByteLength"]
+    , function(Q, FileModel, ProgressBarsView, fileUploadTemplate, hrByteLength){ 
     return Backbone.View.extend({
 
         tagName: "div",
@@ -20,16 +20,18 @@ define(
             // do the same thing as above but for download
             this.downloadDeffered = Q.defer()
 
-            if (this.options.template == "download") this.template = fileDownloadTemplate
-            else this.template = fileUploadTemplate
+            this.template = fileUploadTemplate
+
         },
 
         template: fileUploadTemplate,
 
         render: function(){
             this.$el.html(this.template());
-            this.fileInput = this.$el.find('#file-input')[0];
-            this.hideUploadAnother()
+
+            //lets make the handleFilePicker a global reference so that the filepicker can call it on its onchange attribute
+            _fileView_handleFilePicker = _.bind(this.handleFilePicker, this)
+            this.$el.find('#filePicker').attr("onchange", "_fileView_handleFilePicker(this.files)")
 
             return this.$el;
         },
@@ -49,6 +51,17 @@ define(
             "dragenter #upload": "handleDragEnter",
             "dragleave #upload": "handleDragLeave",
             "dragover #upload": "handleDragOver",
+            "click #filePickerBtn" : "openFilePicker",
+
+        },
+
+        handleFilePicker: function(files){
+          this.uploadFiles(files)
+        },
+
+        openFilePicker:function(){
+          console.log("opening file picker")
+          this.$el.find("#filePicker")[0].click()
         },
 
         cancelUpload: function(){
@@ -287,15 +300,6 @@ define(
             //run the native DOM code
             downloadLink[0].select()
         },
-
-        showUploadAnother : function(){
-            this.$el.find('#uploadAnother').show()
-        },
-
-        hideUploadAnother : function(){
-            this.$el.find('#uploadAnother').hide()
-        }
-
 
     })
 });

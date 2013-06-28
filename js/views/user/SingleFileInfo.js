@@ -1,5 +1,5 @@
 //returns the single file info view, responsible for the look of the info of a file, gives you options to download the file, delete the file, or move the file
-define(["jade!templates/SingleFileInfo", "tools/humanReadableByteLength"], function(fileTemplate, hrByteLength){ 
+define(["jade!templates/user/SingleFileInfo", "tools/humanReadableByteLength"], function(fileTemplate, hrByteLength){ 
     var api = {
     }
 

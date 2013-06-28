@@ -1,5 +1,5 @@
 //Define the User Blob model
-define(['apiEndPoints', 'models/UserBlob'],function(api, UserBlob){ 
+define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){ 
     return Backbone.Model.extend({
         defaults: {
             userBlob : new UserBlob()

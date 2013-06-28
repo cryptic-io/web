@@ -4,6 +4,8 @@ less = { env: 'development' };
  *
  */
 
+test = function(files){debugger}
+
 var dependencies = [
     "require" , "core/backbone" , "crypt/sjcl" , "crypt/betterCBC" , "crypt/rsa/rsa2"
 ]
@@ -22,13 +24,14 @@ requirejs({
         deps:  ['crypt/sjcl'],
         exports : 'sjcl'
       },
-      'crypt/rsa/rsa2' : {
-        deps:  ["crypt/rsa/base64" , 
-                "crypt/rsa/jsbn"   , 
-                "crypt/rsa/jsbn2"  , 
+      'crypt/rsa/jsbn2' : {
+        deps : ["crypt/rsa/jsbn",
+                "crypt/rsa/base64" , 
                 "crypt/rsa/prng4"  , 
-                "crypt/rsa/rng"    , 
-                "crypt/rsa/rsa"], 
+                "crypt/rsa/rng"]     
+      },
+      'crypt/rsa/rsa2' : {
+        deps:  ["crypt/rsa/jsbn2", "crypt/rsa/rsa"], 
         exports : 'RSAKey'
       }
   }
