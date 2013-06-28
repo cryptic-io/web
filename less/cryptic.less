@@ -121,12 +121,14 @@ css3 calc
     position:relative;
 
     margin-left: 0px;
+    overflow:hidden;
 
     .selectedBar {
         position:absolute;
         bottom:0px;
         width: @top-box-width;
         height: @selectedBarHeight;
+        .transition(0.5s)
     }
 
     p {
@@ -144,7 +146,6 @@ css3 calc
 
 // lets define the colors for the bars that indicate which view we are on 
 .selectedBar{
-    display:none;
     &.emeraldSelected {
         background-color: #60E69A;
     }

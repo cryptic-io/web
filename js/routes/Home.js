@@ -1,7 +1,7 @@
 //returns routes that will be used in the Home page (so most pages)
 
-define(["views/Home", "views/File", "views/Progress", "views/user/User", "views/ProgressBars", "views/ViewportHandler", "views/user/UserFiles", "jade!templates/user/SingleFileInfo"  ]
-, function(HomeView, FileView, ProgressView, UserView, ProgressBars, ViewportHandler, UserFilesView, singleFileInfoTemplate){ 
+define(["views/Home", "views/File", "views/Progress", "views/user/User", "views/ProgressBars", "views/ViewportHandler", "views/user/UserFiles", "jade!templates/user/SingleFileInfo", "views/TopBarCategories"  ]
+, function(HomeView, FileView, ProgressView, UserView, ProgressBars, ViewportHandler, UserFilesView, singleFileInfoTemplate, TopBar){ 
     return Backbone.Router.extend({
         routes: {
             "demo" :"demo"
@@ -21,6 +21,9 @@ define(["views/Home", "views/File", "views/Progress", "views/user/User", "views/
 
           //we may also initialize the viewport handler. This will provide functions to modify the placing of elements
           this.viewport = new ViewportHandler({el:$(".body")})
+
+          this.topBar = new TopBar({el:$("#topBar")})
+          this.topBar.render()
 
         },
 

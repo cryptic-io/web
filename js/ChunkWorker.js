@@ -15,13 +15,17 @@ requirejs({
           deps:  ['crypt/sjcl'],
           exports : 'sjcl'
         },
+        'crypt/rsa/rng' : {
+          deps : ["crypt/rsa/prng4"]
+                  
+        },
+        'crypt/rsa/jsbn2' : {
+          deps : ["crypt/rsa/jsbn",
+                  "crypt/rsa/base64" , 
+                  "crypt/rsa/rng"]     
+        },
         'crypt/rsa/rsa2' : {
-          deps:  ["crypt/rsa/base64" , 
-                  "crypt/rsa/jsbn"   , 
-                  "crypt/rsa/jsbn2"  , 
-                  "crypt/rsa/prng4"  , 
-                  "crypt/rsa/rng"    , 
-                  "crypt/rsa/rsa"], 
+          deps:  ["crypt/rsa/jsbn2", "crypt/rsa/rsa"], 
           exports : 'RSAKey'
         }
     }

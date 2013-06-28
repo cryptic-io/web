@@ -24,10 +24,13 @@ requirejs({
         deps:  ['crypt/sjcl'],
         exports : 'sjcl'
       },
+      'crypt/rsa/rng' : {
+        deps : ["crypt/rsa/prng4"]
+                
+      },
       'crypt/rsa/jsbn2' : {
         deps : ["crypt/rsa/jsbn",
                 "crypt/rsa/base64" , 
-                "crypt/rsa/prng4"  , 
                 "crypt/rsa/rng"]     
       },
       'crypt/rsa/rsa2' : {
