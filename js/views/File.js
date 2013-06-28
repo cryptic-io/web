@@ -1,7 +1,7 @@
 //returns the file view
 define(
-    ["core/q", "models/File","views/ProgressBars", "jade!templates/FileUpload", "jade!templates/FileDownload", "jade!templates/UploadingFileRows", "tools/humanReadableByteLength"]
-    , function(Q, FileModel, ProgressBarsView, fileUploadTemplate, fileDownloadTemplate, uploadingFileRowsTemplate, hrByteLength){ 
+    ["core/q", "models/File","views/ProgressBars", "jade!templates/FileUpload", "tools/humanReadableByteLength"]
+    , function(Q, FileModel, ProgressBarsView, fileUploadTemplate, hrByteLength){ 
     return Backbone.View.extend({
 
         tagName: "div",
@@ -20,8 +20,7 @@ define(
             // do the same thing as above but for download
             this.downloadDeffered = Q.defer()
 
-            if (this.options.template == "download") this.template = fileDownloadTemplate
-            else this.template = fileUploadTemplate
+            this.template = fileUploadTemplate
         },
 
         template: fileUploadTemplate,

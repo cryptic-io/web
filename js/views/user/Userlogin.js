@@ -1,5 +1,5 @@
 //returns the Userlogin view, responsible for the look of the user login
-define(["jade!templates/Userlogin"], function(Logintemplate, UserBlob){ 
+define(["jade!templates/user/Userlogin"], function(Logintemplate, UserBlob){ 
     return Backbone.View.extend({
         template: Logintemplate,
 

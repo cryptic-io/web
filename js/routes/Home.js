@@ -1,6 +1,6 @@
 //returns routes that will be used in the Home page (so most pages)
 
-define(["views/Home", "views/File", "views/Progress", "views/User", "views/ProgressBars", "views/ViewportHandler", "views/UserFiles", "jade!templates/SingleFileInfo"  ]
+define(["views/Home", "views/File", "views/Progress", "views/user/User", "views/ProgressBars", "views/ViewportHandler", "views/user/UserFiles", "jade!templates/user/SingleFileInfo"  ]
 , function(HomeView, FileView, ProgressView, UserView, ProgressBars, ViewportHandler, UserFilesView, singleFileInfoTemplate){ 
     return Backbone.Router.extend({
         routes: {

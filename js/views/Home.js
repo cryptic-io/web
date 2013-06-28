@@ -1,5 +1,5 @@
 //returns the home view
-define(["jade!templates/Home", "views/User"], function(homeTemplate, UserView){ 
+define(["jade!templates/Home"], function(homeTemplate){ 
     return Backbone.View.extend({
         template: homeTemplate,
 
@@ -11,7 +11,5 @@ define(["jade!templates/Home", "views/User"], function(homeTemplate, UserView){
         render: function() {
             this.$el.html(this.template());
         },
-
-
     })
 });

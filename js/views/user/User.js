@@ -1,5 +1,5 @@
 //returns the User View, this contains the fs and is the parent to the userLogin
-define(["jade!templates/User", "models/User", "views/Userlogin", "views/UserFiles", "views/UserSpaceInfo", "views/UserOptions"], function(userTemplate, User, UserLoginView, UserFileView, UserSpaceInfo, UserOptions){ 
+define(["jade!templates/user/User", "models/user/User", "views/user/Userlogin", "views/user/UserFiles", "views/user/UserSpaceInfo", "views/user/UserOptions"], function(userTemplate, User, UserLoginView, UserFileView, UserSpaceInfo, UserOptions){ 
     return Backbone.View.extend({
         template: userTemplate,
 
