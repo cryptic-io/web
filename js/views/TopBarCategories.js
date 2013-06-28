@@ -9,6 +9,15 @@
 //
 define(["jade!templates/TopBar"], function(template){
   return Backbone.View.extend({
+
+    //store the index of the buttons
+    layout: {
+      "about":0,
+      "upload":1,
+      "register":2,
+      "login":3
+    },
+
     initialize: function(){
     },
 
@@ -28,16 +37,17 @@ define(["jade!templates/TopBar"], function(template){
       _.each($('#topBar').find('.selectedBar'), function(e, i){$(e).css("left",-150*(i-index))})
     },
 
-    killClick : function(e){
-      debugger;
-      e.stopPropagation()
-      return false;
-    },
+    //these next functions are convience so that the outside doesn't have to know what index something is
+    select : function(category){ this.moveSelectedBar(this.layout[category]) },
 
     handleCategoryClick : function(e){
       var $topBox = $(e.target).closest(".topBox")
+      , index = this.$el.find('.topBox').index($topBox)
 
-      this.moveSelectedBar(this.$el.find('.topBox').index($topBox))
+      this.moveSelectedBar(index)
+      this.trigger(_.invert(this.layout)[index]+":click")
+
+
     }
 
   })

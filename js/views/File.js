@@ -4,9 +4,8 @@ define(
     , function(Q, FileModel, ProgressBarsView, fileUploadTemplate, hrByteLength){ 
     return Backbone.View.extend({
 
-        tagName: "div",
-
-        className: "fileIn",
+        id : "uploadBoxContainer",
+        className : "floatingContainer",
 
         initialize: function(){
 

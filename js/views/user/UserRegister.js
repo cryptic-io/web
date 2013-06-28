@@ -1,9 +1,9 @@
 //returns the Userlogin view, responsible for the look of the user login
-define(["jade!templates/user/Userlogin"], function(Logintemplate, UserBlob){ 
+define(["jade!templates/user/UserRegister"], function(Logintemplate, UserBlob){ 
     return Backbone.View.extend({
         template: Logintemplate,
 
-        id : "userLoginContainer",
+        id : "userRegisterContainer",
         className : "floatingContainer",
 
         // The idea here is to setup this view and then forget about. We modify the state of the user using the user model
@@ -21,22 +21,22 @@ define(["jade!templates/user/Userlogin"], function(Logintemplate, UserBlob){
         },
 
         events: {
-            "click #loginButton": "login"
-            , "click #userOptionsButton": "showUserOptions"
+            "click #registerButton": "register"
         }, 
 
-        showUserOptions: function(){
-            this.model.set('inOptions', true)
-        },
-
-        login: function(){
+        register: function(){
             var username = this.$el.find('#usernameInput > input').val()
-            , password = this.$el.find('#passwordInput > input').val()
-            , auth_attempt = this.$el.find('#twoStepAuthInput > input').val()
-  
+            ,  password = this.$el.find('#passwordInput > input').val()
+            ,  use2step = this.$el.find('#use2StepAuth > input').is(':checked')
 
-            this.model.login(username, password, auth_attempt)
+            this.model.once('secretKeyCreated', function(secretKey){
+                if (!use2step) return;
+                console.log('secret is:', secretKey);
+                var qrURL = 'https://www.google.com/chart?chs=200x200&chld=M|0&cht=qr&chl=otpauth://totp/'+username+'@cryptic.io%3Fsecret%3D'+secretKey;
+                alert("Open this link in another tab to view to code you need to scan with the Google Authenticator app: "+qrURL)
+            },this.model)
+
+            this.model.register(username, password, use2step)
         },
-
     })
 });

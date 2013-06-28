@@ -12,7 +12,7 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
 
       , initialize : function(){
           //debugging
-          this.login("abc", "123",'')
+          //this.login("abc", "123",'')
       }
 
       , createSecretKey : function(){

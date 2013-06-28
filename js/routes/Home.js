@@ -1,7 +1,9 @@
 //returns routes that will be used in the Home page (so most pages)
 
-define(["views/Home", "views/File", "views/Progress", "views/user/User", "views/ProgressBars", "views/ViewportHandler", "views/user/UserFiles", "jade!templates/user/SingleFileInfo", "views/TopBarCategories"  ]
-, function(HomeView, FileView, ProgressView, UserView, ProgressBars, ViewportHandler, UserFilesView, singleFileInfoTemplate, TopBar){ 
+define(
+ ["views/Home", "views/File", "views/Progress", "views/user/User", "views/ProgressBars", 
+  "views/ViewportHandler", "views/user/UserFiles", "jade!templates/user/SingleFileInfo", "views/TopBarCategories", "models/user/User", "views/user/Userlogin", "views/user/UserRegister"  ]
+, function(HomeView, FileView, ProgressView, UserView, ProgressBars, ViewportHandler, UserFilesView, singleFileInfoTemplate, TopBar, User, UserLoginView, UserRegisterView){ 
     return Backbone.Router.extend({
         routes: {
             "demo" :"demo"
@@ -10,6 +12,8 @@ define(["views/Home", "views/File", "views/Progress", "views/user/User", "views/
             , "user/fs" : "user"
             , "user/fs/" : "user"
             , "user" : "user"
+            , "login" : "login"
+            , "register" : "register"
             , "test" : "test"
             , "download/*linkNameAndPasscode" : "download"
         },
@@ -24,7 +28,39 @@ define(["views/Home", "views/File", "views/Progress", "views/user/User", "views/
 
           this.topBar = new TopBar({el:$("#topBar")})
           this.topBar.render()
+          this.registerTopBar(this.topBar)
 
+          this.userModel = new User()
+
+        },
+
+        registerTopBar: function(topBar){
+          this.listenTo(topBar, "login:click", _.bind(this.navigate, this,    "/login", {trigger:true}))
+          this.listenTo(topBar, "register:click", _.bind(this.navigate, this, "/register", {trigger:true}))
+          this.listenTo(topBar, "upload:click", _.bind(this.navigate, this,   "/home", {trigger:true}))
+          this.listenTo(topBar, "about:click", _.bind(this.navigate, this,    "/about", {trigger:true}))
+        },
+
+        login: function(){
+          var viewport = this.viewport
+          ,  userLogin = new UserLoginView({model : this.userModel})
+
+          this.topBar.select('login')
+
+          viewport.exeunt()
+                  .introduce(userLogin)
+                  .placeCenter(userLogin.el)
+        },
+
+        register : function(){
+          var viewport = this.viewport
+          , userRegister = new UserRegisterView({model : this.userModel})
+
+          this.topBar.select('register')
+
+          viewport.exeunt()
+                  .introduce(userRegister)
+                  .placeCenter(userRegister.el)
         },
 
         // this is the default route, this is the first thing a user will see if the just go to cryptic.io
@@ -34,8 +70,9 @@ define(["views/Home", "views/File", "views/Progress", "views/user/User", "views/
           var barsContainer = home.$el.find("#barsContainer")[0]
           , viewport = this.viewport
 
-          //var fileView = new FileView({el:$('#uploadBoxContainer')});
-          var fileView = new FileView({el:$('#uploadBoxContainer'), progressBarContainer: barsContainer });
+          this.topBar.select('upload')
+
+          var fileView = new FileView({progressBarContainer: barsContainer });
           fileView.render()
 
           //this promise will be resolved when the user uploads a file
@@ -45,9 +82,9 @@ define(["views/Home", "views/File", "views/Progress", "views/user/User", "views/
           })
 
           viewport
-            .toggleAnimate(fileView.el) //we don't want to show an animation at the begginning
+            .exeunt()
+            .introduce(fileView)
             .placeCenter(fileView.el) 
-            .toggleAnimate(fileView.el) //but we do want animations later
             .placeRightOffScreen(barsContainer)
 
         },

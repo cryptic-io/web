@@ -1,7 +1,8 @@
 //functions to handle placing elements in the viewable viewport, also listens for screen resizes to move the elements accordingly
 //pass in the viewport as the el
 //most functions return this so you can chain function calls, if it doesn't return this it should return a promise of something (e.g. button click)
-define([], function(){ 
+define(["core/mori"], function(mori){ 
+  m = mori
   return Backbone.View.extend({
 
     offsetFromCenter: 100
@@ -12,14 +13,61 @@ define([], function(){
      
     , minHeight : 500
 
+    //this is a horrible hack, I'm sorry. I need to automatically check the defaultHeight
     , defaultHeight : "calc(100% - 300px)"
+
+    //fuck yeah, clojure datastructures, now we are talking
+    , activeViews : mori.set()
 
     , visibleElements : {} //this is a set of elments that are visible, to keep it fast it's implemented as a hashmap with the key being the elements and value being isVisble or not
     
     , initialize : function(){
       //vector of vectors containing the element and the position function to run (e.g. [[$("#vault"), _.bind(this.placeCenter,this)]...])
 
-      window.onresize = _.debounce(_.bind(function(){ console.log("resizing"); this.rebuildElements()},this), 100)
+      window.onresize = _.debounce(_.bind(function(){ console.log("resizing"); this.rebuildElements()},this), 500)
+    }
+
+    //keep track of views that are introduced into the viewport
+    //if the element hasn't been placed on the page here is where we place it
+    //this function and exeunt are the only ones allowed to use views
+    , introduce : function(view){
+      this.activeViews =  mori.conj(this.activeViews, view)
+
+      if (!document.contains(view.el)){
+          this.$el.append(view.el)
+      }
+
+      return this;
+    }
+
+    //exeunt, as in the stage direction meaning to get off stage
+    //This function should be called with a specifc view to get rid of that view, or if not called with a specific view, it will destroy all activeViews
+    //can also be called with an array to get rid of a set of views
+    , exeunt : function(view){
+      var itemsToRemove 
+      , that = this
+      //they passed in an array
+      if (_.isArray(view)){
+        itemsToRemove = view
+      }else if (_.isUndefined(view)){ //they passed in nothing, so get rid of everything
+        itemsToRemove = mori.into_array(this.activeViews)
+      } else {
+        itemsToRemove = [view]
+      }
+
+      //because they are a set we can just disjoin the activeViews set from the existings views
+      this.activeViews = mori.disj.apply(null, [this.activeViews].concat(itemsToRemove))
+
+      mori.pipeline(
+        mori.vector.apply(null,itemsToRemove),
+        mori.curry(mori.each,function(view){
+          that.placeRightOffScreen(view.el)
+          //wait a bit for the item to fall off screen
+          _.delay(_.bind(view.remove,view), 5e3) //5 seconds should be enough time
+        }))
+
+      return this;
+
     }
 
     , rebuildElements : function(){
