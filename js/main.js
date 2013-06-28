@@ -4,6 +4,8 @@ less = { env: 'development' };
  *
  */
 
+test = function(files){debugger}
+
 var dependencies = [
     "require" , "core/backbone" , "crypt/sjcl" , "crypt/betterCBC" , "crypt/rsa/rsa2"
 ]

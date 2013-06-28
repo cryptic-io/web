@@ -1,3 +1,8 @@
 #vault
     .inner-border#upload
-        p Drop a file in
+        p.vaultText Drop a file in
+        .separator
+            p or
+        .btn.btn-inverse.btn-block#filePickerBtn
+            p Pick a file
+        input#filePicker(type="file",style="display:none", onchange="test(this.files)")
