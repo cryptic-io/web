@@ -1,4 +1,4 @@
-config_location=../js/config.js
+config_location=js/config.js
 NEMO_LOCATION=${NEMO_LOCATION:-localhost}
 NEMO_PORT=${NEMO_PORT:-8888}
 echo "//Auto-generated config made in snap/build.sh" > $config_location
