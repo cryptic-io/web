@@ -41,7 +41,7 @@ css3 calc
 #logo {
     width: @top-box-width;
     height: 100%;
-    background-image: url("/images/cryptic.png");
+    background-image: url("/images/cryptic-ap.png");
     background-size: 100%;
     background-repeat: no-repeat;
     background-position-y: -2px;
@@ -209,6 +209,32 @@ body {
 
 #mainContainer {
     position:relative;
+    height: 100%;
+    .transition(.5s);
+}
+
+.page {
+    width:100%;
+    height:100%;
+    position: absolute;
+    //background-color:black;
+    //border:solid white;
+}
+
+#page0 {
+}
+
+#page1 {
+    margin-left: 100%;
+}
+#page2 {
+    margin-left: 200%;
+}
+#page3 {
+    margin-left: 300%;
+}
+#page4 {
+    margin-left: 400%;
 }
 
 /* vault */
@@ -402,11 +428,30 @@ p.fileBarText{
 
 /* containers */
 .floatingContainer{
-    position: absolute;
-    .transition(1s);
+    margin: auto;
+    position: relative;
     min-width: 400px;
-    //we start the element all the way to the left
-    left: -500px
+}
+
+#aboutContainer{
+    width: 600px;
+
+    h1 {
+        margin-left: 20px;
+    }
+
+    #aboutSeparator {
+        width: 100%;
+        height: 12px;
+        background-color: #e67e22;
+    }
+
+    #aboutText {
+        text-align: right;
+        margin-right: 20px;
+        margin-top: 20px;
+    }
+    
 }
 
 #uploadBoxContainer{
@@ -419,6 +464,7 @@ p.fileBarText{
     min-width: 250px;
     width: 280px;
     border-radius: 10px;
+    margin: auto;
 
 
     div { 
@@ -449,6 +495,8 @@ p.fileBarText{
     h1 {
         margin-bottom: 20px;
         text-align: center;
+        font-weight: normal;
+
         color: @clouds;
     }
 }
@@ -459,6 +507,7 @@ p.fileBarText{
     min-width: 250px;
     width: 280px;
     border-radius: 10px;
+    margin: auto;
 
 
     div { 

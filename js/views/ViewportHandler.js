@@ -25,16 +25,21 @@ define(["core/mori"], function(mori){
       //vector of vectors containing the element and the position function to run (e.g. [[$("#vault"), _.bind(this.placeCenter,this)]...])
 
       window.onresize = _.debounce(_.bind(function(){ console.log("resizing"); this.rebuildElements()},this), 500)
+
+      // todo: implement variadic pages
+      //The size of the viewport can vary depending on how many pages we want
+      //this.options.pages 
+      
     }
 
     //keep track of views that are introduced into the viewport
     //if the element hasn't been placed on the page here is where we place it
     //this function and exeunt are the only ones allowed to use views
-    , introduce : function(view){
+    , introduce : function(view, index){
       this.activeViews =  mori.conj(this.activeViews, view)
 
       if (!document.contains(view.el)){
-          this.$el.append(view.el)
+          this.$el.find("#page"+index).append(view.el)
       }
 
       return this;
@@ -61,13 +66,18 @@ define(["core/mori"], function(mori){
       mori.pipeline(
         mori.vector.apply(null,itemsToRemove),
         mori.curry(mori.each,function(view){
-          that.placeRightOffScreen(view.el)
+          //that.placeRightOffScreen(view.el)
           //wait a bit for the item to fall off screen
-          _.delay(_.bind(view.remove,view), 5e3) //5 seconds should be enough time
+          _.delay(_.bind(view.remove,view), 0.5e3) 
         }))
 
       return this;
 
+    }
+
+    , moveToPage: function(index){
+        this.$el.css('left',index*-100+"%")
+        return this
     }
 
     , rebuildElements : function(){
@@ -140,7 +150,7 @@ define(["core/mori"], function(mori){
         this.visibleElements[element.id]=false
       }
 
-      this.resizeHeight();
+      //this.resizeHeight();
 
     }
 

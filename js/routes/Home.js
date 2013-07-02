@@ -2,8 +2,9 @@
 
 define(
  ["views/Home", "views/File", "views/Progress", "views/user/User", "views/ProgressBars", 
-  "views/ViewportHandler", "views/user/UserFiles", "jade!templates/user/SingleFileInfo", "views/TopBarCategories", "models/user/User", "views/user/Userlogin", "views/user/UserRegister"  ]
-, function(HomeView, FileView, ProgressView, UserView, ProgressBars, ViewportHandler, UserFilesView, singleFileInfoTemplate, TopBar, User, UserLoginView, UserRegisterView){ 
+  "views/ViewportHandler", "views/user/UserFiles", "jade!templates/user/SingleFileInfo", "views/TopBarCategories", "models/user/User", "views/user/Userlogin", "views/user/UserRegister",
+  "views/About"  ]
+, function(HomeView, FileView, ProgressView, UserView, ProgressBars, ViewportHandler, UserFilesView, singleFileInfoTemplate, TopBar, User, UserLoginView, UserRegisterView, About){ 
     return Backbone.Router.extend({
         routes: {
             "demo" :"demo"
@@ -12,6 +13,7 @@ define(
             , "user/fs" : "user"
             , "user/fs/" : "user"
             , "user" : "user"
+            , "about" : "about"
             , "login" : "login"
             , "register" : "register"
             , "test" : "test"
@@ -24,7 +26,7 @@ define(
           this.home.render()
 
           //we may also initialize the viewport handler. This will provide functions to modify the placing of elements
-          this.viewport = new ViewportHandler({el:$(".body")})
+          this.viewport = new ViewportHandler({el:$("#mainContainer")})
 
           this.topBar = new TopBar({el:$("#topBar")})
           this.topBar.render()
@@ -48,8 +50,8 @@ define(
           this.topBar.select('login')
 
           viewport.exeunt()
-                  .introduce(userLogin)
-                  .placeCenter(userLogin.el)
+                  .introduce(userLogin,3)
+                  .moveToPage(3)
         },
 
         register : function(){
@@ -59,8 +61,9 @@ define(
           this.topBar.select('register')
 
           viewport.exeunt()
-                  .introduce(userRegister)
-                  .placeCenter(userRegister.el)
+                  .introduce(userRegister,2)
+                  .moveToPage(2)
+                  //.placeCenter(userRegister.el)
         },
 
         // this is the default route, this is the first thing a user will see if the just go to cryptic.io
@@ -83,9 +86,20 @@ define(
 
           viewport
             .exeunt()
-            .introduce(fileView)
-            .placeCenter(fileView.el) 
-            .placeRightOffScreen(barsContainer)
+            .introduce(fileView, 1)
+            .moveToPage(1)
+        },
+
+        about : function(){
+          console.log('Entering About')
+
+          var  about = new About()
+          about.render()
+          this.topBar.select('about')
+
+          this.viewport.exeunt()
+            .introduce(about,0)
+            .moveToPage(0)
 
         },
 
