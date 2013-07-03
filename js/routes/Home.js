@@ -7,8 +7,7 @@ define(
 , function(HomeView, FileView, ProgressView, UserView, ProgressBars, ViewportHandler, UserFilesView, singleFileInfoTemplate, TopBar, User, UserLoginView, UserRegisterView, About){ 
     return Backbone.Router.extend({
         routes: {
-            "demo" :"demo"
-            , "home" : "home"
+            "home" : "home"
             , "user/fs/*fileLocation" : "openUserFile"
             , "user/fs" : "user"
             , "user/fs/" : "user"
@@ -52,6 +51,7 @@ define(
           viewport.exeunt()
                   .introduce(userLogin,3)
                   .moveToPage(3)
+                  .placeCenter(userLogin.el, 3)
         },
 
         register : function(){
@@ -63,7 +63,7 @@ define(
           viewport.exeunt()
                   .introduce(userRegister,2)
                   .moveToPage(2)
-                  //.placeCenter(userRegister.el)
+                  .placeCenter(userRegister.el,2)
         },
 
         // this is the default route, this is the first thing a user will see if the just go to cryptic.io
@@ -80,14 +80,18 @@ define(
 
           //this promise will be resolved when the user uploads a file
           fileView.uploadDeffered.promise.then(function(){
-            viewport.placeLeftOfCenter(fileView.el)
-                    .placeRightOfCenter(barsContainer)
+
+            viewport.delay(0.5e3) //delay the animation by a bit so the user sees the upload bar is coming "from" the vault
+                    .placeLeftOfCenter(fileView.el, 1)
+                    .placeRightOfCenter(barsContainer, 1)
           })
 
           viewport
             .exeunt()
             .introduce(fileView, 1)
+            .introduceEl(barsContainer, 1)
             .moveToPage(1)
+            .placeCenter(fileView.el, 1)
         },
 
         about : function(){
@@ -97,9 +101,11 @@ define(
           about.render()
           this.topBar.select('about')
 
-          this.viewport.exeunt()
+          this.viewport
+            .exeunt()
             .introduce(about,0)
             .moveToPage(0)
+            .placeCenter(about.el, 0)
 
         },
 
@@ -150,88 +156,6 @@ define(
             //We already have the page built, we just need to go to the root directory
             this.userView.model.set('fsLocation','/')
           }
-
-        },
-
-        
-        // demo for the viewport placing of elements
-        // This will illustrate how the viewport works
-        demo : function (){
-          home = this.home
-
-          bars = new ProgressBars(
-          {
-            el:$("#barsContainer")
-            , bars : 
-              {
-                "title":"Uploading...", items: [
-                                                {text:"Frank's Taxes", percent:"100%"}
-                                                , {text:"Green Card", percent:"84%"}
-                                                , {text:"Taxes", percent:"34%"}
-                                                ]
-              }
-          })
-
-          bars.render()
-
-          fileView = new FileView({el:$('#uploadBoxContainer')});
-          fileView.render()
-
-          userFiles = new UserFilesView({el:$("#userFilesContainer"), model:new Backbone.Model()})
-          userFiles.render({
-            fsLocation:"foo/bar"
-            , files:[
-              {"filename":"boobs"}
-            , {"filename":"Frank's Taxes", selected:true}
-            , {"filename":"foo bar"}
-            , {"filename":"Important Stuff"}]
-          })
-
-          singleFileEl = $("#singleFileContainer")[0]
-
-          $(singleFileEl).html(singleFileInfoTemplate({file:{filename:"Frank's Taxes",type:"text"}, size:2, sizeUnit:"MB", downloadLink:"http://cryptic.io/#download/jfexijf/asdjfe"}))
-
-
-
-          var showBarsHideVault 
-          , showVaultHideBars
-          , viewport = this.viewport
-
-          //buttons showing and hiding the vault
-          showBarsHideVault = function(){
-              viewport.placeRightOfCenter(bars.el)
-                .placeRightDownOffScreen(fileView.el, true)
-                .hideButtonRight()
-                .placeButtonRightDown("Upload",["emerald", "blackText", "withOffsetFromBottom"])
-                .then(showVaultHideBars)
-          }
-
-          showVaultHideBars = function(){
-              viewport.placeRightOffScreen(bars.el)
-                .placeRightOfCenter(fileView.el)
-                .hideButtonRightDown()
-                .placeButtonRight("Progress", ["clouds", "blackText"])
-                .then(showBarsHideVault)
-          }
-
-          // show a button on the left down part of screen, when clicked move the userFiles left off screen, place single file info left of center, hide the button
-          viewport.placeButtonLeftDown("File Info", ["clouds", "blackText"])
-            .then(function(){
-              viewport.placeLeftOffScreen(userFiles.el)
-                .placeLeftOfCenter(singleFileEl)
-                .hideButtonLeftDown()
-            })
-
-          //place the vault hidden, but not completely. 
-          //also place the singleFileEl left down off screen but completely hidden
-          viewport.placeRightDownOffScreen(fileView.el, true)
-            .placeLeftDownOffScreen(singleFileEl)
-
-          viewport.placeLeftOfCenter(userFiles.el) 
-            .placeRightOfCenter(bars.el)
-            .placeButtonRightDown("Upload",["emerald", "blackText", "withOffsetFromBottom"])
-            .then(showVaultHideBars)
-
 
         },
 

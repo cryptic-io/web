@@ -11,20 +11,19 @@ define(["core/mori"], function(mori){
 
     , buttonMargin: 80
      
-    , minHeight : 500
-
-    //this is a horrible hack, I'm sorry. I need to automatically check the defaultHeight
-    , defaultHeight : "calc(100% - 300px)"
-
     //fuck yeah, clojure datastructures, now we are talking
     , activeViews : mori.set()
 
-    , visibleElements : {} //this is a set of elments that are visible, to keep it fast it's implemented as a hashmap with the key being the elements and value being isVisble or not
-    
+    , elements : mori.set()
+
+    , onDelay : false
+
+    , delayedFns : []
+
     , initialize : function(){
       //vector of vectors containing the element and the position function to run (e.g. [[$("#vault"), _.bind(this.placeCenter,this)]...])
 
-      window.onresize = _.debounce(_.bind(function(){ console.log("resizing"); this.rebuildElements()},this), 500)
+      window.onresize = _.debounce(_.bind(function(){ this.rebuildElements()},this), 300)
 
       // todo: implement variadic pages
       //The size of the viewport can vary depending on how many pages we want
@@ -41,6 +40,16 @@ define(["core/mori"], function(mori){
       if (!document.contains(view.el)){
           this.$el.find("#page"+index).append(view.el)
       }
+
+      return this;
+    }
+    
+    , introduceEl : function(el, index){
+      if (document.contains(el)){
+          $(el).remove()
+      }
+
+      this.$el.find("#page"+index).append(el)
 
       return this;
     }
@@ -81,11 +90,11 @@ define(["core/mori"], function(mori){
     }
 
     , rebuildElements : function(){
-      _.each(this.elements, function(elInfo){ elInfo[1]()})
+      return mori.each(this.elements, function(elInfo){ elInfo[1]()})
     }
 
     , removeElement: function(elements, element){
-      return _.reject(elements, function(e){ return e[0]===element}); 
+      return mori.remove(function(e){return e[0]===element}, elements)
     }
 
     //Track the elements and their placing functions
@@ -94,64 +103,38 @@ define(["core/mori"], function(mori){
       if (_.isArray(element) ) element=element[0]
 
       this.elements = this.removeElement(this.elements, element);
-      this.elements.push([element, placementFunction])
+      this.elements = mori.conj(this.elements, [element, placementFunction])
     }
 
-    , findTallestVisibleElement : function(){
-      return _.chain(this.visibleElements)
-                .reduce(function(m,v,k){ if (v) return m.concat(k); return m }, []) //filter elements who are visible
-                .map(function(idname){ return $("#"+idname) })
-                .sortBy(function(el){ return -el.height() }) //get tallest one
-                .first()
-                .value()
+    // function that will cause everything after it to delay
+    // works by having a queue, and a flag
+    // the placeElement function checks for the flag this.onDelay and will append the function to run to the queue
+    // this then calls the queue after the delay
+    // if you add more functions and want delay to work with them, make sure you check for the flag and place the function on the queue
+    , delay : function(milliseconds){
+      // set the flag to true
+      this.onDelay = true
+      _.delay(_.bind(function(){
+        //change the flag
+        this.onDelay = false
+        // run each delayed fn
+        _.each(this.delayedFns, function(fn){ fn() })
+      },this), milliseconds)
+
+      return this;
     }
 
-    , resizeHeight : function(){
-      //get information on the tallest visible element on the page
-      var element = this.findTallestVisibleElement()
-      , elementHeight = $(element).height()
-      , browserHeight = $("html").height()-300 //this is what the default height would be
-      , oldHeight = parseInt(this.$el.css("height"),10) 
-      , oldCSSHeight = this.$el.css("height") //this might be different since it can be "auto" or the default "calc(...)"height
-      , newHeight  // we are going to need this to determine if we need to update the position of the elements
+    , placeElement : function(element, left, top){
 
-      // we have 2 cases to consider
-      // 1: the default browser height is big enough to hold the element + bottomMargin
-      // 2: the element + bottomMargin is so big that it is bigger than the default browser height so it requires the page's height to be increased
-      //
-      // Also, this can be set by multiple items that are displayed 
-      // so in order to avoid managing unnecessary state, we will always reset the page's height to the default height when we rebuild elements
-
-      if (this.bottomMargin+elementHeight > browserHeight){
-        newHeight = (this.bottomMargin+elementHeight)
-      }else{
-        newHeight = this.defaultHeight
+      //check delay, if we are in a delay, lets put it on the queue of things to run after the delay
+      if ( this.onDelay ) {
+        this.delayedFns.push(_.bind(this.placeElement,this,element,left, top))
+        return
       }
 
-      if (newHeight !== oldHeight && newHeight !== oldCSSHeight){ 
-        this.$el.height(newHeight)
-        console.log("resizing height")
-        _.defer(_.bind(this.rebuildElements, this))
-      }
-
-
-
-    }
-
-    , placeElement : function(element, left, top, isVisible){
 
       $(element).css("left", left)
       $(element).css("top", top)
-
-      //save visibility state
-      if (isVisible){
-        this.visibleElements[element.id]=true
-      }else{
-        this.visibleElements[element.id]=false
-      }
-
-      //this.resizeHeight();
-
     }
 
     //show and hide for chaining convienence
@@ -170,47 +153,66 @@ define(["core/mori"], function(mori){
       return this
     }
 
+    // when using position:relative you need to calculate the starting position of the element with reference to previous elements
+    // call this function with the previous element since it's recursive. (i.e. this.findOffsetPosition(element.prev())
+    , findOffsetPosition : function($element, totalWidth){
+      if(_.isUndefined(totalWidth)){
+        totalWidth = 0
+      }
+      
+      //at the end of the previous element chain
+      if ( $element.width() === null ){
+        return totalWidth;
+      }
+
+      if ( $element.css('position') !== "absolute" && $element.css('display').indexOf('inline') !== -1){
+        totalWidth += $element.width()
+      }
+
+      return this.findOffsetPosition($element.prev(), totalWidth)
+    }
+
 
     //rebuilding is a variable that tells the function to not track the element since we are using the tracked elements.
-    , placeCenter: function(element, rebuilding){
+    , placeCenter: function(element,index, rebuilding){
       if(_.isUndefined(rebuilding)){
-        this.trackElement(element,_.bind(this.placeCenter, this, element, true))
+        this.trackElement(element,_.bind(this.placeCenter, this, element, index, true))
       }
 
       var elementWidth = $(element).width()
-      , pageWidth = this.$el.width()
-      , placing = (pageWidth/2) - (elementWidth/2)
+      , pageWidth = this.$el.find("#page"+index).width()
+      , placing = (pageWidth/2) - (elementWidth/2) - this.findOffsetPosition($(element).prev())
 
-      this.placeElement(element, placing, "auto", true)
+      this.placeElement(element, placing, "auto")
 
       return this;
     }
 
-    , placeLeftOfCenter: function(element, rebuilding){
+    , placeLeftOfCenter: function(element, index, rebuilding){
       if(_.isUndefined(rebuilding)){
-        this.trackElement(element,_.bind(this.placeLeftOfCenter, this, element, true))
+        this.trackElement(element,_.bind(this.placeLeftOfCenter, this, element, index, true))
       }
 
 
       var elementWidth = $(element).width()
-      , pageWidth = this.$el.width()
-      , placing = pageWidth/2 - elementWidth - this.offsetFromCenter
+      , pageWidth = this.$el.find("#page"+index).width()
+      , placing = pageWidth/2 - elementWidth - this.offsetFromCenter - this.findOffsetPosition($(element).prev())
 
-      this.placeElement(element, placing, 0, true)
+      this.placeElement(element, placing, 0)
 
       return this;
     }
 
-    , placeRightOfCenter: function(element, rebuilding){
+    , placeRightOfCenter: function(element, index, rebuilding){
       if(_.isUndefined(rebuilding)){
-        this.trackElement(element,_.bind(this.placeRightOfCenter, this, element, true))
+        this.trackElement(element,_.bind(this.placeRightOfCenter, this, element, index, true))
       }
 
       var elementWidth = $(element).width()
-      , pageWidth = this.$el.width()
-      , placing = pageWidth/2 + this.offsetFromCenter
+      , pageWidth = this.$el.find("#page"+index).width()
+      , placing = pageWidth/2 + this.offsetFromCenter - this.findOffsetPosition($(element).prev())
 
-      this.placeElement(element, placing, 0, true)
+      this.placeElement(element, placing, 0)
 
       return this;
     }
@@ -234,7 +236,9 @@ define(["core/mori"], function(mori){
         placing = 0 - elementWidth;
       }
 
-      this.placeElement(element, placing, "auto", false)
+      placing -= this.findOffsetPosition($(element).prev())
+
+      this.placeElement(element, placing, "auto")
 
       return this;
     }
@@ -249,13 +253,15 @@ define(["core/mori"], function(mori){
       , placing 
       , btnElement = $("#leftBtn")
 
+      placing -= this.findOffsetPosition($(element).prev())
+
       if (notCompletelyHidden){
         placing = pageWidth - 20;
       }else{
         placing = pageWidth;
       }
 
-      this.placeElement(element, placing, "auto", false)
+      this.placeElement(element, placing, "auto")
 
       return this;
     }
@@ -281,7 +287,7 @@ define(["core/mori"], function(mori){
         yPlacing = pageHeight;
       }
 
-      this.placeElement(element, placing, yPlacing, false)
+      this.placeElement(element, placing, yPlacing)
 
       return this;
     }
@@ -307,7 +313,7 @@ define(["core/mori"], function(mori){
         yPlacing = pageHeight;
       }
 
-      this.placeElement(element, placing, yPlacing, false)
+      this.placeElement(element, placing, yPlacing)
 
       return this;
     }

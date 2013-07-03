@@ -39,12 +39,15 @@ css3 calc
 }
 
 #logo {
-    width: @top-box-width;
+    //width: @top-box-width;
+    width: 180px;
     height: 100%;
-    background-image: url("/images/cryptic-ap.png");
+    //background-image: url("/images/cryptic-ap.png");
+    background-image: url("/images/cryptic3.png");
     background-size: 100%;
     background-repeat: no-repeat;
     background-position-y: -2px;
+    margin-left:0px;
 }
 
 #topBar {
@@ -188,10 +191,10 @@ body {
 
 @body-padding : 50px;
 .body {
-    height : ~'calc(100% - 300px)'; // for my laziness, make sure to change the defaultHeight in views/ViewportHandler.js when you change this
+    //height : ~'calc(100% - 300px)'; 
     margin-top: @body-padding;
     padding-top: @body-padding;
-    overflow: hidden;
+    overflow-x: hidden;
     min-height: 500px;
     min-width: 800px;
     position:relative;
@@ -209,32 +212,36 @@ body {
 
 #mainContainer {
     position:relative;
-    height: 100%;
+    //height: 100%;
+    width:1000%;
     .transition(.5s);
 }
 
 .page {
-    width:100%;
-    height:100%;
-    position: absolute;
+    width:10%;
+    min-height: 1px; //so the page doesn't collapse when there is nothing in it
+    float: left;
+    //height:100%;
+    //position: absolute;
     //background-color:black;
     //border:solid white;
+}
+
+.wrapper {
+    margin: auto;
+    display: table;
 }
 
 #page0 {
 }
 
 #page1 {
-    margin-left: 100%;
 }
 #page2 {
-    margin-left: 200%;
 }
 #page3 {
-    margin-left: 300%;
 }
 #page4 {
-    margin-left: 400%;
 }
 
 /* vault */
@@ -430,11 +437,14 @@ p.fileBarText{
 .floatingContainer{
     margin: auto;
     position: relative;
-    min-width: 400px;
+    //min-width: 400px;
+    display:inline-block;
+    .transition(.5s)
+
 }
 
 #aboutContainer{
-    width: 600px;
+    width: 800px;
 
     h1 {
         margin-left: 20px;
@@ -442,7 +452,7 @@ p.fileBarText{
 
     #aboutSeparator {
         width: 100%;
-        height: 12px;
+        height: 2px;
         background-color: #e67e22;
     }
 
@@ -456,6 +466,9 @@ p.fileBarText{
 
 #uploadBoxContainer{
     margin-top:50px;
+}
+
+#barsContainer {
 }
 
 #userLoginContainer{

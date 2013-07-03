@@ -15,8 +15,5 @@ define([], function(ProgressTemplate){
                 .text(text)
                 .show()
         }
-
-
-
     })
 });
