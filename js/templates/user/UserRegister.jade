@@ -1,17 +1,24 @@
 #loginBox
-  if loggedIn 
+  if loggedIn
     .usernameContainer
       span signed in as 
       #username= username
       button#userOptionsButton Options
+  else if registered
+    .successMessage
+      p Congrats! you now have a cryptic account!
   else 
     h1 Register
     #usernameInput
-      input(type="text", placeholder="username") 
+      .control-group
+        input(type="text", placeholder="username") 
+      p.message 
     #passwordInput 
-      input(type="password", placeholder="password")
+      .control-group 
+        input(type="password", placeholder="password")
+      p.message
     // 
         #twoStepAuthInput Enter 2 step authentication code:
           input(type="text")
-    #registerBtn.btn.btn-block.btn-primary
-      p Register
+    .control-group
+      a#registerBtn.btn.btn-block.btn-primary.btn-large(href="#register") Register

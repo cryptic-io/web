@@ -36,8 +36,8 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
           userBlob.generateRSA()
   
           var userBlobJSON = userBlob.getBlob()
-          , publickey_n = userBlobJSON.pub_key
-          , publickey_e = userBlobJSON.rsa_e
+          , publickey_n = userBlobJSON.RSAObject.pub_key
+          , publickey_e = userBlobJSON.RSAObject.rsa_e
           , encryptedBlob = userBlob.encryptBlob(password, userBlobJSON)
   
           $.post(api.createUser 
@@ -50,7 +50,12 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
               , _.bind(this.registerCallback, this))
       }
   
-      , registerCallback : function(){
+      , registerCallback : function(result){
+        if (result.return === "success"){
+          this.trigger('register:success')
+        }else{
+          this.trigger('register:error',result.return.error)
+        }
       }
   
   
@@ -70,6 +75,11 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
       }
   
       , loginCallback: function(response){
+          if (result.return !== "success"){
+            this.trigger('login:error',result.return.error)
+            return
+          }
+           
           var userBlob = this.get('userBlob')
           , password = userBlob.get('password')
   
@@ -85,6 +95,7 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
   
           this.set('loggedIn', true)
           this.trigger('loggedIn')
+          this.trigger('login:success')
 
       }
 

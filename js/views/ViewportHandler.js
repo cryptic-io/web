@@ -35,6 +35,13 @@ define(["core/mori"], function(mori){
     //if the element hasn't been placed on the page here is where we place it
     //this function and exeunt are the only ones allowed to use views
     , introduce : function(view, index){
+
+      //check delay, if we are in a delay, lets put it on the queue of things to run after the delay
+      if ( this.onDelay ) {
+        this.delayedFns.push(_.bind(this.introduce,this, view, index))
+        return this
+      }
+
       this.activeViews =  mori.conj(this.activeViews, view)
 
       if (!document.contains(view.el)){
@@ -58,6 +65,12 @@ define(["core/mori"], function(mori){
     //This function should be called with a specifc view to get rid of that view, or if not called with a specific view, it will destroy all activeViews
     //can also be called with an array to get rid of a set of views
     , exeunt : function(view){
+      //check delay, if we are in a delay, lets put it on the queue of things to run after the delay
+      if ( this.onDelay ) {
+        this.delayedFns.push(_.bind(this.exeunt,this,view))
+        return this
+      }
+
       var itemsToRemove 
       , that = this
       //they passed in an array
@@ -75,7 +88,8 @@ define(["core/mori"], function(mori){
       mori.pipeline(
         mori.vector.apply(null,itemsToRemove),
         mori.curry(mori.each,function(view){
-          //that.placeRightOffScreen(view.el)
+          //remove the element from the list keeping track of elements
+          this.elements = thatthis.removeElement(this.elements, view.el)
           //wait a bit for the item to fall off screen
           _.delay(_.bind(view.remove,view), 0.5e3) 
         }))
@@ -85,8 +99,14 @@ define(["core/mori"], function(mori){
     }
 
     , moveToPage: function(index){
-        this.$el.css('left',index*-100+"%")
+      //check delay, if we are in a delay, lets put it on the queue of things to run after the delay
+      if ( this.onDelay ) {
+        this.delayedFns.push(_.bind(this.moveToPage,this,element,left, top))
         return this
+      }
+
+      this.$el.css('left',index*-100+"%")
+      return this
     }
 
     , rebuildElements : function(){

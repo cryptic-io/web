@@ -11,7 +11,9 @@ define(["jade!templates/user/Userlogin"], function(Logintemplate, UserBlob){
         // This forces us to have simple interfaces for the models to the views
         initialize: function(){
             //react to a change in the login status of the user
-            this.model.on('change:loggedIn', this.render, this)
+            this.listenTo(this.model, 'change:login', this.render)
+            this.listenTo(this.model, 'login:success', this.render)
+            this.listenTo(this.model, 'login:error', this.render)
 
             this.render()
         },
@@ -21,7 +23,7 @@ define(["jade!templates/user/Userlogin"], function(Logintemplate, UserBlob){
         },
 
         events: {
-            "click #loginButton": "login"
+            "click #loginBtn": "login"
             , "click #userOptionsButton": "showUserOptions"
         }, 
 
@@ -37,6 +39,14 @@ define(["jade!templates/user/Userlogin"], function(Logintemplate, UserBlob){
 
             this.model.login(username, password, auth_attempt)
         },
+
+        loginSucess: function(){
+          debugger;
+        },
+
+        loginError: function(error){
+          debugger;
+        }
 
     })
 });

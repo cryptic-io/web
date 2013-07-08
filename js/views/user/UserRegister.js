@@ -11,23 +11,42 @@ define(["jade!templates/user/UserRegister"], function(Logintemplate, UserBlob){
         // This forces us to have simple interfaces for the models to the views
         initialize: function(){
             //react to a change in the login status of the user
-            this.model.on('change:loggedIn', this.render, this)
+            this.listenTo(this.model, 'change:loggedIn', this.render)
+
+            //react to a user's registration
+            this.listenTo(this.model, 'register:success', this.renderSuccess)
+            this.listenTo(this.model, 'register:error', this.registerError)
 
             this.render()
         },
 
         render: function() {
-            this.$el.html(this.template(this.model.toJSON()));
+            this.$el.html(this.template(_.defaults({"registered":false},this.model.toJSON())));
+        },
+
+        renderSuccess : function(){
+            console.log("Registered successfully!")
+            this.$el.html(this.template(_.defaults({"registered":true},this.model.toJSON())));
+        },
+
+        registerError: function(error){
+          if (error == "username taken") {
+            $("#usernameInput .control-group").addClass("error")
+            $("#usernameInput .message").addClass("errorMessage")
+            $("#usernameInput .message").text("Username Taken")
+          }
+
         },
 
         events: {
-            "click #registerButton": "register"
+            "click #registerBtn": "register"
         }, 
 
         register: function(){
-            var username = this.$el.find('#usernameInput > input').val()
-            ,  password = this.$el.find('#passwordInput > input').val()
-            ,  use2step = this.$el.find('#use2StepAuth > input').is(':checked')
+            var username = this.$el.find('#usernameInput input').val()
+            ,  password = this.$el.find('#passwordInput input').val()
+            ,  use2step = this.$el.find('#use2StepAuth input').is(':checked')
+
 
             this.model.once('secretKeyCreated', function(secretKey){
                 if (!use2step) return;

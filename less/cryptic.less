@@ -491,9 +491,11 @@ p.fileBarText{
 
 
     #loginBtn {
-        width: 100px;
         height: 40px;
         margin-top: 20px;
+        margin-bottom: 20px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     #loginBtn > p {
@@ -516,7 +518,6 @@ p.fileBarText{
 
 #userRegisterContainer {
     background-color:@wet-asphalt;
-    height: 260px;
     min-width: 250px;
     width: 280px;
     border-radius: 10px;
@@ -532,16 +533,41 @@ p.fileBarText{
         }
     }
 
-    #registerBtn {
-        width: 100px;
-        height: 40px;
-        margin-top: 20px;
+    h2 {
+      color: white;
+      text-align: center;
     }
 
-    #registerBtn > p {
-        font-size: 16pt;
+    .successMessage {
+      color: white;
+      text-align: center;
+      padding-bottom:10px;
+    }
+
+    #usernameInput {
+      margin-bottom: 20px;
+
+      .message {
+        color: white;
+        margin-top: 5px;
+        margin-left: 10px;
+      }
+
+      .errorMessage {
+        color : @alizarin;
+      }
+    }
+
+    #registerBtn {
+        height: 40px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        margin-left: auto;
+        margin-right: auto;
     }
 }
+
+
 
 
 .noAnimate{
