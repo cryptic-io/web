@@ -89,7 +89,7 @@ define(["core/mori"], function(mori){
         mori.vector.apply(null,itemsToRemove),
         mori.curry(mori.each,function(view){
           //remove the element from the list keeping track of elements
-          this.elements = thatthis.removeElement(this.elements, view.el)
+          that.elements = that.removeElement(that.elements, view.el)
           //wait a bit for the item to fall off screen
           _.delay(_.bind(view.remove,view), 0.5e3) 
         }))
@@ -451,3 +451,4 @@ define(["core/mori"], function(mori){
 
   })
 })
+test = "afadf"
