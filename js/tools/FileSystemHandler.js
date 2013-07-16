@@ -58,14 +58,20 @@ var FileSystemHandler = {
         fileSystem.getFileSystem(function(fs){
             fs.root.getFile(name, {create:true, exclusive:true}, options.successCallback, 
                 //Error Function, the file might already exist, so we need to delete it
-                function(){
-                    fs.root.getFile(name, {create:false}, function(fileEntry){
-                        //lets remove the existing file
-                        fileEntry.remove(function(){
-                            //now that the file is removed lets create it
-                            fs.root.getFile(name, {create:true}, options.successCallback, options.errorCallback);
-                        })
-                    }, options.errorCallback)
+                //
+                function(error){
+                    //check to make sure the error is that is already exists
+                    if (error.code === FileError.PATH_EXISTS_ERR){
+                        fs.root.getFile(name, {create:false}, function(fileEntry){
+                            //lets remove the existing file
+                            fileEntry.remove(function(){
+                                //now that the file is removed lets create it
+                                fs.root.getFile(name, {create:true}, options.successCallback, options.errorCallback);
+                            })
+                        }, options.errorCallback)
+                    }else{
+                      console.error("There was something wrong with the filesystem",error)
+                    }
                 }
            )
         })

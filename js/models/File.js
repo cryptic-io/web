@@ -11,7 +11,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
              *
             */
 
-           webworkers: true
+           webworkers: false
            , maxWorkers: 1
 
         },
@@ -309,14 +309,14 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
             chunk = chunks.pop()
 
             //get the key and then download the file
-            this.manifest.fetchChunkKey(chunk.get('chunkInfo').part, _.bind(function(linkKey){
+            this.manifest.fetchChunkKey(chunk.get('chunkInfo').part, _.bind(function(linkKeyObj){
 
                 if ( this.get('webworkers') ){
                     console.log('USING WEBWORKERS')
                     //If there are web workers do this
                     chunk.download({
                         linkName: chunk.get('chunkInfo')['linkName']
-                        , linkKey: linkKey
+                        , linkKeyObj: linkKeyObj
                         , IVKey: chunk.get('chunkInfo')['IVKey']
                     }, _.bind(function(decryptedBuffer){
                         console.log('chunk:',chunkIndex,'downloaded')
@@ -333,10 +333,10 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                     //We need to break it up into multiple steps (something the webworker does to save messages)
                     var args = {
                         linkName: chunk.get('chunkInfo')['linkName']
-                        , linkKey: linkKey
+                        , linkKeyObj: linkKeyObj
                         , IVKey: chunk.get('chunkInfo')['IVKey']
                     }
-                    chunk.set({'linkName':args.linkName, 'linkKey':args.linkKey})
+                    chunk.set({'linkName':args.linkName, 'linkKeyObj':args.linkKeyObj})
                     chunk.decodeIVKey(args.IVKey)
                     chunk.download(_.bind(function(decryptedBuffer){
                         //Here we put it on the map to be written by the main thread
@@ -429,12 +429,6 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
             )
         },
 
-        getFileEntry: function(callback){
-            var name = this.manifest.get('name')
-            this.fileSystem.getFileSystem(function(fs){
-                fs.root.getFile(name, {}, callback)
-            })
-        },
 
 
         //mainly for testing, ouputs text
@@ -447,6 +441,13 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                     }
                     reader.readAsText(file)
                 })
+            })
+        },
+
+        getFileEntry: function(callback){
+            var name = this.manifest.get('name')
+            this.fileSystem.getFileSystem(function(fs){
+                fs.root.getFile(name, {}, callback)
             })
         },
 

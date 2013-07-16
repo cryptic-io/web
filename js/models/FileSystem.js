@@ -5,7 +5,7 @@ define([],function(){
       return {}
     }
 
-    window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+    window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem
 
 
 
@@ -19,6 +19,8 @@ define([],function(){
     FileSystem.prototype = {
 
         size:0,
+
+        fileSystemLoaded: false,
         
         defaultErrCallback: function(e){
             var msg = '';
@@ -47,10 +49,26 @@ define([],function(){
             console.error('Error: ' + msg);
         },
 
+        //This should only be called once, with the requested filesystem being cached under this.fs
         initializeFileSystem: function(requestedSizeInBytes, callback, errCallback){
+            var that = this
             errCallback = errCallback || this.defaultErrCallback
             this['size']=requestedSizeInBytes
-            requestFileSystem(TEMPORARY, requestedSizeInBytes, callback, errCallback )
+
+            //First lets ask for space, please!
+            navigator.webkitTemporaryStorage.requestQuota(requestedSizeInBytes*10,
+              function(grantedBytes){
+                //We got the space, nice! now we ask for the filesystem, with a pretty please
+                requestFileSystem(TEMPORARY, requestedSizeInBytes*10, 
+                function(fs){ 
+                  //we got the fs, now let's cache that sucker
+                  that.fileSystemLoaded = true
+                  that.fs = fs
+                  if (typeof(callback) !== "undefined") callback(fs)
+                }, 
+                errCallback )
+              },
+              errCallback)
         },
 
         requestMoreSpace:function(spaceInBytes, callback, errCallback){
@@ -63,7 +81,11 @@ define([],function(){
             size = size || this.size
             //console.log('this size is gonna be', size)
             errCallback = errCallback || this.defaultErrCallback
-            this.initializeFileSystem(size, callback, errCallback)
+            if (this.fileSystemLoaded){
+              callback(this.fs)
+            }else{
+              this.initializeFileSystem(size, callback, errCallback)
+            }
         },
 
     }

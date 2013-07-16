@@ -1,5 +1,14 @@
 //Define the chunk model
 define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/FileSystem', 'models/RSA', 'apiEndPoints', 'tools/sha1Hash'],function(Uploader, Downloader, FileSystemHandler, FileSystem, RSAModel, api, sha1Hash){ 
+    if (typeof(console) === "undefined") {
+      //in case we are in a web worker
+      console = {
+        log : function(){}
+        , error : function(){}
+        , warn : function(){}
+      }
+    }
+
     return Backbone.Model.extend({
 
         defaults: {
@@ -202,14 +211,14 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
         //callback will return the binary data 
         download: function(callback){
-            if ( !this.has('linkName') || !this.has('linkKey') )
+            if ( !this.has('linkName') || !this.has('linkKeyObj') )
             {
-                //console.error('link name or link key is not set');
+                console.error('link name or link key is not set');
             }
 
             Downloader.prototype.downloadFile(
                 this.get('linkName'),
-                this.get('linkKey'), 
+                this.get('linkKeyObj'), 
                 this.get('progressListener'), 
                 _.bind(function(arraybuffer){
                     this.set('buffer',arraybuffer)

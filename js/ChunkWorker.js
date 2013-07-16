@@ -98,7 +98,7 @@ requirejs({
             download: function(args){
                 currentChunk.set({
                     linkName: args.linkName,
-                    linkKey: args.linkKey
+                    linkKeyObj: args.linkKeyObj
                 });
                 currentChunk.decodeIVKey(args.IVKey);
 

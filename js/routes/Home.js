@@ -240,10 +240,13 @@ define(
           //this will be called when the file begins to download
           fileView.downloadDeffered.promise.then(function(progressView){
             progressView = progressView
-            viewport.toggleAnimate(barsContainer)
-              .placeCenter(barsContainer)
+            viewport.exeunt()
+                    .introduceEl(barsContainer,0)
+                    .moveToPage(0)
+                    .placeCenter(barsContainer,0)
 
           })
+
 
           fileView.downloadFile(linkName, passcode, function(){
               console.log('woohoo downloaded the file!');

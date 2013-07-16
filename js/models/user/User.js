@@ -64,7 +64,7 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
           var userBlob = new UserBlob({username:username, password:password})
           this.set('userBlob', userBlob)
           var loginReq = {username:username}
-          if (auth_attempt.length !== 0){
+          if (!_.isUndefined(auth_attempt) && auth_attempt.length !== 0){
               loginReq["auth_attempt"]=auth_attempt
           } 
 
@@ -75,8 +75,8 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
       }
   
       , loginCallback: function(response){
-          if (result.return !== "success"){
-            this.trigger('login:error',result.return.error)
+          if (_.has(response.return,"error")){
+            this.trigger('login:error',response.return.error)
             return
           }
            
@@ -84,7 +84,15 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
           , password = userBlob.get('password')
   
           var userBlobs = response.return.blobs
-          userBlobs = _.map(userBlobs, _.bind(userBlob.decryptBlob,this, password))
+
+          try {
+            userBlobs = _.map(userBlobs, _.bind(userBlob.decryptBlob,this, password))
+          }catch (e){
+            //The decryption failed, so they most likely used a wrong password
+            console.error(e, ". Probably a Wrong Password")
+            this.trigger('login:error', "wrong password")
+            return
+          }
   
           var userBlobFromServer = userBlob.consolidateBlobs(userBlobs)
   

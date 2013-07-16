@@ -18,7 +18,8 @@ define(["config", "apiEndPoints"],function(config, api){
               try {
                   var fileKeys = JSON.parse(this.response).return
                   var fileKeysObj = {}
-                  fileKeys.forEach(function(fileKey){ fileKeysObj[fileKey.filename] = fileKey.key })
+                  // save the key and ts for each file
+                  fileKeys.forEach(function(fileKey){ fileKeysObj[fileKey.filename] = {key:fileKey.key, ts: fileKey.ts}  })
               }catch(err){
                   //I really shouldn't have to this so often, so call stack should be fine
                   console.error('There was an error',err)
@@ -31,12 +32,19 @@ define(["config", "apiEndPoints"],function(config, api){
           xhr.send(JSON.stringify(request));
       },
 
-      downloadFile: function(linkname, key, progressListener, callback){
+      downloadFile: function(linkname, keyObj, progressListener, callback){
           if (progressListener) progressListener({event:"Downloading", progress:0});
-          request = {command:"downloadFile",filename:linkname,key:key,"meta":{"http":true}}
+
+          var url = "/download/<%=filename%>/<%=ts%>/<%=key%>" 
+          , key = keyObj.key
+          , ts = keyObj.ts
+
+          url = _.template(url, {filename:linkname, key:key, ts:ts})
+
+          var request = {command:"downloadFile",filename:linkname,key:key,"meta":{"http":true}}
 
           var xhr = new XMLHttpRequest()
-          xhr.open('POST', nemo, true)
+          xhr.open('GET', url, true)
 
           xhr.responseType = 'arraybuffer'
           xhr.setRequestHeader('Content-Type','text/plain')
@@ -62,7 +70,7 @@ define(["config", "apiEndPoints"],function(config, api){
               }
           }
   
-          xhr.send( JSON.stringify(request) );
+          xhr.send();
           //$.post(nemo,request, xhr.onload); 
           
       },

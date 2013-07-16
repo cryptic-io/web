@@ -197,7 +197,7 @@ define(['models/Chunk'],function(Chunk){
             this.worker.postMessage({
                 command: command,
                 linkName: args.linkName,
-                linkKey: args.linkKey,
+                linkKeyObj: args.linkKeyObj,
                 IVKey: args.IVKey
             });
 
