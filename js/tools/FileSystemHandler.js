@@ -61,7 +61,7 @@ var FileSystemHandler = {
                 //
                 function(error){
                     //check to make sure the error is that is already exists
-                    if (error.code === FileError.PATH_EXISTS_ERR){
+                    if (error.code === FileError.PATH_EXISTS_ERR || error.code === FileError.INVALID_MODIFICATION_ERR){
                         fs.root.getFile(name, {create:false}, function(fileEntry){
                             //lets remove the existing file
                             fileEntry.remove(function(){

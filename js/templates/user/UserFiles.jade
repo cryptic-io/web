@@ -23,6 +23,10 @@
       if file.selected
         .file.outerBar.selectedFile
           p.fileBarText.barText(path="#{fsLocation}#{file.filename}")= file.filename
+          p.delete ✕
       else
         .file.outerBar
           p.fileBarText.barText(path="#{fsLocation}#{file.filename}")= file.filename
+          p.delete ✕
+     .file#barsContainer
+       .bars

@@ -170,134 +170,82 @@ define(
 
         uploadFiles: function(files){
             files = _.map(files, _.bind(function(file){ return (new FileModel({file:file, user:this.options.user}))},this))
-            , barItems = _.map(files, function(file){ return {text:file.get("file").name, percent:"0%"}})
-            , progressBarsView = new ProgressBarsView({el:barsContainer, bars:{title:"Uploading...", items:barItems}}) //create a new view for all the bars
-            , progressBars = progressBarsView.getIndividualProgressViews() //return individual views for each bars, this will allow greater control of each bar
 
-
-            progressBarsView.render()
-            var progressBars = progressBarsView.getIndividualProgressViews() //return individual views for each bars, this will allow greater control of each bar
-
-            this.uploadDeffered.resolve()
+            //broadcast that we are starting to upload
+            this.trigger("file:start:upload")
 
             //remember the filemodels so we can destroy them if we want to cancel the upload
             this.fileModels = files
+            this.trigger("file:list", files)
 
-            this.uploadFilesRecursively(files, progressBars)
+            this.uploadFilesRecursively(files, 0)
         },
 
-        uploadFilesRecursively: function(files, progressBars){
-            if (files.length != progressBars.length){
-                console.error('Files length and progress bars length do not match')
-                return 
-            }
-
+        uploadFilesRecursively: function(files, fileIndex){
             if (files.length == 0){
+                this.trigger("file:uploaded:all")
                 return 
                 //Finished uploading 
             }
 
-            this.uploadFile(files[0], progressBars[0], _.bind(this.uploadFilesRecursively, this, _.rest(files), _.rest(progressBars)))
+            this.uploadFile(files[0], fileIndex, _.bind(this.uploadFilesRecursively, this, _.rest(files), fileIndex+1))
         },
 
-        uploadFile: function(fileModel, progressView, callback){
+        uploadFile: function(fileModel, fileIndex, callback){
 
             var origin = window.location.protocol + "//" + window.location.host
 
-            fileModel.set('progressView',progressView)
+            //listen to the progress of the file, and pass it up with the fileIndex attached
+            this.listenTo(fileModel,'file:progress',function(progress){ this.trigger("file:progress",fileIndex, progress) })
+
             fileModel.upload(_.bind(function(linkData){
                 console.log('an alert would have happened here','#download/'+linkData.linkName+'/'+linkData.IVKey)
                 fileModel.destroy()
                 var downloadLink = origin+'/#download/'+linkData.linkName+'/'+linkData.IVKey
 
                 console.log('download link',downloadLink)
-                var originalBarText =  progressView.text()
-                progressView.link(downloadLink, originalBarText + "")
-                progressView.text("")
-
                 //trigger the file uploaded event
-                this.trigger('fileUploaded',
+                this.trigger("file:uploaded",fileIndex, 
                              {link:linkData.linkName+'/'+linkData.IVKey
                              , filename:fileModel.get('file').name
                              , size: fileModel.get('file').size
-                             , type: fileModel.get('file').type
-                })
+                             , type: fileModel.get('file').type})
 
                 callback()
             },this))
         },
 
         downloadFile: function(linkName, passcode, callback){
-            $('#progressBarContainer').css({
-                width: "100%"
-                , height: "20px"
-            })
 
-            var progressBarsView = new ProgressBarsView({el:barsContainer, bars:{title:"Downloading...", items:[{text:"", percent:"0%"}]}}) //create a new view for all the bars
+            /*var progressBarsView = new ProgressBarsView({el:barsContainer, bars:{title:"Downloading...", items:[{text:"", percent:"0%"}]}}) //create a new view for all the bars
             progressBarsView.render()
             progressView = progressBarsView.getIndividualProgressViews()[0] //only care about the first one since we are only downloading one thing
 
             this.downloadProgressView = progressView
 
             this.downloadDeffered.resolve(progressView)
+            */
 
             this.model = new FileModel({user:this.options.user})
-            this.model.set('progressView',progressView)
-            this.model.download(linkName, passcode, callback)
+
+            this.trigger("file:start:download")
+
+            this.listenTo(this.model,'file:progress',function(progress){ this.trigger("file:progress",0, progress) })
+            this.listenTo(this.model,'file:name',_.bind(function(name){this.trigger("file:name",name)},this))
+
+            this.model.download(linkName, passcode, _.bind(function(){this.trigger("file:downloaded");callback()},this))
         },
 
 
         createDownloadLink: function(){
             this.model.getFileEntry(_.bind(function(fileEntry){
-                var filename = this.downloadProgressView.text()
-                this.downloadProgressView.link(fileEntry.toURL(), "Save "+filename)
+                this.trigger("file:url",{url:fileEntry.toURL(), name: fileEntry.name})
+                //var filename = this.downloadProgressView.text()
+                //this.downloadProgressView.link(fileEntry.toURL(), "Save "+filename)
                 //clear the old text
-                this.downloadProgressView.text("")
+                //this.downloadProgressView.text("")
             },this))
 
-        },
-
-        convertToProgressBar: function(){
-            var dragDropUpload = this.$el.find('#dragDropUpload')
-            , uploadFileButton = this.$el.find('#uploadFile')
-
-
-            //hide the button no need for it anymore
-            uploadFileButton.hide()
-            
-            
-            //clear the text
-            dragDropUpload.find('#dndInfo').text('')
-            dragDropUpload.find('#filename').text('')
-            
-            //change the message to tell the user uploading is happening
-            this.$el.find('#headerText').text('Encrypting and Uploading the file...')
-
-
-            var progressView = this.model  ? this.model.get('progressView') : {render:function(){}}
-            $(dragDropUpload).anim({height:"5px"}, 1, 'linear',function(){
-                progressView.render();
-            })
-        },
-
-        displayDownloadLink:function(link){
-            var dragDropUpload = this.$el.find('#dragDropUpload');
-            var downloadLink = this.$el.find('#downloadLink')
-
-            downloadLink.show();
-
-            //set the value of the text
-            downloadLink.val(link)
-
-            //set the helpful header text
-            this.$el.find('#headerText').text('File has been encrypted and uploaded, the link below is your key to your cryptic goodness!')
-
-            //hide the upload box
-            dragDropUpload.css('height','5px')
-
-            downloadLink.focus()
-            //run the native DOM code
-            downloadLink[0].select()
         },
 
     })

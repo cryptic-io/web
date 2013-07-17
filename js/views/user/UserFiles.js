@@ -1,6 +1,10 @@
 //returns the Userfiles view, responsible for the look of the fs
 define(["jade!templates/user/UserFiles", "views/user/SingleFileInfo"], function(filesTemplate, SingleFileInfo){ 
     return Backbone.View.extend({
+
+        id : "userFilesContainer",
+        className : "floatingContainer",
+
         template: filesTemplate,
 
         initialize: function(){
@@ -10,8 +14,6 @@ define(["jade!templates/user/UserFiles", "views/user/SingleFileInfo"], function(
             this.listenTo(this.model,'change:inOptions',this.updateView)
             //check if the fs has changed
             this.listenTo(this.model,'change:fs',this.updateView)
-
-
         },
 
         updateView: function(){
@@ -19,8 +21,6 @@ define(["jade!templates/user/UserFiles", "views/user/SingleFileInfo"], function(
             if (this.model.get('loggedIn') == false) return
             if (this.model.get('inOptions') == true) return
             if (_.isUndefined(this.model.getFile())) return
-
-
 
             //this should return a list of files in the current fsLocation
             var file = this.model.getFile()

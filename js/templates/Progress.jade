@@ -3,8 +3,4 @@
         p= title 
     .bars
         each item in items
-            .outerBar
-                p.barText= item.text
-                a.barText.barLink(href="#download/jadsf/adfasd", target="_blank") someLink
-                p.delete ✕
-                .innerBar(style="width:#{item.percent};")
+          include templates/ProgressBar

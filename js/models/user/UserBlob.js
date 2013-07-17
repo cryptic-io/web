@@ -3,6 +3,7 @@ define(["apiEndPoints", "models/File", "models/RSA"],function(api, File, RSAMode
   return Backbone.Model.extend({
     initialize: function(){
       this.set('rsa', new RSAModel())
+      this.set("timestamp", +(new Date()))
     }
 
     , generateRSA: function(){
@@ -14,7 +15,14 @@ define(["apiEndPoints", "models/File", "models/RSA"],function(api, File, RSAMode
     }
 
     , getBlob: function(){
-        var userBlob = _.pick(this.toJSON(),["fs", "version", "id", "username"])
+        this.set("timestamp",+(new Date()))
+      
+        var userBlob = _.pick(this.toJSON(),["fs", "version", "id", "username", "timestamp"])
+
+        if (_.isUndefined(userBlob.fs)) { 
+          this.resetFS();
+          userBlob.fs = this.get("fs")
+        }
 
         //return a serialized json version of the RSA info
         userBlob["RSAObject"] = this.get("rsa").getRSAObject()
@@ -37,8 +45,8 @@ define(["apiEndPoints", "models/File", "models/RSA"],function(api, File, RSAMode
 
     //Merge multiple userBlobs into one, prevents a user from accidently overwriting his data
     , consolidateBlobs: function(userBlobs){
-        //TODO actually do something here
-        return userBlobs[0]
+      //for now I'm just going to get the userblob with the latest timestamp
+      return _.max(userBlobs, function(userBlob){return userBlob.timestamp})
     }
 
     // Simple shortcut, we are just gonna use the excellent work in the sjcl library
@@ -235,6 +243,9 @@ define(["apiEndPoints", "models/File", "models/RSA"],function(api, File, RSAMode
     }
 
     , calcSpaceUsed: function(){
+      if (!this.has("fs")){
+        return 0
+      }
       var fs = this.get('fs')
 
       var recursiveReduceSum = function(memo, fileObj){

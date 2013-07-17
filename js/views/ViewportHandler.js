@@ -6,6 +6,8 @@ define(["core/mori"], function(mori){
   return Backbone.View.extend({
 
     offsetFromCenter: 100
+
+    , delayToRemove: 500 //delay in ms before removing an element, so it doesn't go away without while we are looking at it
     
     , bottomMargin: 50
 
@@ -91,7 +93,7 @@ define(["core/mori"], function(mori){
           //remove the element from the list keeping track of elements
           that.elements = that.removeElement(that.elements, view.el)
           //wait a bit for the item to fall off screen
-          _.delay(_.bind(view.remove,view), 0.5e3) 
+          _.delay(_.bind(view.remove,view), that.delayToRemove) 
         }))
 
       return this;
@@ -149,7 +151,7 @@ define(["core/mori"], function(mori){
       //check delay, if we are in a delay, lets put it on the queue of things to run after the delay
       if ( this.onDelay ) {
         this.delayedFns.push(_.bind(this.placeElement,this,element,left, top))
-        return
+        return this
       }
 
 
@@ -159,11 +161,21 @@ define(["core/mori"], function(mori){
 
     //show and hide for chaining convienence
     , show: function(element){
+      if ( this.onDelay ) {
+        this.delayedFns.push(_.bind(this.show,this,element))
+        return this
+      }
+
       $(element).show()
       return this
     }
 
     , hide: function(element){
+      if ( this.onDelay ) {
+        this.delayedFns.push(_.bind(this.hide,this,element))
+        return this
+      }
+
       $(element).hide()
       return this
     }

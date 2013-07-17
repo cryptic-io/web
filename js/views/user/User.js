@@ -9,15 +9,12 @@ define(["jade!templates/user/User", "models/user/User", "views/user/Userlogin", 
 
         initialize: function(){
 
-            this.model = new User()
-
-
             //set up subordinate views
             //userFileView
-            this.userFileView = new UserFileView({el:this.options.userFilesContainer, model: this.model})
-            this.userLoginView = new UserLoginView({el:this.options.userLoginContainer, model: this.model})
-            this.userSpace = new UserSpaceInfo({el:this.options.userSpaceContainer, model: this.model})
-            this.userOptions = new UserOptions({el:this.options.userFilesContainer, model:this.model})
+            this.userFileView = new UserFileView({model: this.model})
+            this.userLoginView = new UserLoginView({model: this.model})
+            this.userSpace = new UserSpaceInfo({model: this.model})
+            this.userOptions = new UserOptions({model:this.model})
 
 
             this.setupListeners()
@@ -44,7 +41,7 @@ define(["jade!templates/user/User", "models/user/User", "views/user/Userlogin", 
         },
 
         //call this function when the file has been uploaded succefully
-        fileUploaded : function(fileObj){
+        fileUploaded : function(fileIndex, fileObj){
             console.log('Saving',fileObj.name,'to userblob at', fileObj.location)
 
             this.model.addFile(fileObj)

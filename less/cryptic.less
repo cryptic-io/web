@@ -356,6 +356,7 @@ body {
         top: 2px;
         font-size:20pt;
         z-index:2;
+        cursor: pointer;
     }
 }
 
@@ -363,11 +364,17 @@ body {
     width: 40%;
     height: 40px;
     margin-left: 0px;
-    background-color: @emerland;
     position:absolute;
     top:0px;
     z-index:1;
     .transition(1s);
+}
+.innerBar.loading { 
+  background-color: @carrot;
+}
+
+.innerBar.success { 
+  background-color: @emerland;
 }
 
 /* user files */
@@ -406,6 +413,10 @@ p.fileBarText{
 
 .file.outerBar{
     background-color: @wet-asphalt;
+
+    .delete {
+      color: white;
+    }
 }
 
 /* file info */
@@ -437,6 +448,7 @@ p.fileBarText{
 .floatingContainer{
     margin: auto;
     position: relative;
+    vertical-align: top;
     //min-width: 400px;
     display:inline-block;
     .transition(.5s)

@@ -121,11 +121,11 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
         attachProgressListenerToChunks: function(){
             var chunks = this.get('chunks');
-            var progressView = this.get('progressView')
             var numberOfUpdateEventsPerChunk = 2 //represents the events that will be updated for each chunk, this is weighted evenly
             //There is the upload event and the encrypting event. That's 2
             var numberOfChunks = chunks.length  //the chunks that are going to be part of the whole progress
             var chunkProgress = {}
+            var that = this
 
             var progressListener = function(chunkNo){
                 //We are going to keep track of each individual chunks progress 
@@ -150,8 +150,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                     //scale the progress appropriately for the chunks
                     totalChunkProgress = totalChunkProgress/(numberOfChunks*numberOfUpdateEventsPerChunk)
                     console.log('total progress:',totalChunkProgress)
-
-                    progressView.percentage(totalChunkProgress+"%")
+                    that.trigger("file:progress",totalChunkProgress)
                 }
             }
 
@@ -209,8 +208,8 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
             this.manifest.downloadManifest(linkName, passcode, _.bind(function(manifest){
                 console.log('we got the manifest!');
-                //add the name to the download bar
-                this.get("progressView").text(manifest.get("name"))
+                //send an event for the file name
+                this.trigger("file:name",manifest.get("name"))
 
                 this.manifest = manifest
                 this.createChunksFromManifest()

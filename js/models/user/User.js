@@ -33,6 +33,7 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
               {username:username
                , password: password
           })
+          userBlob.resetFS()
           userBlob.generateRSA()
   
           var userBlobJSON = userBlob.getBlob()
@@ -146,8 +147,7 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
 
           userBlob.saveBlob()
 
-          //let listeners know that the fs has changed
-          this.trigger('change:fs')
+          //this.trigger('change:fs')
       }
 
       , deleteFolder: function(fsLocation, filename){

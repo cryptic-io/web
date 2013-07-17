@@ -1,7 +1,10 @@
 //returns the User View, this contains the fs and is the parent to the userLogin
 define(["jade!templates/user/UserOptions"], function(userOptionsTemplate){ 
     return Backbone.View.extend({
-        template : userOptionsTemplate
+        id : "userOptionsContainer"
+        , className : "floatingContainer"
+
+        , template : userOptionsTemplate
 
         , initialize : function(){
             this.listenTo(this.model, 'change:inOptions', this.render)

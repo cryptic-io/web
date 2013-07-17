@@ -1,21 +1,25 @@
-//Given a model with a set of objs containing {name:... , percentages:...}, and a title  generate a set of pregress bars
-//Also give the ability to return a new view that can update individual bars
-define(["jade!templates/Progress", "views/Progress"], function(ProgressTemplates, ProgressBarView){ 
+//This is really just a container for floating progress bars, with a nice function that wil insert progress bars into itself
+define(["jade!templates/ProgressBars", "views/Progress"], function(ProgressTemplates, ProgressBarView){ 
   return Backbone.View.extend({
-    render:function(){
-      //this is where the array of percentages should be
-      // this.model.get("items")
-      
-      //this is where the title should be
-      // this.model.get("title")
 
-      this.$el.html(ProgressTemplates(this.options.bars))
+    id : "progressBarsContainer",
+    className : "floatingContainer",
+  
+    render:function(){
+      this.$el.html(ProgressTemplates({title: this.options.title}))
     },
 
-    // this will return an array of objects that can control the percantage and filename of each progress bar 
-    getIndividualProgressViews: function(){
-      var that = this
-      return _.map(this.$el.find(".bars").children(), function(barEl, index){ return (new ProgressBarView({el:barEl, barInfo:that.options.bars[index]})) })
+    setTitle: function(title){
+      this.$el.find(".barTitle p").text(title)
+    },
+
+    //pass in an array of bar elements and they will be placed appropriately
+    insertProgressBars: function(bars){
+      var barContainer = this.$el.find(".bars")
+      
+      _.each(bars, function(bar){
+        barContainer.append(bar)
+      })
     }
 
   })

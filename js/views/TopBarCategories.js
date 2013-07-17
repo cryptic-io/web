@@ -11,21 +11,53 @@ define(["jade!templates/TopBar"], function(template){
   return Backbone.View.extend({
 
     //store the index of the buttons
-    layout: {
+    loggedOutLayout: {
       "about":0,
       "upload":1,
       "register":2,
       "login":3
     },
 
+    loggedInLayout: {
+      "about":0,
+      "files":1,
+      "settings":2,
+      "logout":3
+    },
+
+    // Keep track of a mapping between names that are used internally (here) and names that are rendered to the DOM
+    prettyNames: {
+      "about":"About",
+      "upload":"Upload",
+      "register":"Register",
+      "login":"Login",
+      "files":"Files",
+      "settings":"Settings",
+      "logout":"Logout"
+    },
+
     initialize: function(){
+      this.layout=this.loggedOutLayout
     },
 
     render: function(){
-      this.$el.html(template())
+      var categories = _.chain(this.layout)
+                        .keys()
+                        .map(function(n){return this.prettyNames[n]},this).value()
+      this.$el.html(template({categories:categories}))
 
       //hide all the selected bars to the left off screen
       _.each($('#topBar').find('.selectedBar'), function(e, i){$(e).css("left",-150*(i+1))})
+    },
+
+    changeToLoggedIn : function(){
+      this.layout = this.loggedInLayout;
+      this.render()
+    },
+
+    changeToLoggedOut : function(){
+      this.layout = this.loggedOutLayout;
+      this.render()
     },
     
     events : {

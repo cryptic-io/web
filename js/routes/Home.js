@@ -1,10 +1,10 @@
 //returns routes that will be used in the Home page (so most pages)
 
 define(
- ["views/Home", "views/File", "views/Progress", "views/user/User", "views/ProgressBars", 
+ ["views/Home", "views/File", "views/Progress", "views/user/User", "views/ProgressBars", "views/Progress",
   "views/ViewportHandler", "views/user/UserFiles", "jade!templates/user/SingleFileInfo", "views/TopBarCategories", "models/user/User", "views/user/Userlogin", "views/user/UserRegister",
   "views/About"  ]
-, function(HomeView, FileView, ProgressView, UserView, ProgressBars, ViewportHandler, UserFilesView, singleFileInfoTemplate, TopBar, User, UserLoginView, UserRegisterView, About){ 
+, function(HomeView, FileView, ProgressView, UserView, ProgressBars, ProgressBar, ViewportHandler, UserFilesView, singleFileInfoTemplate, TopBar, User, UserLoginView, UserRegisterView, About){ 
     return Backbone.Router.extend({
         routes: {
             "home" : "home"
@@ -27,12 +27,39 @@ define(
           //we may also initialize the viewport handler. This will provide functions to modify the placing of elements
           this.viewport = new ViewportHandler({el:$("#mainContainer")})
 
+          this.userModel = new User()
+          user = this.userModel
+
           this.topBar = new TopBar({el:$("#topBar")})
           this.topBar.render()
           this.registerTopBar(this.topBar)
+          this.registerUser(this.userModel)
+          this.registerUserAndTopBar(this.topBar, this.userModel)
 
+          user.login("asdf","asdf")
+
+
+        },
+
+        recreateUser : function(){
+          console.log("recreating user")
+          this.stopListeningToUser(this.userModel)
+          this.userModel.clear()
           this.userModel = new User()
+          this.navigate("/login", {trigger:true})
+          this.viewport.exeunt()
+          _.delay(_.bind(this.login,this),500)
 
+
+          this.registerUser(this.userModel)
+          this.registerUserAndTopBar(this.topBar, this.userModel)
+
+          //safest way to really logout, but it takes time :(
+          //location.reload()
+        },
+
+        registerUser: function(user){
+          this.listenTo(user, "destroy", this.recreateUser)
         },
 
         registerTopBar: function(topBar){
@@ -40,6 +67,23 @@ define(
           this.listenTo(topBar, "register:click", _.bind(this.navigate, this, "/register", {trigger:true}))
           this.listenTo(topBar, "upload:click", _.bind(this.navigate, this,   "/home", {trigger:true}))
           this.listenTo(topBar, "about:click", _.bind(this.navigate, this,    "/about", {trigger:true}))
+
+          this.listenTo(topBar, "files:click", _.bind(this.navigate, this, "/user", {trigger:true}))
+        },
+
+        //just to keep track of things that need the user and the topbar
+        registerUserAndTopBar: function(topBar, user){
+          topBar.listenTo(user, "login:success", topBar.changeToLoggedIn)
+          topBar.listenTo(user, "destroy", topBar.changeToLoggedOut)
+          //have the usermodel know when we logout, and destroy the model 
+          user.listenTo(topBar, "logout:click", user.destroy)
+        },
+
+        //remove anything listening to the user so we don't end up with zombie models calling the shots
+        stopListeningToUser: function( user){
+          this.topBar.stopListening(user)
+          this.stopListening(user)
+          this.userModel.stopListening()
         },
 
         login: function(){
@@ -70,28 +114,64 @@ define(
         home: function() {
           console.log('starting home')
           var home = this.home
-          var barsContainer = home.$el.find("#barsContainer")[0]
+          //var barsContainer = home.$el.find("#barsContainer")[0]
           , viewport = this.viewport
+          , barsContainer = new ProgressBars({title: "Uploading"})
+          barsContainer.render()
 
           this.topBar.select('upload')
 
-          var fileView = new FileView({progressBarContainer: barsContainer });
+          var fileView = new FileView();
           fileView.render()
 
-          //this promise will be resolved when the user uploads a file
-          fileView.uploadDeffered.promise.then(function(){
 
-            viewport.delay(0.5e3) //delay the animation by a bit so the user sees the upload bar is coming "from" the vault
-                    .placeLeftOfCenter(fileView.el, 1)
-                    .placeRightOfCenter(barsContainer, 1)
+
+          // All the progress bars are going to be in this array soon enough
+          progressBars = []
+
+          //Create the list of files
+          fileView.on("file:list",function(files){
+            progressBars = _.map(files, function(fileModel){
+              var progressBar = new ProgressBar()
+              progressBar.render()
+              progressBar.text(fileModel.get("file").name)
+              return progressBar
+            })
+
+            barsContainer.insertProgressBars(_.map(progressBars, function(view){return view.el}))
+          })
+
+          //update the progress of each file
+          fileView.on("file:progress", function(fileIndex,percentage){
+            console.log("progress:",percentage,"for file:",fileIndex)
+            progressBars[fileIndex].percentage(percentage+"%")
+          })
+
+          fileView.on("file:uploaded", function(fileIndex, fileObj){
+            var origin = window.location.protocol + "//" + window.location.host
+            var downloadLink = origin+'/#download/'+fileObj.link
+            var progressBar = progressBars[fileIndex]
+
+            progressBar.link( downloadLink, fileObj.filename )
+            progressBar.markSuccess()
           })
 
           viewport
             .exeunt()
             .introduce(fileView, 1)
-            .introduceEl(barsContainer, 1)
+            .introduce(barsContainer, 1)
             .moveToPage(1)
             .placeCenter(fileView.el, 1)
+            .hide(barsContainer.el)
+            .placeCenter(barsContainer.el,1)
+
+          //this promise will be resolved when the user uploads a file
+          fileView.on("file:start:upload",function(){
+            viewport.show(barsContainer.el)
+                    .delay(0.5e3) //delay the animation by a bit so the user sees the upload bar is coming "from" the vault
+                    .placeLeftOfCenter(fileView.el, 1)
+                    .placeRightOfCenter(barsContainer.el, 1)
+          })
         },
 
         about : function(){
@@ -112,51 +192,79 @@ define(
         // This is visible to a user once he logs in
         user: function(){
           var that=this
-          if (!this.userView) {
-            console.log('starting user home')
+          console.log('starting user home')
 
-            var home = this.home
-
-            var barsContainer = home.$el.find("#barsContainer")[0]
-
-            var viewport = this.viewport
+          var home = this.home
 
 
-            this.userView = new UserView({userLoginContainer:$('#userLogin')
-                                        , userFilesContainer:$('#userFilesContainer')
-                                        , userSpaceContainer:$('#userSpaceContainer')})
+          var viewport = this.viewport
+
+          this.userView = new UserView({model:this.userModel})
+
+          var fileView = new FileView({user:this.userView.model});
+          fileView.render()
+
+          var progressBars = []
 
 
-            var fileView = new FileView({el:$('#uploadBoxContainer'), user:this.userView.model, progressBarContainer: barsContainer });
-            this.userView.listenTo(fileView, 'fileUploaded', this.userView.fileUploaded)
-            this.userView.render()
+          this.userView.listenTo(fileView, 'file:uploaded', this.userView.fileUploaded)
+          this.userView.render()
 
-            fileView.uploadDeffered.promise.then(function(){
-              viewport.placeLeftOffScreen(that.userView.userFileView.el)
-                      .placeLeftOfCenter(fileView.el)
-                      .placeRightOfCenter(barsContainer)
+
+          fileView.on("file:list", function(files){
+            progressBars = _.map(files, function(fileModel){
+              var progressBar = new ProgressBar()
+              progressBar.render()
+              progressBar.text(fileModel.get("file").name)
+              return progressBar
             })
 
-            fileView.render()
-
-            this.userView.model.once('loggedIn', function(){
-              //once a user logs in we will move there files to the left of center, and put the fileViews at the right of center 
-              viewport.placeLeftOfCenter(that.userView.userFileView.el)
-                .placeRightOfCenter(fileView.el)
-                .placeRightOffScreen(barsContainer) //place the upload bars right off screen, this will probably change as we move the progress bar to be in the files 
+            _.each(progressBars, function(bar){
+              that.userView.userFileView.$el.find(".bars").append(bar.el)
             })
 
+          })
 
-            //change the url according to the fsLocation on the model
-            this.listenTo(this.userView.model, 'change:fsLocation', function(model){
-                this.navigate('/user/fs/'+model.get('fsLocation').substr(1))
-            })
-              
-          }else{
-            //We already have the page built, we just need to go to the root directory
-            this.userView.model.set('fsLocation','/')
-          }
+          //update the progress of each file
+          fileView.on("file:progress", function(fileIndex,percentage){
+            console.log("progress:",percentage,"for file:",fileIndex)
+            progressBars[fileIndex].percentage(percentage+"%")
+          })
 
+          fileView.on("file:uploaded", function(fileIndex, fileObj){
+            var origin = window.location.protocol + "//" + window.location.host
+            var downloadLink = origin+'/#download/'+fileObj.link
+            var progressBar = progressBars[fileIndex]
+
+            progressBar.link( downloadLink, fileObj.filename )
+            progressBar.markSuccess()
+          })
+
+          fileView.on("file:uploaded:all", function(){
+            debugger
+            that.userModel.trigger("change:fs")
+          })
+
+          
+          this.userModel.once("login:success", function(){
+            that.userView.userFileView.showFiles()
+            viewport.exeunt()
+              .introduce(that.userView.userFileView, 1)
+              .introduce(fileView, 1)
+              .moveToPage(1)
+              .placeLeftOfCenter(that.userView.userFileView.el, 1)
+              .placeRightOfCenter(fileView.el, 1)
+              .placeRightOffScreen(barsContainer) //place the upload bars right off screen, this will probably change as we move the progress bar to be in the files 
+          })
+
+
+
+
+          //change the url according to the fsLocation on the model
+          this.listenTo(this.userView.model, 'change:fsLocation', function(model){
+              this.navigate('/user/fs/'+model.get('fsLocation').substr(1))
+          })
+            
         },
 
         openUserFile: function(fileLocation){
@@ -168,83 +276,45 @@ define(
             this.userView.model.set('fsLocation', "/"+fileLocation)
         },
 
-
-
-        // This is visible to a user once he logs in
-        user: function(){
-          var that=this
-          if (!this.userView) {
-            console.log('starting user home')
-
-            var home = this.home
-
-            var barsContainer = home.$el.find("#barsContainer")[0]
-
-            var viewport = this.viewport
-
-
-            this.userView = new UserView({userLoginContainer:$('#userLogin')
-                                        , userFilesContainer:$('#userFilesContainer')
-                                        , userSpaceContainer:$('#userSpaceContainer')})
-
-
-            var fileView = new FileView({el:$('#uploadBoxContainer'), user:this.userView.model, progressBarContainer: barsContainer });
-            this.userView.listenTo(fileView, 'fileUploaded', this.userView.fileUploaded)
-            this.userView.render()
-
-            fileView.uploadDeffered.promise.then(function(){
-              viewport.placeLeftOffScreen(that.userView.userFileView.el)
-                      .placeLeftOfCenter(fileView.el)
-                      .placeRightOfCenter(barsContainer)
-            })
-
-            fileView.render()
-
-            this.userView.model.once('loggedIn', function(){
-              //once a user logs in we will move there files to the left of center, and put the fileViews at the right of center 
-              viewport.placeLeftOfCenter(that.userView.userFileView.el)
-                .placeRightOfCenter(fileView.el)
-                .placeRightOffScreen(barsContainer) //place the upload bars right off screen, this will probably change as we move the progress bar to be in the files 
-            })
-
-
-            //change the url according to the fsLocation on the model
-            this.listenTo(this.userView.model, 'change:fsLocation', function(model){
-                this.navigate('/user/fs/'+model.get('fsLocation').substr(1))
-            })
-              
-          }else{
-            //We already have the page built, we just need to go to the root directory
-            this.userView.model.set('fsLocation','/')
-          }
-
-        },
-
-
         download: function(linkNameAndPasscode){
           var home = this.home
 
           viewport = this.viewport
 
           //reference the barsContainer div
-          var barsContainer = home.$el.find("#barsContainer")[0]
-          , progressView
+          var barsContainer = new ProgressBars({title: "Uploading"})
+          barsContainer.render()
+          progressBar = new ProgressBar()
+          progressBar.render()
+          barsContainer.insertProgressBars([progressBar.el])
+
 
           var linkName = linkNameAndPasscode.split('/')[0]
           var passcode = linkNameAndPasscode.split('/')[1]
 
 
-          fileView = new FileView({el:$('#uploadBoxContainer'),template:"download", progressBarContainer: barsContainer});
+          fileView = new FileView();
 
 
           //this will be called when the file begins to download
-          fileView.downloadDeffered.promise.then(function(progressView){
-            progressView = progressView
+          fileView.on("file:start:download",function(){
             viewport.exeunt()
-                    .introduceEl(barsContainer,0)
+                    .introduce(barsContainer,0)
+                    .placeCenter(barsContainer.el,0)
                     .moveToPage(0)
-                    .placeCenter(barsContainer,0)
+          })
 
+          fileView.on("file:name", function(name){
+            progressBar.text(name)
+          })
+
+          fileView.on("file:progress", function(fileIndex,progress){
+            progressBar.percentage(progress+"%")
+          })
+
+          fileView.on("file:url", function(urlObj){
+            progressBar.link(urlObj.url, urlObj.name)
+            progressBar.markSuccess()
           })
 
 
