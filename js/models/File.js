@@ -11,8 +11,8 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
              *
             */
 
-           webworkers: false
-           , maxWorkers: 1
+           webworkers: true
+           , maxWorkers: 3
 
         },
 
