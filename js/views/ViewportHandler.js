@@ -1,7 +1,7 @@
 //functions to handle placing elements in the viewable viewport, also listens for screen resizes to move the elements accordingly
 //pass in the viewport as the el
 //most functions return this so you can chain function calls, if it doesn't return this it should return a promise of something (e.g. button click)
-define(["core/mori"], function(mori){ 
+define(["core/q","core/mori"], function(Q,mori){ 
   m = mori
   return Backbone.View.extend({
 
@@ -81,6 +81,8 @@ define(["core/mori"], function(mori){
         itemsToRemove = view
       }else if (_.isUndefined(view)){ //they passed in nothing, so get rid of everything
         itemsToRemove = mori.into_array(this.activeViews)
+        //go an hide all the buttons too
+        this.hideAllButtons()
       } else {
         itemsToRemove = [view]
       }
@@ -376,29 +378,29 @@ define(["core/mori"], function(mori){
       return this;
     }
 
-    , placeButtonLeft: function(text, classes, withMargin, rebuilding){
-      return this.placeButton($("#leftBtn")[0], text, ["sideBtn"].concat(classes), withMargin, "left", rebuilding)
+    , placeButtonLeft: function( pageIndex,text, classes, withMargin, rebuilding){
+      return this.placeButton($("#leftBtn")[0], pageIndex, text, ["sideBtn"].concat(classes), withMargin, "left", rebuilding)
     }
 
-    , placeButtonRight: function(text, classes, rebuilding){
-      return this.placeButton($("#rightBtn")[0], text, ["sideBtn"].concat(classes), "right", rebuilding)
+    , placeButtonRight: function( pageIndex,text, classes, rebuilding){
+      return this.placeButton($("#rightBtn")[0], pageIndex, text, ["sideBtn"].concat(classes), "right", rebuilding)
     }
 
-    , placeButtonRightDown: function(text, classes, rebuilding){
-      return this.placeButton($("#rightDownBtn")[0], text, ["sideBtn", "rightDownBtn"].concat(classes), "rightDown", rebuilding)
+    , placeButtonRightDown: function( pageIndex,text, classes, rebuilding){
+      return this.placeButton($("#rightDownBtn")[0], pageIndex, text, ["sideBtn", "rightDownBtn"].concat(classes), "rightDown", rebuilding)
     }
 
-    , placeButtonLeftDown: function(text, classes, rebuilding){
-      return this.placeButton($("#leftDownBtn")[0], text, ["sideBtn", "leftDownBtn"].concat(classes), "leftDown", rebuilding)
+    , placeButtonLeftDown: function( pageIndex,text, classes, rebuilding){
+      return this.placeButton($("#leftDownBtn")[0], pageIndex, text, ["sideBtn", "leftDownBtn"].concat(classes), "leftDown", rebuilding)
     }
 
-    , placeButton: function(element, text, classes,  side, rebuilding){
+    , placeButton: function(element, pageIndex, text, classes,  side, rebuilding){
       //We should add the classes before determining the width
       $(element).addClass(classes.join(" "))
       $(element).show();
 
       if(_.isUndefined(rebuilding)){
-        this.trackElement(element, _.bind(this.placeButton, this, element, text, classes, side, true))
+        this.trackElement(element, _.bind(this.placeButton, this, element, pageIndex, text, classes, side, true))
       }
 
       var defer = Q.defer()
@@ -406,7 +408,7 @@ define(["core/mori"], function(mori){
       //use css('width'... instead of .width() because the element may be rotated
       var elementWidth = $(element).width()
       , elementHeight = $(element).height()
-      , pageWidth = this.$el.width()
+      , pageWidth = this.$el.find("#page"+pageIndex).width()
       , pageHeight = this.$el.height()
       , placing 
       , yPlacing = 120
@@ -433,7 +435,8 @@ define(["core/mori"], function(mori){
 
       $(element).children("p").text(text)
 
-      $(element).css("left",placing);
+      //need to redo this later 10 is the assumption that there are 10 pages so 100/10 = 10% perpage
+      $(element).css("left","calc("+pageIndex*10+"% + "+placing+"px)");
       $(element).css("top",yPlacing);
 
       if(_.isUndefined(rebuilding)){
@@ -442,6 +445,13 @@ define(["core/mori"], function(mori){
       }
 
       return defer.promise;
+    }
+
+    , hideAllButtons: function(){
+      this.hideButtonLeft()
+      this.hideButtonRight()
+      this.hideButtonRightDown()
+      this.hideButtonLeftDown()
     }
     
     , hideButtonLeft: function(rebuilding){
