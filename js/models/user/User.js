@@ -33,8 +33,8 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
               {username:username
                , password: password
           })
-          userBlob.resetFS()
           userBlob.generateRSA()
+          userBlob.resetFS()
   
           var userBlobJSON = userBlob.getBlob()
           , publickey_n = userBlobJSON.RSAObject.pub_key
