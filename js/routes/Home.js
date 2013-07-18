@@ -23,6 +23,7 @@ define(
           //here we will create the HomeView which is the main container where everything else will live
           this.home = new HomeView({el:$('#mainContainer')})
           this.home.render()
+          dis = this
 
           //we may also initialize the viewport handler. This will provide functions to modify the placing of elements
           this.viewport = new ViewportHandler({el:$("#mainContainer")})
@@ -32,26 +33,36 @@ define(
 
           this.topBar = new TopBar({el:$("#topBar")})
           this.topBar.render()
-          this.registerTopBar(this.topBar)
-          this.registerUser(this.userModel)
-          this.registerUserAndTopBar(this.topBar, this.userModel)
+
+          this.resetListener(this.userModel, this.topBar)
+
+          //this.userModel.login("asdf","asdf")
+
         },
 
         recreateUser : function(){
           console.log("recreating user")
           this.stopListeningToUser(this.userModel)
+          this.userModel.off()
           this.userModel.clear()
           this.userModel = new User()
+
+          this.resetListener(this.userModel, this.topBar)
+
           this.navigate("/login", {trigger:true})
-          this.viewport.exeunt()
-          _.delay(_.bind(this.login,this),500)
 
-
-          this.registerUser(this.userModel)
-          this.registerUserAndTopBar(this.topBar, this.userModel)
 
           //safest way to really logout, but it takes time :(
           //location.reload()
+        },
+
+        resetListener: function(user, topBar){
+          this.stopListening()
+          topBar.stopListening()
+          user.stopListening()
+          this.registerTopBar(topBar)
+          this.registerUser(user)
+          this.registerUserAndTopBar(topBar, user)
         },
 
         registerUser: function(user){
@@ -87,6 +98,11 @@ define(
           ,  userLogin = new UserLoginView({model : this.userModel})
 
           this.topBar.select('login')
+
+          //naviate to the user's files on successful login
+          this.listenToOnce(this.userModel,"login:success", _.bind(this.navigate, this, "/user", {trigger:true}))
+          
+          
 
           viewport.exeunt()
                   .introduce(userLogin,3)
@@ -193,16 +209,28 @@ define(
 
         },
 
+        clearListeners: function(items){
+          _.each(items, function(item){
+            item.off()
+          })
+        },
+
         // This is visible to a user once he logs in
         user: function(){
           var that=this
           console.log('starting user home')
+          
+          this.resetListener(this.userModel, this.topBar)
           
 
           var home = this.home
 
 
           var viewport = this.viewport
+            
+
+          //check to see if we have created a previous version of this
+          if (this.userView) this.userView.destroy()
 
           this.userView = new UserView({model:this.userModel})
 
@@ -215,8 +243,7 @@ define(
           this.userView.listenTo(fileView, 'file:uploaded', this.userView.fileUploaded)
           this.userView.render()
 
-
-          fileView.on("file:list", function(files){
+          this.listenTo(fileView,"file:list", function(files){
             progressBars = _.map(files, function(fileModel){
               var progressBar = new ProgressBar()
               progressBar.render()
@@ -231,12 +258,12 @@ define(
           })
 
           //update the progress of each file
-          fileView.on("file:progress", function(fileIndex,percentage){
+          this.listenTo(fileView,"file:progress", function(fileIndex,percentage){
             console.log("progress:",percentage,"for file:",fileIndex)
             progressBars[fileIndex].percentage(percentage+"%")
           })
 
-          fileView.on("file:uploaded", function(fileIndex, fileObj){
+          this.listenTo(fileView, "file:uploaded", function(fileIndex, fileObj){
             var origin = window.location.protocol + "//" + window.location.host
             var downloadLink = origin+'/#download/'+fileObj.link
             var progressBar = progressBars[fileIndex]
@@ -245,21 +272,37 @@ define(
             progressBar.markSuccess()
           })
 
-          fileView.on("file:uploaded:all", function(){
+          this.listenTo(fileView, "file:uploaded:all", function(){
             that.userModel.trigger("change:fs")
           })
 
-          this.userView.userFileView.on("fs:file:open", function(fileObj){
+          //decalre this variable, we'll define it in a bit
+          var hideSingleFileAndShowUpload
+
+          this.listenTo(this.userView.userFileView, "fs:file:open", function(fileObj){
             that.userView.singleFileInfo.render({file:fileObj})
             viewport
                     .show(that.userView.singleFileInfo.el, true)
-                    .placeRightUpOffScreen(that.userView.singleFileInfo.el, 1)
                     .placeRightOfCenter(that.userView.singleFileInfo.el, 1)
                     .placeRightOffScreen(fileView.el,1)
+                    .placeButtonRight(1,"Upload", ["emerald"])
+                    .then(hideSingleFileAndShowUpload)
           })
 
-          
-          this.userModel.once("login:success", function(){
+          hideSingleFileAndShowUpload = function(){
+            viewport.placeRightUpOffScreen(that.userView.singleFileInfo.el, 1)
+                    .placeRightOfCenter(fileView.el, 1)
+          }
+
+
+
+          //change the url according to the fsLocation on the model
+          this.listenTo(this.userView.model, 'change:fsLocation', function(model){
+              this.navigate('/user/fs/'+model.get('fsLocation').substr(1))
+          })
+
+          //the user is already logged in we can activate the view
+          if (this.userModel.get("loggedIn")){
             that.topBar.select('files')
             that.userView.userFileView.showFiles()
             viewport.exeunt()
@@ -272,15 +315,10 @@ define(
               .placeLeftOfCenter(that.userView.userFileView.el, 1)
               .placeRightOfCenter(fileView.el, 1)
               .placeRightOffScreen(barsContainer) //place the upload bars right off screen, this will probably change as we move the progress bar to be in the files 
-          })
-
-
-
-
-          //change the url according to the fsLocation on the model
-          this.listenTo(this.userView.model, 'change:fsLocation', function(model){
-              this.navigate('/user/fs/'+model.get('fsLocation').substr(1))
-          })
+          }else{
+            this.navigate("/login",{trigger:true})
+          }
+          
             
         },
 
