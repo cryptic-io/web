@@ -115,7 +115,7 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
       }
 
 
-      //interface for showing off the files
+      //interface for showing off the files located at the current directory, or a single file if we are at the directory of a single file
       , getFile : function(){
           var userBlob = this.get('userBlob')
           , fs = userBlob.get("fs")
@@ -124,12 +124,35 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
           return userBlob.getFile(fs, fsLocation)
       }
 
+      // similar to the ls -la filename
+      , lsla : function(filename){
+        var userBlob = this.get('userBlob')
+        , fs = userBlob.get("fs")
+        , fsLocation = this.get("fsLocation")+"/"+filename
+
+        return userBlob.getFile(fs, fsLocation)
+      }
+
+
       , ls : function(){
           var userBlob = this.get('userBlob')
           , fs = userBlob.get("fs")
           , fsLocation = this.get("fsLocation")
 
           return userBlob.ls(fs, fsLocation)
+      }
+
+      //like the unix cd, change directory into a folder
+      , cd : function(filename){
+        var file = this.lsla(filename)
+        if (file.type !== "folder"){
+          console.error("Trying to cd into a file!")
+          return false
+        }
+
+        var fsLocation = this.get("fsLocation")
+        this.set("fsLocation", fsLocation+"/"+filename)
+        return true
       }
 
       , addFolder : function(folderName){

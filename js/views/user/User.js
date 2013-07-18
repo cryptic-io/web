@@ -1,5 +1,5 @@
 //returns the User View, this contains the fs and is the parent to the userLogin
-define(["jade!templates/user/User", "models/user/User", "views/user/Userlogin", "views/user/UserFiles", "views/user/UserSpaceInfo", "views/user/UserOptions"], function(userTemplate, User, UserLoginView, UserFileView, UserSpaceInfo, UserOptions){ 
+define(["jade!templates/user/User", "models/user/User", "views/user/Userlogin", "views/user/UserFiles", "views/user/UserSpaceInfo", "views/user/UserOptions","views/user/SingleFileInfo"], function(userTemplate, User, UserLoginView, UserFileView, UserSpaceInfo, UserOptions, SingleFileInfo){ 
     return Backbone.View.extend({
         template: userTemplate,
 
@@ -15,9 +15,11 @@ define(["jade!templates/user/User", "models/user/User", "views/user/Userlogin", 
             this.userLoginView = new UserLoginView({model: this.model})
             this.userSpace = new UserSpaceInfo({model: this.model})
             this.userOptions = new UserOptions({model:this.model})
-
+            this.singleFileInfo = new SingleFileInfo({model:this.model})
 
             this.setupListeners()
+
+            this.setupPassThroughEvents()
         },
 
         destroy: function(){
@@ -34,6 +36,13 @@ define(["jade!templates/user/User", "models/user/User", "views/user/Userlogin", 
 
         setupListeners: function(){
             this.on('error', this.errorHandler)
+
+            this.listenTo(this.userFileView, "fs:folder:open", function(filename){this.model.cd(filename)})
+        },
+
+        //Sometimes we want to pass up an event from a child view to whoever is listening to this view
+        setupPassThroughEvents: function(){
+          this.listenTo(this.userFileView, "fs:file:open", _.bind(this.trigger, this, "fs:file:open"))
         },
 
 

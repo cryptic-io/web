@@ -6,6 +6,9 @@ define(["jade!templates/user/SingleFileInfo", "tools/humanReadableByteLength"], 
     return Backbone.View.extend({
         template: fileTemplate,
 
+        id : "SingleFileInfoContainer",
+        className : "floatingContainer",
+
         initialize: function(){
         },
 
@@ -15,22 +18,22 @@ define(["jade!templates/user/SingleFileInfo", "tools/humanReadableByteLength"], 
             var bytes = args.file.size
             , sizeUnit = hrByteLength.calcHumanReadableSize(bytes)
             , size = hrByteLength.truncateBytes(bytes)
-            , fileLocation = args.fileLocation
-            , downloadLink = location.origin+'/#download/'+this.file.link
+            , origin = window.location.protocol + "//" + window.location.host
+            , downloadLink = origin+'/#download/'+this.file.link
 
-            fileLocation = ['/'].concat(_.without(fileLocation.split('/'), "")) //array of the parts of the file
+            this.downloadLink = downloadLink
 
-            this.$el.html(this.template({file:args.file, size:size, sizeUnit:sizeUnit, fileLocation:fileLocation, downloadLink:downloadLink}));
+            this.$el.html(this.template({file:args.file, size:size, sizeUnit:sizeUnit, downloadLink:downloadLink}));
 
         },
 
         events: {
-            "click #downloadButton": "downloadFile"
-            , "click #deleteButton": "deleteFile"
+            "click .downloadBtn": "downloadFile"
+            , "click .deleteBtn": "deleteFile"
         },
 
         downloadFile : function(){
-            window.open(location.origin+'/#download/'+this.model.getFile().link)
+            window.open(this.downloadLink)
         },
 
         deleteFile : function(){

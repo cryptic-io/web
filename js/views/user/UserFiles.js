@@ -1,5 +1,5 @@
 //returns the Userfiles view, responsible for the look of the fs
-define(["jade!templates/user/UserFiles", "views/user/SingleFileInfo"], function(filesTemplate, SingleFileInfo){ 
+define(["jade!templates/user/UserFiles", ], function(filesTemplate, SingleFileInfo){ 
     return Backbone.View.extend({
 
         id : "userFilesContainer",
@@ -41,6 +41,23 @@ define(["jade!templates/user/UserFiles", "views/user/SingleFileInfo"], function(
             "click #newFolder":"showNewFolder"
             , "change #folderNameInput": "createNewFolder"
             , "click #deleteFolder":"deleteFolder"
+            , "click .file":"openFile"
+        },
+
+        openFile : function(e){
+          var filename = e.srcElement.textContent
+
+          //check if this is a file or a folder
+          fileObj = this.model.lsla(filename)
+
+          if (fileObj.type === "folder"){
+            //someone will deal with this, they need to change the fsLocation of the model and this view should automatically update
+            this.trigger("fs:folder:open")
+          }else{
+            //tell someone to focus on this file!
+            this.trigger("fs:file:open", fileObj)
+          }
+            
         },
 
         deleteFolder : function(){
@@ -92,8 +109,8 @@ define(["jade!templates/user/UserFiles", "views/user/SingleFileInfo"], function(
             , fsLocation = this.model.get('fsLocation')
 
             if (file && file.type != "folder"){
-                var singleFileInfo = new SingleFileInfo({el:this.el, model:this.model})
-                singleFileInfo.render({file:file, fileLocation:fsLocation})
+                //var singleFileInfo = new SingleFileInfo({el:this.el, model:this.model})
+                //singleFileInfo.render({file:file, fileLocation:fsLocation})
             }
         },
 

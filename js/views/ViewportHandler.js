@@ -11,8 +11,8 @@ define(["core/mori"], function(mori){
     
     , bottomMargin: 50
 
-    , buttonMargin: 80
-     
+    , topPageMargin: 0 //will be set in the initialize function
+
     //fuck yeah, clojure datastructures, now we are talking
     , activeViews : mori.set()
 
@@ -23,6 +23,7 @@ define(["core/mori"], function(mori){
     , delayedFns : []
 
     , initialize : function(){
+      this.topPageMargin = parseInt( this.$el.css('margin-top') )
       //vector of vectors containing the element and the position function to run (e.g. [[$("#vault"), _.bind(this.placeCenter,this)]...])
 
       window.onresize = _.debounce(_.bind(function(){ this.rebuildElements()},this), 300)
@@ -160,23 +161,31 @@ define(["core/mori"], function(mori){
     }
 
     //show and hide for chaining convienence
-    , show: function(element){
+    , show: function(element, useOpacity){
       if ( this.onDelay ) {
-        this.delayedFns.push(_.bind(this.show,this,element))
+        this.delayedFns.push(_.bind(this.show,this,element, useOpacity))
         return this
       }
 
-      $(element).show()
+      if (useOpacity){
+        $(element).css('opacity',1)
+      }else{
+        $(element).show()
+      }
       return this
     }
 
-    , hide: function(element){
+    , hide: function(element, useOpacity){
       if ( this.onDelay ) {
-        this.delayedFns.push(_.bind(this.hide,this,element))
+        this.delayedFns.push(_.bind(this.hide,this,element, useOpacity))
         return this
       }
 
-      $(element).hide()
+      if (useOpacity){
+        $(element).css('opacity',0)
+      }else{
+        $(element).hide()
+      }
       return this
     }
 
@@ -275,27 +284,44 @@ define(["core/mori"], function(mori){
       return this;
     }
 
-    , placeRightOffScreen: function(element, notCompletelyHidden, rebuilding ){
+    , placeRightOffScreen: function(element, index, notCompletelyHidden, rebuilding ){
       if(_.isUndefined(rebuilding)){
-        this.trackElement(element, _.bind(this.placeRightOffScreen, this, element, notCompletelyHidden, true))
+        this.trackElement(element, _.bind(this.placeRightOffScreen, this, element, index, notCompletelyHidden, true))
       }
 
       var elementWidth = $(element).width()
-      , pageWidth = this.$el.width()
+      , pageWidth = this.$el.find("#page"+index).width()
       , placing 
       , btnElement = $("#leftBtn")
 
-      placing -= this.findOffsetPosition($(element).prev())
 
       if (notCompletelyHidden){
         placing = pageWidth - 20;
       }else{
         placing = pageWidth;
       }
+      placing -= this.findOffsetPosition($(element).prev())
 
       this.placeElement(element, placing, "auto")
 
       return this;
+    }
+
+    , placeRightUpOffScreen: function(element, index, notCompletelyHidden, rebuilding){
+      if(_.isUndefined(rebuilding)){
+        this.trackElement(element, _.bind(this.placeRightUpOffScreen, this, element, index, notCompletelyHidden, true))
+      }
+
+      var elementWidth = $(element).width()
+      , pageWidth = this.$el.find("#page"+index).width()
+      , placing = pageWidth/2 + this.offsetFromCenter - this.findOffsetPosition($(element).prev())
+      , elementHeight = $(element).height()
+      , yPlacing = 0 - elementHeight - this.topPageMargin
+
+      this.placeElement(element, placing, yPlacing)
+
+      return this;
+
     }
 
     , placeRightDownOffScreen: function(element, notCompletelyHidden, rebuilding ){
@@ -463,4 +489,3 @@ define(["core/mori"], function(mori){
 
   })
 })
-test = "afadf"

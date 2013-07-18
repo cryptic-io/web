@@ -35,10 +35,6 @@ define(
           this.registerTopBar(this.topBar)
           this.registerUser(this.userModel)
           this.registerUserAndTopBar(this.topBar, this.userModel)
-
-          user.login("asdf","asdf")
-
-
         },
 
         recreateUser : function(){
@@ -131,6 +127,10 @@ define(
 
           //Create the list of files
           fileView.on("file:list",function(files){
+            //update the title of the bars container
+            barsContainer.setTitle("Uploading")
+
+            //create a new progress bar for each file, and store it in an array
             progressBars = _.map(files, function(fileModel){
               var progressBar = new ProgressBar()
               progressBar.render()
@@ -154,6 +154,10 @@ define(
 
             progressBar.link( downloadLink, fileObj.filename )
             progressBar.markSuccess()
+          })
+
+          fileView.on("file:uploaded:all", function(){
+            barsContainer.setTitle("Done!")
           })
 
           viewport
@@ -193,6 +197,7 @@ define(
         user: function(){
           var that=this
           console.log('starting user home')
+          
 
           var home = this.home
 
@@ -241,17 +246,29 @@ define(
           })
 
           fileView.on("file:uploaded:all", function(){
-            debugger
             that.userModel.trigger("change:fs")
+          })
+
+          this.userView.userFileView.on("fs:file:open", function(fileObj){
+            that.userView.singleFileInfo.render({file:fileObj})
+            viewport
+                    .show(that.userView.singleFileInfo.el, true)
+                    .placeRightUpOffScreen(that.userView.singleFileInfo.el, 1)
+                    .placeRightOfCenter(that.userView.singleFileInfo.el, 1)
+                    .placeRightOffScreen(fileView.el,1)
           })
 
           
           this.userModel.once("login:success", function(){
+            that.topBar.select('files')
             that.userView.userFileView.showFiles()
             viewport.exeunt()
               .introduce(that.userView.userFileView, 1)
+              .introduce(that.userView.singleFileInfo, 1)
               .introduce(fileView, 1)
               .moveToPage(1)
+              .hide(that.userView.singleFileInfo.el, true)
+              .placeRightUpOffScreen(that.userView.singleFileInfo.el, 1)
               .placeLeftOfCenter(that.userView.userFileView.el, 1)
               .placeRightOfCenter(fileView.el, 1)
               .placeRightOffScreen(barsContainer) //place the upload bars right off screen, this will probably change as we move the progress bar to be in the files 
@@ -282,7 +299,7 @@ define(
           viewport = this.viewport
 
           //reference the barsContainer div
-          var barsContainer = new ProgressBars({title: "Uploading"})
+          var barsContainer = new ProgressBars({title: "Downloading"})
           barsContainer.render()
           progressBar = new ProgressBar()
           progressBar.render()
@@ -315,6 +332,8 @@ define(
           fileView.on("file:url", function(urlObj){
             progressBar.link(urlObj.url, urlObj.name)
             progressBar.markSuccess()
+
+            barsContainer.setTitle("Done!")
           })
 
 

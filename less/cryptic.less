@@ -193,7 +193,6 @@ body {
 .body {
     //height : ~'calc(100% - 300px)'; 
     margin-top: @body-padding;
-    padding-top: @body-padding;
     overflow-x: hidden;
     min-height: 500px;
     min-width: 800px;
@@ -214,6 +213,8 @@ body {
     position:relative;
     //height: 100%;
     width:1000%;
+
+    margin-top:@body-padding;
     .transition(.5s);
 }
 
@@ -414,6 +415,8 @@ p.fileBarText{
 .file.outerBar{
     background-color: @wet-asphalt;
 
+    cursor: pointer;
+
     .delete {
       color: white;
     }
@@ -426,6 +429,10 @@ p.fileBarText{
         font-family:@base-font-family;
         font-size:44pt;
 
+    }
+
+    .pointer{
+      cursor:pointer
     }
 
     .outerBar {
@@ -481,6 +488,11 @@ p.fileBarText{
 }
 
 #barsContainer {
+}
+
+#SingleFileInfoContainer {
+  width: 400px;
+  height: 400px;
 }
 
 #userLoginContainer{
