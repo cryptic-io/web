@@ -102,7 +102,8 @@ define(["jade!templates/user/UserFiles", ], function(filesTemplate, SingleFileIn
             evt.target.value = ""
             this.toggleFolderInput()
 
-            this.showFiles()
+            this.updateView()
+
         },
 
 
