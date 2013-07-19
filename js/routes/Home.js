@@ -36,7 +36,7 @@ define(
 
           this.resetListener(this.userModel, this.topBar)
 
-          this.userModel.login("a","a")
+          //this.userModel.login("a","a")
 
         },
 
