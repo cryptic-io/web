@@ -45,6 +45,16 @@ define(["jade!templates/user/UserFiles", ], function(filesTemplate, SingleFileIn
             , "change #folderNameInput": "createNewFolder"
             , "click #deleteFolder":"deleteFolder"
             , "click .file":"openFile"
+            , "click .breadcrumb" : "handleBreadcrumb"
+        },
+
+        handleBreadcrumb : function(e){
+          var index = this.$el.find("#filePath .breadcrumb").index(e.target)
+          , fsParts = _.without(this.model.get('fsLocation').split('/'), "") //clean extra '/' from the string
+          fsParts.splice(index+1)
+
+          this.model.set("fsLocation","/"+fsParts.join("/"))
+          e.preventDefault()
         },
 
         toggleFolderInput: function(){
