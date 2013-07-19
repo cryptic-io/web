@@ -209,7 +209,7 @@ body {
     border-bottom: 1px solid #CFCFCF;
 }
 
-@media (max-width: 1440px) {
+@media (max-width: 1430px) {
   .body{
     width:100%;
     min-width: 1200px;
@@ -366,6 +366,21 @@ body {
         z-index:2;
         cursor: pointer;
     }
+}
+
+.subItems {
+    .transition(0.5s);
+    max-height:0px; //this will change to 1000px when the items are open. 
+    overflow:hidden;
+
+}
+
+.subItems.open {
+    max-height:1000px; 
+}
+
+.subItems > .outerBar {
+    margin-left: 20px;
 }
 
 .innerBar {
@@ -651,6 +666,7 @@ p.fileBarText{
     .transform(rotate(-90deg));
 }
 #rightBtn {
+    margin-left: 15px;
     .transform(rotate(90deg));
 }
 
