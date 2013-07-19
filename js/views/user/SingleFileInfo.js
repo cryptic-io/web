@@ -31,6 +31,7 @@ define(["jade!templates/user/SingleFileInfo", "tools/humanReadableByteLength"], 
             "click .downloadBtn": "downloadFile"
             , "click .deleteBtn": "deleteFile"
             , "click .shareBtn" : "toggleShareOptions"
+            , "click #normalLink":"createNormalLink"
         },
 
         downloadFile : function(){
@@ -48,6 +49,18 @@ define(["jade!templates/user/SingleFileInfo", "tools/humanReadableByteLength"], 
         toggleShareOptions : function(){
             this.$el.find("#sharing .subItems").toggleClass("open")
         },
+
+        createNormalLink : function(){
+            //we already created the link
+            if ( this.$el.find("#normalLink input").length > 0) return
+
+            this.$el.find("#normalLink p").hide()
+            this.$el.find("#normalLink").append($("<input type=text onclick='this.select()'>"))
+            this.$el.find("#normalLink input").val(this.downloadLink)
+
+        },
+
+
 
     })
 })

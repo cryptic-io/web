@@ -379,8 +379,11 @@ body {
     max-height:1000px; 
 }
 
+@subIndent : 20px;
+
 .subItems > .outerBar {
-    margin-left: 20px;
+    margin-left: @subIndent;
+    width: 400px-@subIndent;
 }
 
 .innerBar {
@@ -515,6 +518,12 @@ p.fileBarText{
 #SingleFileInfoContainer {
   width: 400px;
   height: 400px;
+
+  #sharing .subItems input {
+    border-color: black;
+    border-radius: 0;
+    width: 50%;
+  }
 }
 
 #userOptionsContainer{
