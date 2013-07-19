@@ -2,9 +2,9 @@
 
 define(
  ["views/Home", "views/File", "views/Progress", "views/user/User", "views/ProgressBars", "views/Progress",
-  "views/ViewportHandler", "views/user/UserFiles", "jade!templates/user/SingleFileInfo", "views/TopBarCategories", "models/user/User", "views/user/Userlogin", "views/user/UserRegister",
+  "views/ViewportHandler", "views/user/UserFiles", "jade!templates/user/SingleFileInfo", "views/TopBarCategories", "models/user/User", "views/user/Userlogin", "views/user/UserRegister", "views/user/UserOptions",
   "views/About"  ]
-, function(HomeView, FileView, ProgressView, UserView, ProgressBars, ProgressBar, ViewportHandler, UserFilesView, singleFileInfoTemplate, TopBar, User, UserLoginView, UserRegisterView, About){ 
+, function(HomeView, FileView, ProgressView, UserView, ProgressBars, ProgressBar, ViewportHandler, UserFilesView, singleFileInfoTemplate, TopBar, User, UserLoginView, UserRegisterView, UserOptions, About){ 
     return Backbone.Router.extend({
         routes: {
             "home" : "home"
@@ -12,6 +12,7 @@ define(
             , "user/fs" : "user"
             , "user/fs/" : "user"
             , "user" : "user"
+            , "settings" : "settings"
             , "about" : "about"
             , "login" : "login"
             , "register" : "register"
@@ -23,7 +24,6 @@ define(
           //here we will create the HomeView which is the main container where everything else will live
           this.home = new HomeView({el:$('#mainContainer')})
           this.home.render()
-          dis = this
 
           //we may also initialize the viewport handler. This will provide functions to modify the placing of elements
           this.viewport = new ViewportHandler({el:$("#mainContainer")})
@@ -36,7 +36,7 @@ define(
 
           this.resetListener(this.userModel, this.topBar)
 
-          //this.userModel.login("asdf","asdf")
+          this.userModel.login("asdf","asdf")
 
         },
 
@@ -76,6 +76,8 @@ define(
           this.listenTo(topBar, "about:click", _.bind(this.navigate, this,    "/about", {trigger:true}))
 
           this.listenTo(topBar, "files:click", _.bind(this.navigate, this, "/user", {trigger:true}))
+
+          this.listenTo(topBar, "settings:click", _.bind(this.navigate, this, "/settings", {trigger:true}))
         },
 
         //just to keep track of things that need the user and the topbar
@@ -209,14 +211,35 @@ define(
 
         },
 
-        clearListeners: function(items){
-          _.each(items, function(item){
-            item.off()
-          })
+        settings : function(){
+          //check if logged in
+          if (!this.userModel.get("loggedIn")){
+            this.navigate("/login",{trigger:true})
+            return
+          }
+
+          console.log("Entering settings")
+
+          this.topBar.select('settings')
+
+          var userSettings = new UserOptions({model:this.userModel})
+            userSettings.render()
+
+          this.viewport.exeunt()
+              .moveToPage(2)
+              .introduce(userSettings, 2)
+              .placeCenter(userSettings.el, 2)
+
         },
 
         // This is visible to a user once he logs in
         user: function(){
+          if (!this.userModel.get("loggedIn")){
+            this.navigate("/login",{trigger:true})
+            return
+          }
+
+
           var that=this
           console.log('starting user home')
           
@@ -227,6 +250,8 @@ define(
 
 
           var viewport = this.viewport
+
+          this.topBar.select('files')
             
 
           //check to see if we have created a previous version of this
@@ -292,6 +317,7 @@ define(
           hideSingleFileAndShowUpload = function(){
             viewport.placeRightUpOffScreen(that.userView.singleFileInfo.el, 1)
                     .placeRightOfCenter(fileView.el, 1)
+                    .hideButtonRight()
           }
 
 
@@ -302,22 +328,17 @@ define(
           })
 
           //the user is already logged in we can activate the view
-          if (this.userModel.get("loggedIn")){
-            that.topBar.select('files')
-            that.userView.userFileView.showFiles()
-            viewport.exeunt()
-              .introduce(that.userView.userFileView, 1)
-              .introduce(that.userView.singleFileInfo, 1)
-              .introduce(fileView, 1)
-              .moveToPage(1)
-              .hide(that.userView.singleFileInfo.el, true)
-              .placeRightUpOffScreen(that.userView.singleFileInfo.el, 1)
-              .placeLeftOfCenter(that.userView.userFileView.el, 1)
-              .placeRightOfCenter(fileView.el, 1)
-              .placeRightOffScreen(barsContainer) //place the upload bars right off screen, this will probably change as we move the progress bar to be in the files 
-          }else{
-            this.navigate("/login",{trigger:true})
-          }
+          that.userView.userFileView.showFiles()
+          viewport.exeunt()
+            .introduce(that.userView.userFileView, 1)
+            .introduce(that.userView.singleFileInfo, 1)
+            .introduce(fileView, 1)
+            .moveToPage(1)
+            .hide(that.userView.singleFileInfo.el, true)
+            .placeRightUpOffScreen(that.userView.singleFileInfo.el, 1)
+            .placeLeftOfCenter(that.userView.userFileView.el, 1)
+            .placeRightOfCenter(fileView.el, 1)
+            .placeRightOffScreen(barsContainer) //place the upload bars right off screen, this will probably change as we move the progress bar to be in the files 
           
             
         },

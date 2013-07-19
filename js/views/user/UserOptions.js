@@ -11,9 +11,7 @@ define(["jade!templates/user/UserOptions"], function(userOptionsTemplate){
         }
 
         , render: function(){
-            if (this.model.get('inOptions') == true){
-              this.$el.html(this.template({}))
-            }
+            this.$el.html(this.template({}))
         }
 
         , events : {
