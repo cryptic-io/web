@@ -8,9 +8,9 @@ define(
     return Backbone.Router.extend({
         routes: {
             "home" : "home"
-            , "user/fs/*fileLocation" : "openUserFile"
-            , "user/fs" : "user"
-            , "user/fs/" : "user"
+            , "user/fs/*fileLocation" : "fs"
+            , "user/fs" : "fs"
+            , "user/fs/" : "fs"
             , "user" : "user"
             , "settings" : "settings"
             , "about" : "about"
@@ -36,7 +36,7 @@ define(
 
           this.resetListener(this.userModel, this.topBar)
 
-          //this.userModel.login("a","a")
+          this.userModel.login("a","a")
 
         },
 
@@ -232,6 +232,16 @@ define(
 
         },
 
+        fs : function(fileLocation){
+          if (!this.userModel.get("loggedIn")){
+            this.navigate("/login",{trigger:true})
+            return
+          }
+          if (fileLocation === null || _.isUndefined(fileLocation)) fileLocation = ""
+          this.userView.model.set('fsLocation', "/"+fileLocation)
+
+        },
+
         // This is visible to a user once he logs in
         user: function(){
           if (!this.userModel.get("loggedIn")){
@@ -345,15 +355,6 @@ define(
             .placeRightOffScreen(barsContainer) //place the upload bars right off screen, this will probably change as we move the progress bar to be in the files 
           
             
-        },
-
-        openUserFile: function(fileLocation){
-            //check to see if the user view has been loaded already
-            if (!this.userView){
-                this.user()
-            }
-
-            this.userView.model.set('fsLocation', "/"+fileLocation)
         },
 
         download: function(linkNameAndPasscode){
