@@ -39,9 +39,14 @@ define(["jade!templates/user/UserFiles", ], function(filesTemplate, SingleFileIn
 
         events : {
             "click #newFolder":"showNewFolder"
+            , "click #createFolderBtn": "toggleFolderInput"
             , "change #folderNameInput": "createNewFolder"
             , "click #deleteFolder":"deleteFolder"
             , "click .file":"openFile"
+        },
+
+        toggleFolderInput: function(){
+            this.$el.find("#folderNameSub").toggleClass("open")
         },
 
         openFile : function(e){
@@ -52,7 +57,7 @@ define(["jade!templates/user/UserFiles", ], function(filesTemplate, SingleFileIn
 
           if (fileObj.type === "folder"){
             //someone will deal with this, they need to change the fsLocation of the model and this view should automatically update
-            this.trigger("fs:folder:open")
+            this.trigger("fs:folder:open", fileObj.filename)
           }else{
             //tell someone to focus on this file!
             this.trigger("fs:file:open", fileObj)
@@ -78,13 +83,14 @@ define(["jade!templates/user/UserFiles", ], function(filesTemplate, SingleFileIn
         },
 
         createNewFolder : function(evt){
-            debugger
-
             var folderName = evt.target.value
 
             this.model.addFolder(folderName)
 
-            this.$el.find('#folderNameInput').hide()
+            evt.target.value = ""
+            this.toggleFolderInput()
+
+            this.showFiles()
         },
 
 

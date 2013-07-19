@@ -1,32 +1,27 @@
-.page#UserFiles 
-  //
-    #folderButtons
-      span#newFolder
-        button New Folder
-      span#deleteFolder
-        button Delete Folder
-
-  #filePath
-    - var fsParts = fsLocation.replace(/^\//g,'').split("/")
-    each fsPart in fsParts
-      .span.filePart
-        p / 
-      .span.filePart
-        p= fsPart
-  #deleteButton
-  .files 
-    .outerBar#createFolder
-      p.barText.fileBarText Create Folder
-    .file#folderNameInput(style="display:none")
-      input(placeholder="Folder Name")
-    each file in files
-      if file.selected
-        .file.outerBar.selectedFile
-          p.fileBarText.barText(path="#{fsLocation}#{file.filename}")= file.filename
-          p.delete ✕
-      else
-        .file.outerBar
-          p.fileBarText.barText(path="#{fsLocation}#{file.filename}")= file.filename
-          p.delete ✕
-     .file#barsContainer
-       .bars
+#filePath
+  - var fsParts = fsLocation.replace(/^\//g,'').split("/")
+  each fsPart in fsParts
+    .span.filePart
+      p / 
+    .span.filePart
+      p= fsPart
+#deleteButton
+.files 
+  .outerBar#createFolder
+    p.barText.fileBarText#createFolderBtn.pointer Create Folder
+  .subItems#folderNameSub
+    .outerBar#folderNameInput
+      input(type="text", placeholder="Folder Name")
+  .file#folderNameInput(style="display:none")
+    input(placeholder="Folder Name").barText
+  each file in files
+    if file.selected
+      .file.outerBar.selectedFile
+        p.fileBarText.barText(path="#{fsLocation}#{file.filename}")= file.filename
+        p.delete ✕
+    else
+      .file.outerBar
+        p.fileBarText.barText(path="#{fsLocation}#{file.filename}")= file.filename
+        p.delete ✕
+   .file#barsContainer
+     .bars
