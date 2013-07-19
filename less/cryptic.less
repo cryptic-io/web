@@ -85,6 +85,10 @@ css3 calc
     color: black !important;
 }
 
+.whiteText{
+    color: white !important;
+}
+
 .alizarinBtn {
   background-color: @alizarin;
   .swap-button-color(@danger, @button-danger-hover, @button-danger-active);
@@ -423,6 +427,11 @@ body {
         color: black;
     }
 
+    a {
+        font-family: @base-font-family;
+        font-size: 44pt;
+    }
+
     .filePart {
         margin-left: 5px;
     }
@@ -456,6 +465,9 @@ p.fileBarText{
 }
 
 /* file info */
+.pointer{
+  cursor:pointer
+}
 
 #fileInfo {
     .filename {
@@ -464,9 +476,6 @@ p.fileBarText{
 
     }
 
-    .pointer{
-      cursor:pointer
-    }
 
     .outerBar {
         background-color: @asbestos;

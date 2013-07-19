@@ -1,10 +1,11 @@
 #filePath
-  - var fsParts = fsLocation.replace(/^\//g,'').split("/")
+  .span.filePart
+    a(href="#user/fs//") / 
   each fsPart in fsParts
     .span.filePart
-      p / 
+      a(href="#").breadCrumb= fsPart
     .span.filePart
-      p= fsPart
+      p / 
 #deleteButton
 .files 
   .outerBar#createFolder
@@ -12,8 +13,9 @@
   .subItems#folderNameSub
     .outerBar#folderNameInput
       input(type="text", placeholder="Folder Name")
-  .file#folderNameInput(style="display:none")
-    input(placeholder="Folder Name").barText
+  if !inRoot
+    .deleteBtn.outerBar.pomegranate.pointer#deleteFolder
+      p.barText.fileBarText Delete This Folder
   each file in files
     if file.selected
       .file.outerBar.selectedFile

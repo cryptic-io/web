@@ -26,10 +26,12 @@ define(["jade!templates/user/User", "models/user/User", "views/user/Userlogin", 
             //destroy all bound events
             this.userLoginView.off()
             this.userFileView.off()
+            this.singleFileInfo.off()
             this.off()
 
             this.userLoginView.remove()
             this.userFileView.remove()
+            this.singleFileInfo.remove()
             this.remove()
         },
 

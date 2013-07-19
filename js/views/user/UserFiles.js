@@ -25,8 +25,10 @@ define(["jade!templates/user/UserFiles", ], function(filesTemplate, SingleFileIn
             //this should return a list of files in the current fsLocation
             var file = this.model.getFile()
 
-            if (file.type === "folder"){
-                this.showFiles()
+            if (file.name === "root" && file.type === "folder"){
+                this.showFiles("/")
+            }else if (file.type === "folder"){
+                this.showFiles(file.location+"/"+file.filename)
             }else{
                 this.showFileInfo()
             }
@@ -99,12 +101,15 @@ define(["jade!templates/user/UserFiles", ], function(filesTemplate, SingleFileIn
             loc = loc ||  "/"
 
             var files = this.model.ls()
-            , fsLocation = this.model.get('fsLocation')
+            , inRoot = false
+            , fsParts = _.without(loc.split('/'), "") //clean extra '/' from the string
+            , fsLocation = "/" + fsParts.join("/")
 
-            //location that can be put with a filename something like /a.file and /afolder/b.file so / and /afolder/ respectively
-            fsLocation = '/' == fsLocation ? '/' : fsLocation + '/'
+            if (fsLocation === "/"){
+              inRoot = true
+            }
 
-            this.render({files:files, folder: this.model.getFile(), fsLocation:fsLocation})
+            this.render({files:files, folder: this.model.getFile(), fsLocation:fsLocation, inRoot: inRoot, fsParts: fsParts})
             return files
         },
 

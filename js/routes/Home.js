@@ -239,6 +239,9 @@ define(
             return
           }
 
+          //check to see if we have created a previous version of this
+          if (this.userView) this.userView.destroy()
+          if (this.fileView) this.fileView.remove()
 
           var that=this
           console.log('starting user home')
@@ -254,13 +257,13 @@ define(
           this.topBar.select('files')
             
 
-          //check to see if we have created a previous version of this
-          if (this.userView) this.userView.destroy()
 
           this.userView = new UserView({model:this.userModel})
 
           var fileView = new FileView({user:this.userView.model});
           fileView.render()
+
+          this.fileView = fileView
 
           var progressBars = []
 
@@ -328,7 +331,8 @@ define(
           })
 
           //the user is already logged in we can activate the view
-          that.userView.userFileView.showFiles()
+          that.userModel.set("fsLocation","/")
+          that.userView.userFileView.showFiles("/")
           viewport.exeunt()
             .introduce(that.userView.userFileView, 1)
             .introduce(that.userView.singleFileInfo, 1)
