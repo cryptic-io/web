@@ -15,12 +15,16 @@ define(["jade!templates/user/UserOptions"], function(userOptionsTemplate){
         }
 
         , events : {
-            "click #saveOptions" : "saveOptions"
-            , "click #changePasswordForm > .confirmChange" : "changePassword"
+            "click .changePassword" : "changePassword"
+        }
+
+        , verifyPasswordConsitency: function(){
+            passwords = this.$el.find(".newPass").map(function(i,e){return e.value})
+            return passwords[0] === passwords[1]
         }
 
         , changePassword : function(){
-            var newPassword = this.$el.find('#newPass').val()
+            var newPassword = this.$el.find('.newPass').val()
             , oldPassword = this.$el.find('#oldPass').val()
             , userBlob = this.model.get('userBlob')
 
@@ -32,11 +36,16 @@ define(["jade!templates/user/UserOptions"], function(userOptionsTemplate){
                 this.model.set('userBlob', userBlob)
 
                 userBlob.saveBlob()
+                this.showSuccess("Password Changed")
+            }else{
+              this.showError("Wrong original password")
             }
         }
 
-        , saveOptions : function(){
-            this.model.set('inOptions', false)
+        , showSuccess : function(){
+        }
+
+        , showError : function(){
         }
     })
 })

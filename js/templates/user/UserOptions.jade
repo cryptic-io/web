@@ -1,10 +1,12 @@
-.page
-  #userOptions
-    #changePassword.option
-      button#changePasswordBtn Change password
-      #changePasswordForm
-        input#oldPass(type="password", placeholder="Old Password")
-        input#newPass(type="password", placeholder="New Password")
-        button#confirmPassChange.confirmChange Change Password
-      button#saveOptions Save
+h2 Settings
+#changePassword.option
+  #changePasswordForm
+    .controlGroup
+        input#oldPass(type="password", placeholder="Original Password")
+    .controlGroup
+        input.newPass(type="password", placeholder="New Password")
+    .controlGroup
+        input.newPass(type="password", placeholder="New Password")
+    .controlGroup
+        a.btn.btn-primary.btn-large.btn-block.changePassword Change Password
 
