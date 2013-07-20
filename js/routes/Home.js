@@ -36,7 +36,7 @@ define(
 
           this.resetListener(this.userModel, this.topBar)
 
-          //this.userModel.login("a","a")
+          this.userModel.login("a","a")
 
         },
 
@@ -323,7 +323,7 @@ define(
                     .show(that.userView.singleFileInfo.el, true)
                     .placeRightOfCenter(that.userView.singleFileInfo.el, 1)
                     .placeRightOffScreen(fileView.el,1)
-                    .placeButtonRight(1,"Upload", ["emerald"])
+                    .placeButtonRight(1,"Upload", ["emeraldBtn"])
                     .then(hideSingleFileAndShowUpload)
           })
 
@@ -352,7 +352,6 @@ define(
             .placeRightUpOffScreen(that.userView.singleFileInfo.el, 1)
             .placeLeftOfCenter(that.userView.userFileView.el, 1)
             .placeRightOfCenter(fileView.el, 1)
-            .placeRightOffScreen(barsContainer) //place the upload bars right off screen, this will probably change as we move the progress bar to be in the files 
           
             
         },

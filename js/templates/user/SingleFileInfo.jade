@@ -2,27 +2,27 @@
   .filename 
     p= file.filename
   .boxes
-    .filesize.outerBar 
+    .filesize.outerBar.asbestos 
       p.barText Size: #{size}  #{sizeUnit}
-    .filetype.outerBar
+    .filetype.outerBar.asbestos
       p.barText Type: #{file.type}
     //
       .downloadLink Link:
         span
           input(type="text", value="#{downloadLink}")
-    .downloadBtn.outerBar.nephritis.pointer
+    .downloadBtn.outerBar.emeraldBtn.pointer
       p.barText Download 
     #sharing
-      .shareBtn.outerBar.peter-river.pointer
+      .shareBtn.outerBar.peter-riverBtn.pointer
         p.barText Share
       .subItems
-        .outerBar.peter-river.pointer#normalLink
+        .outerBar.peter-riverBtn.pointer#normalLink
           p.barText Normal Link
-        .outerBar.peter-river.pointer
+        .outerBar.peter-riverBtn.pointer
           p.barText Time Limited Link
-        .outerBar.peter-river.pointer
+        .outerBar.peter-riverBtn.pointer
           p.barText One Time Only Link
-    .deleteBtn.outerBar.pomegranate.pointer
+    .deleteBtn.outerBar.alizarinBtn.pointer
       p.barText Delete
       
 

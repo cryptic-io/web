@@ -55,6 +55,9 @@ css3 calc
 }
 
 /* colors! */
+.asbestos{
+    background-color: @asbestos !important;
+}
 .carrot {
     background-color: @carrot !important;
 }
@@ -89,29 +92,37 @@ css3 calc
     color: white !important;
 }
 
+//simple btns
+
+.turqouiseBtn {
+  .transition(0.5s);
+  .swap-button-color(@turquoise, @button-primary-hover, @button-primary-active);
+}
+
 .alizarinBtn {
-  background-color: @alizarin;
+  .transition(0.5s);
   .swap-button-color(@danger, @button-danger-hover, @button-danger-active);
 }
 
 .asphaltBtn {
+  .transition(0.5s);
   .swap-button-color(@wet-asphalt, @button-inverse-hover, @button-inverse-active);
 }
 
 .emeraldBtn {
+  .transition(0.5s);
   .swap-button-color(@success, @button-success-hover, @button-success-active);
 }
 
 .carrotBtn {
+  .transition(0.5s);
   background-color: @carrot;
   .swap-button-color(@carrot, #E59255, #E56D13);
 }
 
-.peter-riverBtn.topBox{
-
-
+.peter-riverBtn{
+  .transition(0.5s);
   background-color: @peter-river;
-
   &:hover {
       .swap-button-color(@info, @button-info-hover, @button-info-active);
   }
@@ -357,7 +368,6 @@ body {
 .outerBar {
     width: 400px;
     height: @barHeight;
-    background-color: @clouds;
     position:relative;
 
     margin-bottom: 4px;
@@ -440,11 +450,28 @@ body {
 }
 
 .selectedFile {
-    background-color: @green-sea !important;
+    background-color: @button-inverse-hover !important;
 }
 
 #createFolder {
-    background-color: @asbestos;
+}
+
+.filesLabel {
+    top: -18px;
+    margin-left: 20px;
+    text-align: left;
+}
+
+.filesLabelContainer {
+    margin: auto;
+    background: white;
+    width: 100px;
+}
+
+#filesSeparator {
+    background: #7f8c8d;
+    height: 5px;
+    margin: 30px 0px;
 }
 
 p.fileBarText{
@@ -455,8 +482,8 @@ p.fileBarText{
 }
 
 .file.outerBar{
-    background-color: @wet-asphalt;
 
+    .transition(0.25s);
     cursor: pointer;
 
     .delete {
@@ -478,8 +505,6 @@ p.fileBarText{
 
 
     .outerBar {
-        background-color: @asbestos;
-
          p {
              text-align: left;
              line-height: @barHeight;
@@ -670,7 +695,6 @@ p.fileBarText{
     cursor: pointer
     height: 50px;
     width: 150px;
-    background-color: black;
     margin-top: 50px;
     z-index:4;
 

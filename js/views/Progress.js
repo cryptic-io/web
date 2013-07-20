@@ -1,7 +1,7 @@
 //returns the file view
 define(["jade!templates/ProgressBar"], function(ProgressTemplate){ 
     return Backbone.View.extend({
-        className: "outerBar",
+        className: "outerBar clouds",
 
         render: function(){
           //render a blank slate, change the text, percentages, and link through the functions below

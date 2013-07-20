@@ -1,5 +1,5 @@
 //returns the Userfiles view, responsible for the look of the fs
-define(["jade!templates/user/UserFiles", ], function(filesTemplate, SingleFileInfo){ 
+define(["jade!templates/user/UserFiles" ], function(filesTemplate, SingleFileInfo){ 
     return Backbone.View.extend({
 
         id : "userFilesContainer",
@@ -74,6 +74,10 @@ define(["jade!templates/user/UserFiles", ], function(filesTemplate, SingleFileIn
             //tell someone to focus on this file!
             this.trigger("fs:file:open", fileObj)
           }
+
+          this.$el.find(".file").removeClass("selectedFile")
+          $(e.target).parent().addClass('selectedFile')
+
             
         },
 

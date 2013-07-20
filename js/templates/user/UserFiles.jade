@@ -8,22 +8,20 @@
       p / 
 #deleteButton
 .files 
-  .outerBar#createFolder
+  .outerBar.turqouiseBtn#createFolder
     p.barText.fileBarText#createFolderBtn.pointer Create Folder
   .subItems#folderNameSub
     .outerBar#folderNameInput
       input(type="text", placeholder="Folder Name")
   if !inRoot
-    .deleteBtn.outerBar.pomegranate.pointer#deleteFolder
+    .deleteBtn.outerBar.pointer.alizarinBtn#deleteFolder
       p.barText.fileBarText Delete This Folder
+  .outerBar#filesSeparator
+    .filesLabelContainer
+        p.barText.filesLabel Files
   each file in files
-    if file.selected
-      .file.outerBar.selectedFile
-        p.fileBarText.barText(path="#{fsLocation}#{file.filename}")= file.filename
-        p.delete ✕
-    else
-      .file.outerBar
-        p.fileBarText.barText(path="#{fsLocation}#{file.filename}")= file.filename
-        p.delete ✕
-   .file#barsContainer
-     .bars
+    .file.outerBar.asphaltBtn
+      p.fileBarText.barText(path="#{fsLocation}#{file.filename}")= file.filename
+      p.delete ✕
+  .file#barsContainer
+    .bars
