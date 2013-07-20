@@ -21,6 +21,14 @@
         p.barText.filesLabel Files
   each file in files
     .file.outerBar.asphaltBtn
+      if file.type === "folder"
+          i.icon-folder-open.fileIcon
+      else if file.type.indexOf("image") !== -1 
+          i.icon-picture.fileIcon
+      else if file.type.indexOf("audio") !== -1 
+          i.icon-music.fileIcon
+      else 
+          i.icon-file.fileIcon
       p.fileBarText.barText(path="#{fsLocation}#{file.filename}")= file.filename
       p.delete ✕
   .file#barsContainer
