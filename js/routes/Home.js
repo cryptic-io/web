@@ -3,8 +3,8 @@
 define(
  ["views/Home", "views/File", "views/Progress", "views/user/User", "views/ProgressBars", "views/Progress",
   "views/ViewportHandler", "views/user/UserFiles", "jade!templates/user/SingleFileInfo", "views/TopBarCategories", "models/user/User", "views/user/Userlogin", "views/user/UserRegister", "views/user/UserOptions",
-  "views/About"  ]
-, function(HomeView, FileView, ProgressView, UserView, ProgressBars, ProgressBar, ViewportHandler, UserFilesView, singleFileInfoTemplate, TopBar, User, UserLoginView, UserRegisterView, UserOptions, About){ 
+  "views/About", "config"  ]
+, function(HomeView, FileView, ProgressView, UserView, ProgressBars, ProgressBar, ViewportHandler, UserFilesView, singleFileInfoTemplate, TopBar, User, UserLoginView, UserRegisterView, UserOptions, About, config){ 
     return Backbone.Router.extend({
         routes: {
             "home" : "home"
@@ -36,7 +36,10 @@ define(
 
           this.resetListener(this.userModel, this.topBar)
 
-          this.userModel.login("a","a")
+          //defined in js/config.js 
+          if (config.debug){
+            this.userModel.login("a","a")
+          }
 
         },
 
