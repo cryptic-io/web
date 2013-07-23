@@ -4,8 +4,6 @@ less = { env: 'development' };
  *
  */
 
-test = function(files){debugger}
-
 var dependencies = [
     "require" , "core/backbone" , "crypt/sjcl" , "crypt/betterCBC" , "crypt/rsa/rsa2"
 ]
@@ -41,9 +39,9 @@ requirejs({
 },
 dependencies, function(require, Backbone){
     require( 
-        ['routes/Home'],
-        function(HomeRouter) {
-            router = new HomeRouter();
+        ['routes/Router'],
+        function(Router) {
+            router = new Router();
             var givenPage = Backbone.history.start()
             if (!givenPage){
                 router.navigate('home',{trigger:true})
