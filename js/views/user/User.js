@@ -22,7 +22,7 @@ define(["jade!templates/user/User", "models/user/User", "views/user/Userlogin", 
             this.setupPassThroughEvents()
         },
 
-        destroy: function(){
+        remove: function(){
             //destroy all bound events
             this.userLoginView.off()
             this.userFileView.off()
