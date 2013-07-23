@@ -166,9 +166,9 @@ define(["apiEndPoints", "models/File", "models/RSA"],function(api, File, RSAMode
     }
 
     , getParentFsLocation: function(fsLocation){
-          var  parentFsLocation = fsLocation.split('/')
+          var parentFsLocation = fsLocation = _.without(fsLocation,"") 
           parentFsLocation.splice(1) //get rid of the current folder in the fsLocation
-          parentFsLocation = '/' + _.without(parentFsLocation,"").join('/') // recreate the original path
+          parentFsLocation = '/' +parentFsLocation.join('/') // recreate the original path
 
           return parentFsLocation
     }
