@@ -1,5 +1,5 @@
 //returns the file model
-define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/FileSystem', 'tools/FileSystemHandler'],function(Chunk, Manifest, ChunkWorkerInterface, FileSystem, FileSystemHandler){ 
+define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/FileSystem', 'tools/FileSystemHandler', 'config'],function(Chunk, Manifest, ChunkWorkerInterface, FileSystem, FileSystemHandler, config){ 
     return Backbone.Model.extend({
 
         defaults:{
@@ -11,7 +11,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
              *
             */
 
-           webworkers: true
+           webworkers: config.webworkers ? true : false
            , maxWorkers: 3
 
         },
