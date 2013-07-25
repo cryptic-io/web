@@ -41,11 +41,9 @@ define(["jade!templates/user/Userlogin"], function(Logintemplate, UserBlob){
         },
 
         loginSucess: function(){
-          debugger;
         },
 
         loginError: function(error){
-          debugger;
         }
 
     })

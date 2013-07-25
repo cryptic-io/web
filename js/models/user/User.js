@@ -49,12 +49,13 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
                     , publickey_e: publickey_e
                     , secret_key : secretKey
                     , blob : encryptedBlob} )
-              , _.bind(this.registerCallback, this))
+              , _.bind(this.registerCallback, this, username, password))
       }
   
-      , registerCallback : function(result){
+      , registerCallback : function(username, password, result){
         if (result.return === "success"){
           this.trigger('register:success')
+          this.login(username, password)
         }else{
           this.trigger('register:error',result.return.error)
         }
@@ -106,7 +107,6 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
           this.set('loggedIn', true)
           this.trigger('loggedIn')
           this.trigger('login:success')
-
       }
 
       , changePassword: function(oldPassword, newPassword){
