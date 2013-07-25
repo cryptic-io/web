@@ -21,7 +21,7 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
       }
 
 
-      , register: function(username, password, use2step){
+      , register: function(username, password, testerToken, use2step){
           var userBlob = this.get('userBlob')
           , secretKey = use2step ? this.createSecretKey() : undefined //set the secret to nothing if we arent using it
   
@@ -44,6 +44,7 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
           $.post(api.createUser 
               , JSON.stringify(
                   { username:username
+                    , testerToken: testerToken
                     , publickey_n: publickey_n
                     , publickey_e: publickey_e
                     , secret_key : secretKey

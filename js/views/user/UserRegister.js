@@ -46,6 +46,7 @@ define(["jade!templates/user/UserRegister"], function(Logintemplate, UserBlob){
             var username = this.$el.find('#usernameInput input').val()
             ,  password = this.$el.find('#passwordInput input').val()
             ,  use2step = this.$el.find('#use2StepAuth input').is(':checked')
+            ,  testerToken = this.$el.find("#testerToken input").val()
 
 
             this.model.once('secretKeyCreated', function(secretKey){
@@ -55,7 +56,7 @@ define(["jade!templates/user/UserRegister"], function(Logintemplate, UserBlob){
                 alert("Open this link in another tab to view to code you need to scan with the Google Authenticator app: "+qrURL)
             },this.model)
 
-            this.model.register(username, password, use2step)
+            this.model.register(username, password, testerToken, use2step)
         },
     })
 });
