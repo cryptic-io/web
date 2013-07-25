@@ -9,7 +9,7 @@
       p Congrats! you now have a cryptic account!
   else 
     h1 Register
-    #usernameInput
+    #usernameInput.inputField
       .control-group
         input(type="text", placeholder="username") 
       p.message 
@@ -18,7 +18,9 @@
         input(type="password", placeholder="password")
       p.message
     #testerToken.inputField
-      input(type="text", placeholder="Test Token")
+      .control-group
+        input(type="text", placeholder="Test Token")
+      p.message
     // 
         #twoStepAuthInput Enter 2 step authentication code:
           input(type="text")

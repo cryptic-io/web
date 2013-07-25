@@ -34,6 +34,10 @@ define(["jade!templates/user/UserRegister"], function(Logintemplate, UserBlob){
             $("#usernameInput .control-group").addClass("error")
             $("#usernameInput .message").addClass("errorMessage")
             $("#usernameInput .message").text("Username Taken")
+          }else if (error === "invalid tester token"){
+            $("#testerToken .control-group").addClass("error")
+            $("#testerToken .message").addClass("errorMessage")
+            $("#testerToken .message").text("Invalid Token")
           }
 
         },
