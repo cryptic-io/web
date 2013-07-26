@@ -18,7 +18,12 @@ define(["jade!templates/ProgressBar"], function(ProgressTemplate){
           this.$el.find(".barLink")
                 .attr("href",link)
                 .text(text)
+                .attr("download",text)
                 .show()
+        },
+
+        clickLink : function(){
+          this.$el.find(".barLink")[0].click()
         },
 
         markLoading: function(){

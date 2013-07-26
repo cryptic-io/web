@@ -13,14 +13,17 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
            webworkers: config.webworkers ? true : false
            , maxWorkers: 3
-
         },
+
+        chrome : navigator.userAgent.indexOf("Chrome") > 0,
+        firefox : navigator.userAgent.indexOf("Firefox") > 0,
+        webkit : navigator.userAgent.indexOf("AppleWebKit") > 0,
 
         fileSystem: new FileSystem(),
 
         initialize: function(){
             //Unfortunately somethings have vendor prefixes so we'll get that sorted right here and now
-            File.prototype.slice = File.prototype.slice ? File.prototype.slice : File.prototype.mozSlice;
+            File.prototype.slice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice
 
             var user = this.get('user')
             if (_.isUndefined(user)){
@@ -251,34 +254,98 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
         //Speciy which chunk you want. if unspecified will default to all
         downloadChunks: function(callback){
             var chunks = this.get('chunks')
+            , size = this.manifest.get('size')
 
-            //get more space for the new file
-            this.fileSystem.requestMoreSpace(this.manifest.get('size'), _.bind(function(fs){
+            var successCallback = _.bind(function(){
 
-                //create the file and delete it if it already exists
-                FileSystemHandler.createFile({
-                    successCallback: _.bind(function(){
+                //callback after all the chunks have been written
+                var asyncCallback = _.after(chunks.length, callback)
 
-                        //callback after all the chunks have been written
-                        var asyncCallback = _.after(chunks.length, callback)
+                //reverse the chunks to use it as a stack
+                var chunksStack = chunks.reverse()
+                var writePositionObj = { writePosition:0, downloadedChunks:{}, numberOfChunks:chunks.length }
 
-                        //reverse the chunks to use it as a stack
-                        var chunksStack = chunks.reverse()
-                        var writePositionObj = { writePosition:0, downloadedChunks:{}, numberOfChunks:chunks.length }
+                //spawn the number of maxWorkers
+                _.map(_.range(this.get('maxWorkers')), _.bind(this.recursivelyDownloadChunks, this, chunksStack, writePositionObj))
 
-                        //spawn the number of maxWorkers
-                        _.map(_.range(this.get('maxWorkers')), _.bind(this.recursivelyDownloadChunks, this, chunksStack, writePositionObj))
+                //spawn a single writing worker, single because it needs to be sequential
+                this.recursivelyWriteChunks(writePositionObj, callback)
+            },this)
 
-                        //spawn a single writing worker, single because it needs to be sequential
-                        this.recursivelyWriteChunks(writePositionObj, callback)
+            if ( this.chrome ) {
+              //get more space for the new file
+              this.fileSystem.requestMoreSpace(size, _.bind(function(fs){
+                  //create the file and delete it if it already exists
+                  FileSystemHandler.createFile({
+                      successCallback: successCallback
+                      , name: this.manifest.get('name')
+                      , fileSystem: this.fileSystem
+                  })
+              }, this))
+            }else if (this.firefox){ 
+              //for firefox we need to use indexed db
+              //There is an optimization here that involves caching whether we already requested permissions to save >50MB of data
+              //But that's for a later date
+              console.log("asking for indexedDB")
+              var dbName = "cryptic"
 
-                        //this.downloadChunk(chunk, chunkKeys, asyncCallback)
+              //we have to request permissions to save big files, but after that we need to make the DB where the file is going to live for realz
+              var afterPermissions = _.bind(function(){
+                var request = window.indexedDB.open(dbName,1)
+                this.dbName = dbName
 
-                    },this)
-                    , name: this.manifest.get('name')
-                    , fileSystem: this.fileSystem
-                })
-            }, this))
+                request.onerror = function(event){
+                  console.error("There was an error in the indexedDB request",request.errorCode)
+                }
+
+                request.onupgradeneeded = function(event){
+                  console.log("indexedDB is requesting upgrade")
+                  request.result.createObjectStore(dbName)
+                }
+
+                //safe a reference to the db, and call the successCallback
+                request.onsuccess = _.bind(function(event){
+                  this.db = request.result
+
+                  //First delete any old data by clearing the object store, then call the successCallback
+                  this.db.transaction(dbName, "readwrite").objectStore(dbName).clear().onsuccess = successCallback
+                },this)
+              },this)
+
+              var request = window.indexedDB.open(dbName,1)
+              request.onerror = function(event){
+                console.error("There was an error in the indexedDB request",request.errorCode)
+              }
+
+              request.onupgradeneeded = function(event){
+                console.log("indexedDB is requesting upgrade")
+                request.result.createObjectStore(dbName)
+              }
+
+              request.onsuccess = function(event){
+                console.log("Success for the request!", request.result)
+                var db = request.result
+
+                var transaction = db.transaction(dbName, "readwrite")
+
+                transaction.onerror = function(e){
+                  console.error("There was an error with the transaction",e)
+                }
+
+                transaction.oncomplete = function(e){
+                  console.log("Transaction completed succesfully!")
+                  //delete the indexedDB temp thing we made to ask permissions for >50MB
+                  db.close() 
+                  indexedDB.deleteDatabase(db)
+                  afterPermissions()
+                }
+
+                //lets ask for the permissions of getting over 50MB at once so we don't have to ask again later
+                transaction.objectStore(dbName).put(new Blob([new ArrayBuffer(51*1024*1024)]), 'temp')
+              }
+
+            }
+
 
         },
 
@@ -372,12 +439,12 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                 return
             }
 
-
             //So we have a chunk that is ready to be written
             var chunk = downloadedChunks[writePosition]
             console.log('chunk:',writePosition,'writing')
             console.log('chunk:',chunk.get('chunkInfo').part,'writing')
-            this.appendToFile(chunk, _.bind(function(){
+
+            var successCallback = _.bind(function(){
                 console.log('chunk:',writePosition,'written')
                 console.log('chunk:',chunk.get('chunkInfo').part,'writing')
                 writePositionObj.writePosition++; //Increment the writePositionObj
@@ -389,43 +456,76 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                 // Make the recursive call
                 // Using a dirty hack to place the recursive call at the top of Javascript's call stack  
                 _.defer(_.bind(this.recursivelyWriteChunks, this, writePositionObj, writeCompleteCallback))
-                //setTimeout(_.bind(this.recursivelyWriteChunks, this, writePositionObj, writeCompleteCallback), 1e3)
-            },this));
+            },this)
+
+            if ( this.chrome ) {
+              this.appendToFile(chunk, successCallback)
+            } else if ( this.firefox ) {
+              this.addToIndexedDB(chunk, writePosition, successCallback)
+            }
+        },
+
+        addToIndexedDB : function(chunk, writePosition, successCallback){
+          var transaction = this.db.transaction(this.dbName,'readwrite')
+          , that = this
+          ,  chunkCount = _.keys(this.manifest.get('chunks')).length - 1 //zero indexed
+          , chunkSize = Chunk.prototype.defaults.chunkSize
+          , buffer = chunk.get('buffer')
+
+          //if this is the last chunk only write the amount needed to the file
+          if ( chunk.get('chunkInfo').part == chunkCount){
+              var lastChunkSize =  this.manifest.get('size') - (chunkCount*chunkSize)
+
+              buffer = buffer.slice(0, lastChunkSize)
+          }
+
+          transaction.oncomplete = function(){
+            console.log("placed chunk at:",writePosition)
+            successCallback()
+          }
+
+          transaction.onerror = function(){
+            console.error("There was an error in trying to save a chunk:", writePosition, "Retrying now")
+            that.addToIndexedDB(chunk, writePosition, successCallback)
+            return
+          }
+
+          transaction.objectStore(this.dbName).put(new Blob([buffer]), "chunk:"+writePosition)
         },
 
         appendToFile: function(chunk, callback){
-            var chunkCount = _.keys(this.manifest.get('chunks')).length - 1 //zero indexed
-            , chunkSize = Chunk.prototype.defaults.chunkSize
-            , buffer = chunk.get('buffer')
+          var chunkCount = _.keys(this.manifest.get('chunks')).length - 1 //zero indexed
+          , chunkSize = Chunk.prototype.defaults.chunkSize
+          , buffer = chunk.get('buffer')
 
-            //if this is the last chunk only write the amount needed to the file
-            if ( chunk.get('chunkInfo').part == chunkCount){
-                var lastChunkSize =  this.manifest.get('size') - (chunkCount*chunkSize)
+          //if this is the last chunk only write the amount needed to the file
+          if ( chunk.get('chunkInfo').part == chunkCount){
+              var lastChunkSize =  this.manifest.get('size') - (chunkCount*chunkSize)
 
-                buffer = buffer.slice(0, lastChunkSize)
-            }
-
-
-            //specify where in the file this chunk starts
-            var start = chunk.get('chunkInfo').part*chunkSize
+              buffer = buffer.slice(0, lastChunkSize)
+          }
 
 
-            var errCallback = function(e){console.error('Error in saving file:',e)}
+          //specify where in the file this chunk starts
+          var start = chunk.get('chunkInfo').part*chunkSize
 
-            FileSystemHandler.appendToFile(
-                { 
-                  successCallback: _.bind(function(){
-                      callback()
-                  },this)
-                  , errorCallback: errCallback
-                  , name: this.manifest.get('name')
-                  , fileSystem: this.fileSystem
-                  , data: buffer
-                  , type: this.manifest.get('type')
-                  , size: this.manifest.get('size')
-                  , start: start
-                }
-            )
+
+          var errCallback = function(e){console.error('Error in saving file:',e)}
+
+          FileSystemHandler.appendToFile(
+              { 
+                successCallback: _.bind(function(){
+                    callback()
+                },this)
+                , errorCallback: errCallback
+                , name: this.manifest.get('name')
+                , fileSystem: this.fileSystem
+                , data: buffer
+                , type: this.manifest.get('type')
+                , size: this.manifest.get('size')
+                , start: start
+              }
+          )
         },
 
 
@@ -445,9 +545,33 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
 
         getFileEntry: function(callback){
             var name = this.manifest.get('name')
-            this.fileSystem.getFileSystem(function(fs){
-                fs.root.getFile(name, {}, callback)
-            })
+            if (this.chrome){
+              this.fileSystem.getFileSystem(function(fs){
+                  fs.root.getFile(name, {}, callback)
+              })
+            } else if (this.firefox){
+              var transaction = this.db.transaction(this.dbName).objectStore(this.dbName).mozGetAll()
+              t = transaction
+
+
+              transaction.onsuccess = function(event){
+                var chunks = event.target.result
+                , file = new Blob(chunks)
+                , url = URL.createObjectURL(file)
+                //emulate a FileEntry Obj
+                var fileEntry = {
+                  fullPath : "/",
+                  name: name,
+                  toURL : function(){ return url }
+                }
+                callback(fileEntry)
+              }
+
+              transaction.onerror = function(event){
+                console.error("There was an error in getting the chunks",e)
+
+              }
+            }
         },
 
         getArrayBufferChunk:function(start, end, callback){
