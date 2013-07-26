@@ -62,7 +62,8 @@ define(["jade!templates/user/UserFiles" ], function(filesTemplate, SingleFileInf
         },
 
         openFile : function(e){
-          var filename = e.srcElement.textContent
+          var filename = e.target.textContent
+          debugger
 
           //check if this is a file or a folder
           fileObj = this.model.lsla(filename)
