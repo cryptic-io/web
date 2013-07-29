@@ -2,3 +2,9 @@
 *.vim
 js/config.js
 tests/chrome
+*.map
+main-built.js
+node_modules/*
+Guardfile
+cryptic.css
+
