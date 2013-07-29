@@ -5,7 +5,9 @@
   "main": "js/main.js",
   "dependencies": {
     "http-server": "~0.5.5",
-    "coffee-script": "~1.6.3"
+    "coffee-script": "~1.6.3",
+    "requirejs": "~2.1.8",
+    "recess": "1.1.9"
   },
   "devDependencies": {
     "http-server": "~0.5.5",
@@ -27,5 +29,8 @@
   "author": "Marco Munizaga",
   "license": "EPL",
   "gitHead": "525c244a95559da9f4d1c4b1e2bc8295afe2d832",
+  "bugs": {
+    "url": "https://github.com/cryptic-io/ccweb/issues"
+  },
   "readmeFilename": "README.md"
 }
