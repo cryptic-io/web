@@ -3,7 +3,7 @@
 //(e.g. user route is defined under routes/User.js)
 
 define(
- ["routes/Home", "routes/User", "routes/Fs", "routes/Settings", "routes/About", "routes/Login", "routes/Register", "routes/Download", "routes/Test", 
+ ["routes/Home", "routes/User", "routes/Fs", "routes/Settings", "routes/About", "routes/Login", "routes/Register", "routes/Download", 
   "views/Home", "views/ViewportHandler", "views/TopBarCategories", "models/user/User", "config"], 
  function(HomeRoute, UserRoute, Fs, Settings, About, Login, Register, Download, Test,
    HomeView, ViewportHandler, TopBar, User, config){ 
@@ -12,16 +12,16 @@ define(
         createRoutes: function(viewport, topBar, userModel, router){
           var routes = {
               "home" : "home"
-              , "user/fs/*fileLocation" : "fs"
-              , "user/fs" : "fs"
-              , "user/fs/" : "fs"
-              , "user" : "user"
-              , "settings" : "settings"
-              , "about" : "about"
-              , "login" : "login"
-              , "register" : "register"
-              , "test" : "test"
-              , "download/*linkNameAndPasscode" : "download"
+            , "user/fs/*fileLocation" : "fs"
+            , "user/fs" : "fs"
+            , "user/fs/" : "fs"
+            , "user" : "user"
+            , "settings" : "settings"
+            , "about" : "about"
+            , "login" : "login"
+            , "register" : "register"
+            , "test" : "test"
+            , "download/*linkNameAndPasscode" : "download"
           }
 
           //wire the routes 
@@ -38,8 +38,7 @@ define(
             "about"    : About(viewport, topBar),
             "login"    : Login(viewport, topBar, userModel, router),
             "register" : Register(viewport, topBar, userModel),
-            "download" : Download(viewport),
-            "test"     : Test()
+            "download" : Download(viewport)
           }
 
 
