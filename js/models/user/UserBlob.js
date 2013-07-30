@@ -1,5 +1,6 @@
 //Define the User Blob model
-define(["apiEndPoints", "models/File", "models/RSA"],function(api, File, RSAModel){ 
+define(["apiEndPoints", "models/File", "models/RSA", "models/user/FS"],function(api, File, RSAModel, userFS){ 
+  k = userFS
   return Backbone.Model.extend({
     initialize: function(){
       this.set('rsa', new RSAModel())
@@ -86,54 +87,16 @@ define(["apiEndPoints", "models/File", "models/RSA"],function(api, File, RSAMode
       alert("Error: "+errorObj.error)
     }
 
-    , addFile: function(fs, loc, fileObj){
+    , addFile: userFS.addFile
 
-      var contents = fileObj
-      , filename = fileObj.filename
+    , deleteFolder : userFS.deleteFolder
 
-      contents = _.defaults(contents, {
-          created: +(new Date()), modified: +( new Date() ), type: "file", location: loc, size:"Unknown", value: contents.link})
-
-      var folder = this.getFile(fs, loc)
-      , currentFolder = folder.value //the value of the folder is the object that contains all the other files
-
-      if (_.isUndefined(currentFolder[filename]) ){
-          currentFolder[filename]=contents
-      }else{
-        
-        //increment through filenames if the file already exists
-        (function(filename, copyNumber){
-          if( _.isUndefined(currentFolder[filename+' ('+copyNumber+')']) ){
-            contents.filename = filename + ' ('+copyNumber+')'
-            currentFolder[filename + ' ('+copyNumber+')']=contents
-          }else{
-            //we need to increment the number
-            arguments.callee(filename, ++copyNumber)
-            return
-          }
-        })(filename, 1)
-      }
-
-      return fs
-    }
-
-    , deleteFolder : function(fs, loc, filename){
-        return this.removeFile(fs, loc, filename, true)
-    }
-
+    //calls the userFS removeFile as well as remove the file from the server, which requires user info, so that stays here.
     , removeFile: function(fs, loc, filename, isFolder){
       var folder = this.getFile(fs, loc)
-      , currentFolder = folder.value //the value of the folder is the object that contains all the other files
       , file = folder.value[filename]
 
-      //remove the file from the folder
-      currentFolder = _.omit(currentFolder, filename)
-
-      folder.value = currentFolder
-
-      if (isFolder){
-          return fs
-      }
+      userFS.removeFile(fs, loc, filename, isFolder)
 
       this.removeFileFromServer(file.value)
 
@@ -165,41 +128,15 @@ define(["apiEndPoints", "models/File", "models/RSA"],function(api, File, RSAMode
 
     }
 
-    , getParentFsLocation: function(fsLocation){
-          var parentFsLocation = fsLocation = _.without(fsLocation,"") 
-          parentFsLocation.splice(1) //get rid of the current folder in the fsLocation
-          parentFsLocation = '/' +parentFsLocation.join('/') // recreate the original path
-
-          return parentFsLocation
-    }
+    , getParentFsLocation: userFS.getParentFsLocation
 
     // Given a fs and location, return an array of all the files inside
-    , getFile: function(fs, loc){
-        var locationArray = _.without(loc.split('/'), "")
-        , file = fs
+    , getFile: userFS.getFile
 
-        _.each(locationArray, function(location){
-          //navigate inside folders 
-          file = file.value[location]
-        })
-
-        return file
-    }
-
-    , ls: function(fs, loc){
-      //we return a list of files from a folder
-      return _.values(this.getFile(fs, loc).value)
-    }
+    , ls: userFS.ls
     
     // given an array, and an  object, navigate the object given the array
-    , getIn: function(object, loc){
-        var tempObj = object
-        _.each(loc, function(part){
-            tempObj = tempObj[part]
-        })
-
-        return tempObj
-    }
+    , getIn: userFS.getIn
     
     , signMessage: function(messageString){
       //redirect to the rsa model's implementation

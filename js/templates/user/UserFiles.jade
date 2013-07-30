@@ -3,7 +3,7 @@
     a(href="#user/fs//") / 
   each fsPart in fsParts
     .span.filePart
-      a(href="#").breadcrumb= fsPart
+      a(href="#", filename="#{fsPart}").breadcrumb= fsPart.replace(/\\\//g,"/")
     .span.filePart
       p / 
 #deleteButton
@@ -29,6 +29,6 @@
           i.icon-music.fileIcon
       else 
           i.icon-file.fileIcon
-      p.fileBarText.barText(path="#{fsLocation}#{file.filename}")= file.filename
+      p.fileBarText.barText(path="#{fsLocation}#{file.filename}", filename="#{file.filename}")= file.filename.replace(/\\\//g,"/")
   .file#barsContainer
     .bars

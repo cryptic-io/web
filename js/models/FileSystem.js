@@ -1,4 +1,4 @@
-//returns a filesystem singleton 
+//returns a filesystem singleton, this is for chrome's filesystem api, not to be confused with the user's filesystem
 define([],function(){ 
     //precent webworkers from crashing because they try to access the filesystem
     if (typeof(window) === "undefined"){

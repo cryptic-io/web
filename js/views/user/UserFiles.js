@@ -1,5 +1,5 @@
 //returns the Userfiles view, responsible for the look of the fs
-define(["jade!templates/user/UserFiles" ], function(filesTemplate, SingleFileInfo){ 
+define(["jade!templates/user/UserFiles", "models/user/FS" ], function(filesTemplate, userFS){ 
     return Backbone.View.extend({
 
         id : "userFilesContainer",
@@ -50,7 +50,7 @@ define(["jade!templates/user/UserFiles" ], function(filesTemplate, SingleFileInf
 
         handleBreadcrumb : function(e){
           var index = this.$el.find("#filePath .breadcrumb").index(e.target)
-          , fsParts = _.without(this.model.get('fsLocation').split('/'), "") //clean extra '/' from the string
+          , fsParts = userFS.splitPath(this.model.get('fsLocation'))
           fsParts.splice(index+1)
 
           this.model.set("fsLocation","/"+fsParts.join("/"))
@@ -62,7 +62,7 @@ define(["jade!templates/user/UserFiles" ], function(filesTemplate, SingleFileInf
         },
 
         openFile : function(e){
-          var filename = e.target.textContent
+          var filename = $(e.target).attr("filename")
 
           //check if this is a file or a folder
           fileObj = this.model.lsla(filename)
@@ -117,8 +117,8 @@ define(["jade!templates/user/UserFiles" ], function(filesTemplate, SingleFileInf
 
             var files = this.model.ls()
             , inRoot = false
-            , fsParts = _.without(loc.split('/'), "") //clean extra '/' from the string
-            , fsLocation = "/" + fsParts.join("/")
+            , fsParts = userFS.splitPath(loc)
+            , fsLocation = userFS.cleanPath(loc)
 
             if (fsLocation === "/"){
               inRoot = true
