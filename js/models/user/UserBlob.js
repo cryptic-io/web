@@ -1,6 +1,6 @@
 //Define the User Blob model
 define(["apiEndPoints", "models/File", "models/RSA", "models/user/FS"],function(api, File, RSAModel, userFS){ 
-  k = userFS
+  var multipass = new Multipass()
   return Backbone.Model.extend({
     initialize: function(){
       this.set('rsa', new RSAModel())
@@ -115,14 +115,10 @@ define(["apiEndPoints", "models/File", "models/RSA", "models/user/FS"],function(
             links = links.concat(linkName)
 
             var sig = this.signMessage(JSON.stringify(links))
-            $.post(api.removeFile,
-                JSON.stringify(
-                    { username: this.get('username')
-                      , filenames : links
-                      , signature : sig
-                    }
-                )
-            )
+            ,   data = JSON.stringify({ username: this.get('username') , filenames : links , signature : sig})
+
+            multipass.checkMultipass()
+                     .then(_.bind($.post, $, api.removeFile, data))
         }, this))
 
 
@@ -161,14 +157,12 @@ define(["apiEndPoints", "models/File", "models/RSA", "models/user/FS"],function(
       , id = userBlob.id
       , encryptedBlob = this.encryptBlob(password, userBlob)
       , signature = this.signMessage(encryptedBlob)
+      , data = JSON.stringify( { username:username , id: id , newBlob : encryptedBlob , signature : signature} ) 
 
-      $.post(api.updateUserBlob
-        , JSON.stringify(
-          { username:username
-            , id: id
-            , newBlob : encryptedBlob
-            , signature : signature} )
-        , _.bind(this.saveBlobCallback, this))
+      
+      multipass.checkMultipass()
+               .then(_.bind($.post, $, api.updateUserBlob, data))
+               .then(_.bind(this.saveBlobCallback, this))
     }
 
     , saveBlobCallback: function(){

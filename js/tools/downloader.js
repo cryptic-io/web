@@ -1,6 +1,8 @@
 //helper tool to download
 //define for requirejs
-define(["config", "apiEndPoints"],function(config, api){
+define(["config", "apiEndPoints", "tools/Multipass"],function(config, api, Multipass){
+  var multipass = new Multipass()
+
   var nemo = "http://"+config.NEMO_LOCATION+":"+config.NEMO_PORT
   var Downloader = function() {
   };
@@ -29,7 +31,9 @@ define(["config", "apiEndPoints"],function(config, api){
               if (typeof callback != 'undefined') callback(fileKeysObj)
             }
           };
-          xhr.send(JSON.stringify(request));
+
+          multipass.checkMultipass()
+                   .then(_.bind(xhr.send, xhr, JSON.stringify(request)));
       },
 
       downloadFile: function(linkname, keyObj, progressListener, callback){
@@ -71,7 +75,6 @@ define(["config", "apiEndPoints"],function(config, api){
           }
   
           xhr.send();
-          //$.post(nemo,request, xhr.onload); 
           
       },
 

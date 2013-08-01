@@ -10,8 +10,8 @@ define([],function(){
 
 
     FileSystem = function(){
-        if ( arguments.callee._singleton ){
-            return arguments.callee._singleton
+        if ( arguments.callee._singletonInstance ){
+            return arguments.callee._singletonInstance
         }
         arguments.callee._singletonInstance = this;
     };

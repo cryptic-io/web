@@ -1,5 +1,7 @@
 //Define the User Blob model
-define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){ 
+define(['apiEndPoints', 'models/user/UserBlob', 'tools/Multipass'],function(api, UserBlob, Multipass){ 
+    var multipass = new Multipass()
+
     return Backbone.Model.extend({
         defaults: {
             userBlob : new UserBlob()
@@ -40,16 +42,17 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
           , publickey_n = userBlobJSON.RSAObject.pub_key
           , publickey_e = userBlobJSON.RSAObject.rsa_e
           , encryptedBlob = userBlob.encryptBlob(password, userBlobJSON)
-  
-          $.post(api.createUser 
-              , JSON.stringify(
+          , data = JSON.stringify(
                   { username:username
-                    , testerToken: testerToken
-                    , publickey_n: publickey_n
-                    , publickey_e: publickey_e
-                    , secret_key : secretKey
-                    , blob : encryptedBlob} )
-              , _.bind(this.registerCallback, this, username, password))
+                  , testerToken: testerToken
+                  , publickey_n: publickey_n
+                  , publickey_e: publickey_e
+                  , secret_key : secretKey
+                  , blob : encryptedBlob} )
+  
+          multipass.checkMultipass()
+                   .then(_.bind($.post,$, api.createUser, data))
+                   .then(_.bind(this.registerCallback, this, username, password))
       }
   
       , registerCallback : function(username, password, result){
@@ -71,10 +74,9 @@ define(['apiEndPoints', 'models/user/UserBlob'],function(api, UserBlob){
               loginReq["auth_attempt"]=auth_attempt
           } 
 
-  
-          $.post(api.getUserBlobs 
-                 , JSON.stringify(loginReq)
-                 , _.bind(this.loginCallback,this))
+          multipass.checkMultipass()
+                  .then(_.bind($.post, $, api.getUserBlobs, JSON.stringify(loginReq)))
+                  .then(_.bind(this.loginCallback, this))
       }
   
       , loginCallback: function(response){
