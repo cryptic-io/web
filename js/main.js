@@ -12,10 +12,11 @@ requirejs({
     //lets set up a jade template loader
     paths: { 
         jade: './require-jade/jade'
+      , jquery : "core/jquery-2.0.3.min"
     },
     shim: {
       'core/backbone' : {
-        deps : ['core/underscore', 'core/zepto'],
+        deps : ['core/underscore', 'jquery'],
         exports : 'Backbone'
       },
       'crypt/betterCBC' : {
