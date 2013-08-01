@@ -18,24 +18,28 @@ define(["apiEndPoints"], function(apiEndPoints){
       var promise = $.Deferred()
 
       if ( _.isUndefined(this.multipassCache) || +(new Date()) > this.multipassCacheTimeout + multipassTimeout ){
-        this.multipass()
-            .then(this.saveMultiPass)
+        $.post(apiEndPoints.multipass)
+            .then(_.bind(this.saveMultiPass, this))
             .then(function(multipass){promise.resolve(multipass)})
+      }else{
+        promise.resolve(this.multipassCache)
       }
-
-      promise.resolve(this.multipassCache)
 
       return promise
     },
 
     saveMultiPass : function(data){
       var promise = $.Deferred()
-      debugger
+      , multipass = data.return
+
       if (data.error) {
         console.error("Error in getting multipass",data)
       }
 
-      promise.resolve(data.return)
+      this.multipassCache = multipass
+      this.multipassCacheTimeout = +(new Date())
+
+      promise.resolve(multipass)
 
       return promise
     }

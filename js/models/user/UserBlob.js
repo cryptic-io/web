@@ -1,5 +1,5 @@
 //Define the User Blob model
-define(["apiEndPoints", "models/File", "models/RSA", "models/user/FS"],function(api, File, RSAModel, userFS){ 
+define(["apiEndPoints", "models/File", "models/RSA", "models/user/FS", "tools/Multipass"],function(api, File, RSAModel, userFS, Multipass){ 
   var multipass = new Multipass()
   return Backbone.Model.extend({
     initialize: function(){
