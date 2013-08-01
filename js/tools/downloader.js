@@ -32,8 +32,10 @@ define(["config", "apiEndPoints", "tools/Multipass"],function(config, api, Multi
             }
           };
 
-          multipass.checkMultipass()
-                   .then(_.bind(xhr.send, xhr, JSON.stringify(request)));
+          var data = request
+
+          multipass.checkMultipass(data)
+                   .then(_.bind(xhr.send, xhr));
       },
 
       downloadFile: function(linkname, keyObj, progressListener, callback){

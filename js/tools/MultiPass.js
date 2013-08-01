@@ -1,5 +1,5 @@
 //define the multipass layer for api calls
-define(["apiEndPoints"], function(apiEndPoints){
+define(["core/q", "apiEndPoints"], function(Q, apiEndPoints){
   var multipassTimeout = 30*60*1e3 // 30 Minutes
 
   var Multipass  = function(){
@@ -14,34 +14,49 @@ define(["apiEndPoints"], function(apiEndPoints){
   //all services return a promise
   Multipass.prototype = {
     // Check if the multipass is valid, if it isn't get a new multipass. This will always return a promise
-    checkMultipass : function(){
-      var promise = $.Deferred()
+    checkMultipass : function(data){
+      data = data || {}
+
+      var defer = Q.defer()
 
       if ( _.isUndefined(this.multipassCache) || +(new Date()) > this.multipassCacheTimeout + multipassTimeout ){
-        $.post(apiEndPoints.multipass)
-            .then(_.bind(this.saveMultiPass, this))
-            .then(function(multipass){promise.resolve(multipass)})
+        var xhr = new XMLHttpRequest()
+        ,   xhrDefer = Q.defer()
+
+        xhr.open("POST", apiEndPoints.multipass, true);
+        xhr.onload = function(e) {
+          if (this.status == 200) {
+            xhrDefer.resolve(JSON.parse(xhr.responseText))
+          }
+        }
+        xhr.send()
+
+        xhrDefer.promise.then(_.bind(this.saveMultiPass, this, data))
+                        .then(function(multipass){defer.resolve(multipass)})
       }else{
-        promise.resolve(this.multipassCache)
+        data.multipass = this.multipassCache
+        defer.resolve(JSON.stringify(data))
       }
 
-      return promise
+      return defer.promise
     },
 
-    saveMultiPass : function(data){
-      var promise = $.Deferred()
-      , multipass = data.return
+    saveMultiPass : function(formData, multipassData){
+      var defer = Q.defer()
+      , multipass = multipassData.return
 
-      if (data.error) {
+      if (multipassData.error) {
         console.error("Error in getting multipass",data)
       }
 
       this.multipassCache = multipass
       this.multipassCacheTimeout = +(new Date())
 
-      promise.resolve(multipass)
+      formData.multipass = multipass
 
-      return promise
+      defer.resolve(JSON.stringify(formData))
+
+      return defer.promise
     }
 
   }

@@ -38,13 +38,16 @@ define(["tools/Multipass"], function(Multipass){
               }
           }
 
-          // Put in the extra data!!!
-          xhr.setRequestHeader("X-Extra-Data", JSON.stringify(extraOptions))
           
 
           // finally send the request as binary data (really an arraybuffer)
           multipass.checkMultipass()
-            .then(_.bind(xhr.send, xhr, arraybuffer))
+            .then(function(multipassData){
+              // Put in the extra data!!!
+              extraOptions.multipass = JSON.parse(multipassData).multipass
+              xhr.setRequestHeader("X-Extra-Data", JSON.stringify(extraOptions))
+              xhr.send(arraybuffer)
+            })
       },
 
   };

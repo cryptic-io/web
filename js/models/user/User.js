@@ -42,16 +42,16 @@ define(['apiEndPoints', 'models/user/UserBlob', 'tools/Multipass'],function(api,
           , publickey_n = userBlobJSON.RSAObject.pub_key
           , publickey_e = userBlobJSON.RSAObject.rsa_e
           , encryptedBlob = userBlob.encryptBlob(password, userBlobJSON)
-          , data = JSON.stringify(
+          , data = 
                   { username:username
                   , testerToken: testerToken
                   , publickey_n: publickey_n
                   , publickey_e: publickey_e
                   , secret_key : secretKey
-                  , blob : encryptedBlob} )
+                  , blob : encryptedBlob}
   
-          multipass.checkMultipass()
-                   .then(_.bind($.post,$, api.createUser, data))
+          multipass.checkMultipass(data)
+                   .then(_.bind($.post,$, api.createUser))
                    .then(_.bind(this.registerCallback, this, username, password))
       }
   
@@ -74,8 +74,8 @@ define(['apiEndPoints', 'models/user/UserBlob', 'tools/Multipass'],function(api,
               loginReq["auth_attempt"]=auth_attempt
           } 
 
-          multipass.checkMultipass()
-                  .then(_.bind($.post, $, api.getUserBlobs, JSON.stringify(loginReq)))
+          multipass.checkMultipass(loginReq)
+                  .then(_.bind($.post, $, api.getUserBlobs))
                   .then(_.bind(this.loginCallback, this))
       }
   

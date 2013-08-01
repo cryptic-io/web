@@ -115,10 +115,10 @@ define(["apiEndPoints", "models/File", "models/RSA", "models/user/FS", "tools/Mu
             links = links.concat(linkName)
 
             var sig = this.signMessage(JSON.stringify(links))
-            ,   data = JSON.stringify({ username: this.get('username') , filenames : links , signature : sig})
+            ,   data = { username: this.get('username') , filenames : links , signature : sig}
 
-            multipass.checkMultipass()
-                     .then(_.bind($.post, $, api.removeFile, data))
+            multipass.checkMultipass(data)
+                     .then(_.bind($.post, $, api.removeFile))
         }, this))
 
 
@@ -157,11 +157,11 @@ define(["apiEndPoints", "models/File", "models/RSA", "models/user/FS", "tools/Mu
       , id = userBlob.id
       , encryptedBlob = this.encryptBlob(password, userBlob)
       , signature = this.signMessage(encryptedBlob)
-      , data = JSON.stringify( { username:username , id: id , newBlob : encryptedBlob , signature : signature} ) 
+      , data = { username:username , id: id , newBlob : encryptedBlob , signature : signature}
 
       
-      multipass.checkMultipass()
-               .then(_.bind($.post, $, api.updateUserBlob, data))
+      multipass.checkMultipass(data)
+               .then(_.bind($.post, $, api.updateUserBlob))
                .then(_.bind(this.saveBlobCallback, this))
     }
 
