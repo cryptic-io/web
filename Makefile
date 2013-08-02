@@ -3,7 +3,7 @@ CCWEB_WEBWORKERS ?= true
 CONFIG_LOCATION=js/config.js
 
 server.pid: node_modules
-	node_modules/http-server/bin/http-server & echo "$$!" > server.pid
+	node_modules/http-server/bin/http-server -p8008 & echo "$$!" > server.pid
 
 server: server.pid
 
@@ -16,7 +16,7 @@ node_modules:
 	npm install
 
 tests: server.pid node_modules config 
-	node_modules/phantomjs/lib/phantom/bin/phantomjs js/tools/run-jasmine.js http://localhost:8082/tests.html;
+	node_modules/phantomjs/lib/phantom/bin/phantomjs js/tools/run-jasmine.js http://localhost:8008/tests.html;
 
 $(CONFIG_LOCATION): 
 	#!/bin/sh
