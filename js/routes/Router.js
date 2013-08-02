@@ -5,7 +5,7 @@
 define(
  ["routes/Home", "routes/User", "routes/Fs", "routes/Settings", "routes/About", "routes/Login", "routes/Register", "routes/Download", 
   "views/Home", "views/ViewportHandler", "views/TopBarCategories", "models/user/User", "config"], 
- function(HomeRoute, UserRoute, Fs, Settings, About, Login, Register, Download, Test,
+ function(HomeRoute, UserRoute, Fs, Settings, About, Login, Register, Download, 
    HomeView, ViewportHandler, TopBar, User, config){ 
     return Backbone.Router.extend({
 
