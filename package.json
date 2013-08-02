@@ -1,0 +1,29 @@
+{
+  "name": "cryptic-web",
+  "version": "0.1.0",
+  "description": "Cryptic.io's frontend app",
+  "main": "js/main.js",
+  "dependencies": {
+    "http-server": "~0.5.5"
+  },
+  "devDependencies": {
+    "http-server": "~0.5.5",
+    "phantomjs": "~1.9.1-0"
+  },
+  "scripts": {
+    "test": "make tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/cryptic-io/ccweb"
+  },
+  "keywords": [
+    "cryptic",
+    "cryptic.io",
+    "ccweb"
+  ],
+  "author": "Marco Munizaga",
+  "license": "EPL",
+  "gitHead": "525c244a95559da9f4d1c4b1e2bc8295afe2d832",
+  "readmeFilename": "README.md"
+}
