@@ -1,0 +1,12 @@
+language: node_js
+node_js:
+  - "0.8"
+before_script: make server deps config 
+script: make tests
+after_script: make kill-server
+branches:
+  only:
+    - tests
+env: 
+  global:
+    - CCWEB_WEBWORKERS=false
