@@ -1,6 +1,8 @@
 #filePath
   .span.filePart
-    a(href="#user/fs//") / 
+    a(href="#user/fs//").breadcrumb Home 
+  .span.filePart
+    p / 
   each fsPart in fsParts
     .span.filePart
       a(href="#", filename="#{fsPart}").breadcrumb= fsPart.replace(/\\\//g,"/")

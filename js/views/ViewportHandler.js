@@ -5,7 +5,7 @@ define(["core/q","core/mori"], function(Q,mori){
   m = mori
   return Backbone.View.extend({
 
-    offsetFromCenter: 100
+    offsetFromCenter: 60
 
     , delayToRemove: 500 //delay in ms before removing an element, so it doesn't go away without while we are looking at it
     
@@ -420,7 +420,7 @@ define(["core/q","core/mori"], function(Q,mori){
           placing = 0 - elementWidth;
           break;
         case "right":
-          placing = pageWidth - 2*elementWidth;
+          placing = pageWidth - 2*elementHeight;
           break;
         case "leftDown":
           placing = pageWidth/2 - 2*elementWidth - this.offsetFromCenter
