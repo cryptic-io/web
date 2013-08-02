@@ -6,6 +6,14 @@ define(["models/user/FS"],function(userFS){
       expect(_.isEqual(a,b))
     })
 
+    it("Another simple test", function(){
+      expect(true).toBe(true)
+    })
+
+    it("And another simple test", function(){
+      expect(true).toBe(true)
+    })
+
 
   })
 })

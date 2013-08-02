@@ -7,4 +7,5 @@ main-built.js
 node_modules/*
 Guardfile
 cryptic.css
+server.pid
 
