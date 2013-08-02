@@ -1,11 +1,11 @@
 #filePath
-  .span.filePart
+  .span.noMargin
     a(href="#user/fs//").breadcrumb Home 
   .span.filePart
     p / 
   each fsPart in fsParts
     .span.filePart
-      a(href="#", filename="#{fsPart}").breadcrumb= fsPart.replace(/\\\//g,"/")
+      a(href="#", filename="#{fsPart}").breadcrumb.fsPart= fsPart.replace(/\\\//g,"/")
     .span.filePart
       p / 
 #deleteButton

@@ -45,11 +45,11 @@ define(["jade!templates/user/UserFiles", "models/user/FS" ], function(filesTempl
             , "change #folderNameInput": "createNewFolder"
             , "click #deleteFolder":"deleteFolder"
             , "click .file":"openFile"
-            , "click .breadcrumb" : "handleBreadcrumb"
+            , "click #filePath .fsPart" : "handleBreadcrumb"
         },
 
         handleBreadcrumb : function(e){
-          var index = this.$el.find("#filePath .breadcrumb").index(e.target)
+          var index = this.$el.find("#filePath .fsPart").index(e.target)
           , fsParts = userFS.splitPath(this.model.get('fsLocation'))
           fsParts.splice(index+1)
 

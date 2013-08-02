@@ -427,19 +427,25 @@ body {
   }
 }
 
-#filePath {
-    height: 109px;
+.noMargin {
+    margin : 0px;
+}
 
+@pathSize : 34pt;
+#filePath {
+    height: 80px;
+
+
+        
     p {
         font-family: @base-font-family;
-        font-size: 44pt;
+        font-size: @pathSize;
         font-weight: bold;
-        color: black;
     }
 
     a {
         font-family: @base-font-family;
-        font-size: 44pt;
+        font-size: @pathSize;
     }
 
     .filePart {
