@@ -92,11 +92,11 @@ define(["apiEndPoints", "models/File", "models/RSA", "models/user/FS", "tools/Mu
     , deleteFolder : userFS.deleteFolder
 
     //calls the userFS removeFile as well as remove the file from the server, which requires user info, so that stays here.
-    , removeFile: function(fs, loc, filename, isFolder){
+    , removeFile: function(fs, loc, filename){
       var folder = this.getFile(fs, loc)
       , file = folder.value[filename]
 
-      userFS.removeFile(fs, loc, filename, isFolder)
+      userFS.removeFile(fs, loc, filename)
 
       this.removeFileFromServer(file.value)
 
@@ -130,9 +130,6 @@ define(["apiEndPoints", "models/File", "models/RSA", "models/user/FS", "tools/Mu
     , getFile: userFS.getFile
 
     , ls: userFS.ls
-    
-    // given an array, and an  object, navigate the object given the array
-    , getIn: userFS.getIn
     
     , signMessage: function(messageString){
       //redirect to the rsa model's implementation

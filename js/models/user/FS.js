@@ -7,7 +7,7 @@ define([],function(){
       return _.values(FS.getFile(fs, loc).value)
     },
 
-    //removes extraneous slashes. Should handle paths with slashes by escaping them
+    //Returns a path with extra forward slashes removed
     cleanPath: function(path){
       return "/"+FS.splitPath(path).join("/")
     },
@@ -55,7 +55,6 @@ define([],function(){
         return file
     },
 
-
     addFile: function(fs, loc, fileObj){
 
       var contents = fileObj
@@ -95,7 +94,8 @@ define([],function(){
         return FS.removeFile(fs, loc, filename, true)
     },
     
-    removeFile: function(fs, loc, filename, isFolder){
+    removeFile: function(fs, loc, filename){
+      fs = _.clone(fs)
       var folder = FS.getFile(fs, loc)
       , currentFolder = folder.value //the value of the folder is the object that contains all the other files
       , file = folder.value[filename]
@@ -105,31 +105,17 @@ define([],function(){
 
       folder.value = currentFolder
 
-      if (isFolder){
-          return fs
-      }
-
       return fs
     },
 
     getParentFsLocation: function(fsLocation){
-          var parentFsLocation = fsLocation = _.without(fsLocation,"") 
-          parentFsLocation.splice(1) //get rid of the current folder in the fsLocation
+          var parentFsLocation = this.splitPath(fsLocation)
+          parentFsLocation.pop()//get rid of the current folder in the fsLocation
           parentFsLocation = '/' +parentFsLocation.join('/') // recreate the original path
 
           return parentFsLocation
     },
-
     
-    // given an array, and an  object, navigate the object given the array
-    getIn: function(object, loc){
-        var tempObj = object
-        _.each(loc, function(part){
-            tempObj = tempObj[part]
-        })
-
-        return tempObj
-    }
   }
 
   return FS
