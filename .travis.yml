@@ -6,7 +6,7 @@ script: make tests
 after_script: make kill-server
 branches:
   only:
-    - tests
+    - master
 env: 
   global:
     - CCWEB_WEBWORKERS=false
