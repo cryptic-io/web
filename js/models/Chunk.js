@@ -33,6 +33,8 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
             fileModel.getArrayBufferChunk(start, end, _.bind(function(buffer){
 
                 if (padding){
+                    var leftover = (end - start)%(16)
+                    var paddedSize  = (16 - leftover) + (end - start)
                     var copierDest = new Uint8Array(paddedSize)
                     var copierSource = new Uint8Array(buffer)
                     _.each(copierSource, function(byte, index){ copierDest[index] = byte })
@@ -109,12 +111,24 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
                 , iv: this.get('iv')
                 , key: this.get('key')
             })
+
             this.set('buffer', e.buffer)
 
             if (this.has('progressListener')) this.get('progressListener')({event:'Encrypting',progress:100})
 
             return e
 
+        },
+
+        encryptStr: function(str){
+            //authenticated encryption
+            var e = sjcl.encrypt(this.get('key'), str)
+            return e
+        },
+
+        decryptStr: function(str){
+            var d = sjcl.decrypt(this.get('key'), str)
+            return d
         },
 
         decryptChunk:function(){

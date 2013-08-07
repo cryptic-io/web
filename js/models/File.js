@@ -73,9 +73,8 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                     counter += chunkSize;
                     var end = counter < file.size ? counter : file.size;
 
-                    //It has to fit within 32*4 because 32 bits is the int size used in data encryption and 4 because AES operates on 4 ints at a time for decryption
-                    //Then it has to divide by 8 because 8 bits in a byte
-                    //so 2^5 * 2^2 / 2^3  == 16
+                    //It has to fit within 32*4 because 32 bits is the int size used in data encryption and 4 because AES operates on a blocksize of 16bytes 
+                    //(32*4) == 16Bytes
                     if ( (end - start)%(16) != 0){
                         leftover = (end - start)%(16)
                         paddedSize  = (16 - leftover) + (end-start)
