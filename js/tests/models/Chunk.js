@@ -51,8 +51,6 @@ define(["models/Chunk", "text!tests/testfile1.data", "text!tests/testfile2.data"
       //The encrypted version shouldn't be === to zero because first it's uint, so no negs, and 0's are the plaintext
       var e = new Uint8Array(encryptedBuffer)
       expect(_.reduce(e,function(a,b){return a+b})).not.toEqual(0)
-
-      expect(encryptedBuffer).not.toBe(text.buffer)
     })
 
     it("Decrypts the Chunk", function(){
@@ -62,38 +60,27 @@ define(["models/Chunk", "text!tests/testfile1.data", "text!tests/testfile2.data"
 
       //the testfile is full of zero's so this should only be zero
       expect(_.reduce(d,function(a,b){return a+b})).toEqual(0)
-
-      expect(decryptedBuffer).not.toBe(text.buffer)
     })
 
     // Run some Benchmarks
 
-    //encrypt & decrypt 100 times
+    it("Benchmarked encryption/decryption n times on a 1 MB file. Check the console for more detail: ", function(){
 
-    var startTime = +(new Date())
-    for(var i=0;i<1000;i++){
-      chunk.encryptChunk()
-      chunk.decryptChunk()
-    }
+      var startTime = +(new Date());
+          iterations = 10
+      for(var i=0;i<iterations;i++){
+        chunk.encryptChunk()
+        chunk.decryptChunk()
+      }
 
-    var endTime = +(new Date())
-    ,   delta   = endTime - startTime
+      var endTime = +(new Date())
+      ,   delta   = endTime - startTime
 
-
-    it("Benchmarked encryption/decryption 1000 times on a 1 MB file. It took: " + delta + " ms")
-
-
-    var startTime = +(new Date())
-    for(var i=0;i<1;i++){
-      e = chunk.encryptStr(testfile1)
-      chunk.decryptChunk(e)
-    }
-
-    var endTime = +(new Date())
-    ,   delta   = endTime - startTime
-
-    it("Benchmarked normal sjcl ccm encryption/decryption 1000 times on a 1 MB file. It took: " + delta + " ms")
-
+      console.group("%cBenchmark encryption/decryption of a 1MB file:", "color:green;")
+      console.log("Benchmark total:",delta,"ms")
+      console.log("Iterations:",iterations)
+      console.log("Average encrypt/decrypt operation:",delta/(iterations*2),"ms")
+    })
     
   })
 })
