@@ -34,7 +34,7 @@ define(["views/ProgressBars", "views/Progress", "views/File"], function(Progress
       })
 
       fileView.on("file:url", function(urlObj){
-        progressBar.link(urlObj.url, urlObj.name)
+        progressBar.link(urlObj.url, urlObj.name, true)
         progressBar.markSuccess()
         progressBar.clickLink()
         barsContainer.setTitle("Done!")
