@@ -90,7 +90,7 @@ requirejs({
                     self.postMessage({
                         command: "upload",
                         status: "success",
-                        result: linkName
+                        result: {linkName:linkName, tag: currentChunk.get('tag')}
                     });
                 });
             },
@@ -98,7 +98,8 @@ requirejs({
             download: function(args){
                 currentChunk.set({
                     linkName: args.linkName,
-                    linkKeyObj: args.linkKeyObj
+                    linkKeyObj: args.linkKeyObj,
+                    tag: args.tag
                 });
                 currentChunk.decodeIVKey(args.IVKey);
 

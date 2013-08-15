@@ -14,12 +14,18 @@ define(["jade!templates/ProgressBar"], function(ProgressTemplate){
         text : function(text){
           return this.$el.find("p.barText").text(text)
         },
-        link: function(link, text){
+        link: function(link, text, downloadable){
+          downloadable = _.isUndefined(downloadable) ? false : true
+
           this.$el.find(".barLink")
-                .attr("href",link)
-                .text(text)
-                .attr("download",text)
-                .show()
+                  .attr("href",link)
+                  .text(text)
+                  .show()
+
+          if (downloadable){
+            this.$el.find(".barLink")
+                    .attr("download",text)
+          }
         },
 
         clickLink : function(){

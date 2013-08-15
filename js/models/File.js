@@ -73,9 +73,8 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                     counter += chunkSize;
                     var end = counter < file.size ? counter : file.size;
 
-                    //It has to fit within 32*4 because 32 bits is the int size used in data encryption and 4 because AES operates on 4 ints at a time for decryption
-                    //Then it has to divide by 8 because 8 bits in a byte
-                    //so 2^5 * 2^2 / 2^3  == 16
+                    //It has to fit within 32*4 because 32 bits is the int size used in data encryption and 4 because AES operates on a blocksize of 16bytes 
+                    //(32*4) == 16Bytes
                     if ( (end - start)%(16) != 0){
                         leftover = (end - start)%(16)
                         paddedSize  = (16 - leftover) + (end-start)
@@ -196,7 +195,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
             }
 
             //save the response from the server
-            this.manifest.setChunkLinkName(index, linkName, function(){
+            this.manifest.setChunkLinkName(index, linkName, chunk, function(){
               //async way of knowing when all the chunks have been uploaded, we go on to upload the chunks
               uploadManifest()
 
@@ -384,6 +383,7 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                         linkName: chunk.get('chunkInfo')['linkName']
                         , linkKeyObj: linkKeyObj
                         , IVKey: chunk.get('chunkInfo')['IVKey']
+                        , tag : chunk.get('chunkInfo')['tag']
                     }, _.bind(function(decryptedBuffer){
                         console.log('chunk:',chunkIndex,'downloaded')
                         //Here we put it on the map to be written by the main thread
@@ -401,8 +401,9 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
                         linkName: chunk.get('chunkInfo')['linkName']
                         , linkKeyObj: linkKeyObj
                         , IVKey: chunk.get('chunkInfo')['IVKey']
+                        , tag : chunk.get('chunkInfo')['tag']
                     }
-                    chunk.set({'linkName':args.linkName, 'linkKeyObj':args.linkKeyObj})
+                    chunk.set({'linkName':args.linkName, 'linkKeyObj':args.linkKeyObj, 'tag':args.tag})
                     chunk.decodeIVKey(args.IVKey)
                     chunk.download(_.bind(function(decryptedBuffer){
                         //Here we put it on the map to be written by the main thread

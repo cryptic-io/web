@@ -3,13 +3,14 @@ var dependencies = [
 ]
 
 //define the test files that are going to required in
-var testSuites = ["tests/models/user/FS", "tests/models/RSA"] 
+var testSuites = ["tests/models/user/FS", "tests/models/RSA", "tests/models/Chunk"] 
 
 var requireConfig = {
   baseUrl : "/js",
   //lets set up a jade template loader
   paths: { 
       jade: './require-jade/jade'
+    , text: './require-text/text'
     , jquery : "core/jquery-2.0.3.min"
   },
   shim: {
