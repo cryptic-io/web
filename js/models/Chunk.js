@@ -13,7 +13,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
         defaults: {
             //This chunk uses the 1.0 version of enryption, future chunks may have different versions
-            encryptionVersion: "1.0",
+           encryptionVersion: "1.0",
 
            chunkSize: 4194304,  //Specify how big the chunk should be. ******  THIS HAS TO BE DIVISBLE BY 16 ****** (the reason so that we only need pad the last chunk)
            //chunksize is 4MB
@@ -75,14 +75,16 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         // Generate the initial keys
         generateKey: function(){
             if ( !this.has('iv') || !this.has('key')){
-                this.set('iv',sjcl.random.randomWords(4));
-                this.set('key',sjcl.random.randomWords(4));
+                this.set('iv',sjcl.random.randomWords(2));
+                this.set('key',sjcl.random.randomWords(8));
             }
         },
 
         /*
          * Encodes the key along with the iv
          * The first for items in the array are the iv
+         *
+         * The reason it looks async is that this method is also used by the webworker so it needs to appear async on both implementations
          */
         encodeIVKey: function(callback){
             var ivKey = sjcl.codec.base64url.fromBits(this.get('iv').concat(this.get('key')))
@@ -91,32 +93,35 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         },
 
         /* Sets the internal iv and returns the decoded key
-         * The first four items belong to the iv
-         * The last four is the key
+         * The first 2 items belong to the iv
+         * The last 8 is the key
          */
         decodeIVKey: function(encodedKey){
             var ivKey = sjcl.codec.base64url.toBits(encodedKey);
 
-            this.set('iv',ivKey.slice(0,4))
-            this.set('key' , ivKey.slice(4))
+            this.set('iv',ivKey.slice(0,2))
+            this.set('key' , ivKey.slice(2))
 
-            return ivKey.slice(4);
+            return ivKey.slice(2);
         },
 
         encryptChunk:function(){
             if (this.has('progressListener')) this.get('progressListener')({event:'Encrypting',progress:0})
+            
+            var prf = new sjcl.cipher.aes(this.get('key'))
 
-            var e = sjcl.mode.betterCBC.encryptChunk( {
-                buffer: this.get('buffer')
-                , iv: this.get('iv')
-                , key: this.get('key')
-            })
+            var e = sjcl.arrayBuffer.ccm.encrypt( 
+              prf,
+              this.get('buffer'),
+              this.get('iv')
+            )
 
-            this.set('buffer', e.buffer)
+            this.set('buffer', e.ciphertext_buffer)
+            this.set('tag',e.tag)
+
+            this.set('encrypted', true)
 
             if (this.has('progressListener')) this.get('progressListener')({event:'Encrypting',progress:100})
-
-            return e
 
         },
 
@@ -133,14 +138,17 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
         decryptChunk:function(){
             if (this.has('progressListener')) this.get('progressListener')({event:'Decrypting',progress:0})
+              
+            var prf = new sjcl.cipher.aes(this.get('key'))
 
-            var d = sjcl.mode.betterCBC.decryptChunk( {
-                buffer: this.get('buffer')
-                , iv: this.get('iv')
-                , key: this.get('key')
-            })
+            var d = sjcl.arrayBuffer.ccm.decrypt( 
+              prf,
+              this.get('buffer'),
+              this.get('iv'),
+              this.get('tag')
+            )
 
-            this.set('buffer', d.buffer)
+            this.set('buffer', d)
 
             if (this.has('progressListener')) this.get('progressListener')({event:'Decrypting',progress:100})
 
@@ -189,7 +197,10 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
 
             var uploader = new Uploader();
 
-            this.encryptChunk();
+            //check if we have already encrypted the chunk
+            if (!this.get("encrypted")){
+              this.encryptChunk();
+            }
 
             //this is going to be a signed user upload as opposed to an anonymous upload
             //The username is required for chunks that are signed so the server can verify the sig
@@ -236,9 +247,9 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
                 _.bind(function(arraybuffer){
                     this.set('buffer',arraybuffer)
                     //we are also going to decrypt here to save another worker message
-                    var decryptedBuffer = this.decryptChunk().buffer
+                    this.decryptChunk()
                     //passing the data back just to test
-                    if (callback) callback(decryptedBuffer)
+                    if (callback) callback(this.get('buffer'))
                 },this)
             )
         },

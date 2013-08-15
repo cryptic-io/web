@@ -176,7 +176,12 @@ define(['models/Chunk'],function(Chunk){
             });
 
             //We listen in for the event that will be triggered when the worker is done
-            this.bindSuccess(command, callback);
+            this.bindSuccess(command, _.bind(function(chunkInfo){
+              //save the tag
+              this.set('tag',chunkInfo.tag)
+
+              callback(chunkInfo.linkName)
+            },this));
 
             //If we wanted to account for an error we could do
             this.bindError(command, function(result) {
@@ -198,7 +203,8 @@ define(['models/Chunk'],function(Chunk){
                 command: command,
                 linkName: args.linkName,
                 linkKeyObj: args.linkKeyObj,
-                IVKey: args.IVKey
+                IVKey: args.IVKey,
+                tag : args.tag
             });
 
             //We listen in for the event that will be triggered when the worker is done
