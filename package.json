@@ -8,7 +8,8 @@
   },
   "devDependencies": {
     "http-server": "~0.5.5",
-    "phantomjs": "~1.9.1-0"
+    "phantomjs": "~1.9.1-0",
+    "phantom-jasmine":"git+https://github.com/MarcoPolo/phantom-jasmine.git"
   },
   "scripts": {
     "test": "make tests"

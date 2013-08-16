@@ -77,6 +77,7 @@ define(["models/Chunk", "text!tests/testfile1.data", "text!tests/testfile2.data"
       ,   delta   = endTime - startTime
 
       console.group("%cBenchmark encryption/decryption of a 1MB file:", "color:green;")
+      console.log("Benchmark encryption/decryption of a 1MB file:")
       console.log("Benchmark total:",delta,"ms")
       console.log("Iterations:",iterations)
       console.log("Average encrypt/decrypt operation:",delta/(iterations*2),"ms")

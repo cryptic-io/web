@@ -40,15 +40,18 @@ var requireConfig = {
 
 require(requireConfig, dependencies, function(){
   require(testSuites, function(){
-    console.log("running tests!")
     // For outputting the test results
     
     var jasmineEnv = jasmine.getEnv();
     jasmineEnv.updateInterval = 1000;
 
     var htmlReporter = new jasmine.HtmlReporter();
-
     jasmineEnv.addReporter(htmlReporter);
+
+    //this needs to be int the global scope so phantom-jasmine can read it. Hacky :( 
+    //also make sure not to fire console messages before the tests because phantom-jasmine hates that
+    console_reporter = new jasmine.ConsoleReporter()
+    jasmine.getEnv().addReporter(console_reporter);
 
     jasmineEnv.specFilter = function(spec) {
       return htmlReporter.specFilter(spec);
