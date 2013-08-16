@@ -1,6 +1,6 @@
 # Cryptic.io - A Tale in 4 Acts 
 [![Stories in Ready](https://badge.waffle.io/cryptic-io/web.png)](http://waffle.io/cryptic-io/web)
-[![Build Status](https://travis-ci.org/cryptic-io/web-backup.png)](https://travis-ci.org/cryptic-io/web-backup)
+[![Build Status](https://travis-ci.org/cryptic-io/web.png)](https://travis-ci.org/cryptic-io/web)
 
 # Prelude - Encrypted Cloud Storage
 cryptic.io is an extremely simple solution to a difficult problem. How do we securely store files?
