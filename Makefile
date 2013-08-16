@@ -8,13 +8,18 @@ PHANTOM_JASMINE=node_modules/phantom-jasmine/lib/run_jasmine_test.coffee
 
 server.pid: node_modules
 	node_modules/http-server/bin/http-server -p8008 & echo "$$!" > server.pid
+	sleep 5 #wait a bit
 
 server: server.pid
 
 kill-server:
-	test -s server.pid || { echo "Already dead"; exit 1; }
-	kill `cat server.pid`
-	rm server.pid
+	if test -s server.pid; \
+	then \
+		(kill `cat server.pid`); \
+		rm server.pid ; \
+	else \
+		echo "Already dead"; \
+	fi
 
 node_modules:
 	npm install
@@ -36,5 +41,6 @@ config: $(CONFIG_LOCATION)
 
 deps: node_modules
 
-clean:
-	rm $(CONFIG_LOCATION)
+clean: kill-server
+	rm $(CONFIG_LOCATION) 
+	rm -r node_modules
