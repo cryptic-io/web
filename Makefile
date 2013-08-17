@@ -37,7 +37,7 @@ kill-server:
 node_modules:
 	npm install
 
-tests: server.pid node_modules config 
+tests: server.pid node_modules all
 	$(PHANTOMJS) $(PHANTOM_JASMINE) http://localhost:8008/tests.html;
 
 $(CONFIG_LOCATION): 
