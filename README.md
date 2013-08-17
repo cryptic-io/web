@@ -51,7 +51,7 @@ So here it is, our wall. Open sourced for the whole world to see!
 * set $NEMO_PORT to the port of the nemo server, defaults to 8888
 
 # Act IV - Build:
-* Run sh build.sh to generate the js/config.js file 
+* Run ``` make ``` to generate the js/config.js file 
 
 # License
     The use and distribution terms for this software are covered by the Eclipse
