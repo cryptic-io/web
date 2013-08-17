@@ -1,7 +1,0 @@
-{
-  "volo": {
-    "dependencies": {
-      "require-jade": "github:rocketlabsdev/require-jade/master"
-    }
-  }
-}

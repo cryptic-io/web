@@ -6,7 +6,18 @@ CONFIG_LOCATION=js/config.js
 PHANTOMJS=node_modules/phantomjs/bin/phantomjs
 PHANTOM_JASMINE=node_modules/phantom-jasmine/lib/run_jasmine_test.coffee
 
+## Coffee script in/out locations
+COFFEE_IN=coffee/
+COFFEE_OUT=js/
+
+all: config coffee
+
 config: $(CONFIG_LOCATION)
+
+coffee: .coffee
+
+.coffee:
+	node_modules/coffee-script/bin/coffee -o $(COFFEE_OUT) -c $(COFFEE_IN)
 
 server.pid: node_modules
 	node_modules/http-server/bin/http-server -p8008 & echo "$$!" > server.pid
