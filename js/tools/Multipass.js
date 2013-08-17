@@ -31,7 +31,7 @@ define(["core/q", "apiEndPoints"], function(Q, apiEndPoints){
         }
         xhr.send()
 
-        xhrDefer.promise.then(_.bind(this.saveMultiPass, this, data))
+        xhrDefer.promise.then(_.bind(this.saveMultipass, this, data))
                         .then(function(multipass){defer.resolve(multipass)})
       }else{
         data.multipass = this.multipassCache
@@ -41,7 +41,7 @@ define(["core/q", "apiEndPoints"], function(Q, apiEndPoints){
       return defer.promise
     },
 
-    saveMultiPass : function(formData, multipassData){
+    saveMultipass : function(formData, multipassData){
       var defer = Q.defer()
       , multipass = multipassData.return
 
