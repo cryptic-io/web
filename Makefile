@@ -10,7 +10,29 @@ PHANTOM_JASMINE=node_modules/phantom-jasmine/lib/run_jasmine_test.coffee
 COFFEE_IN=coffee/
 COFFEE_OUT=js/
 
+## Recess
+RECESS=node_modules/recess/bin/recess
+
+## r.js
+RJS=node_modules/requirejs/bin/r.js
+
 all: config coffee
+
+production: config optimize
+
+optimize: deps
+	# Compress styles
+	$(RECESS) less/bootstrap/bootstrap.less  less/flat/flat-ui.less less/cryptic.less  --compress > cryptic.css
+	# Compress JS
+	$(RJS) -o js/build.js
+	# Putting optimized index.html
+	rm index.html
+	ln -s index-optimized.html index.html
+
+unoptimize:
+	# Restoring original index.html
+	rm index.html
+	ln -s index-unoptimized.html index.html
 
 config: $(CONFIG_LOCATION)
 
