@@ -107,7 +107,7 @@ define(
             $(evt.target).parent().removeClass("dragEnter");
 
 
-            var files = evt.dataTransfer.files
+            var files = (evt.dataTransfer || evt.originalEvent.dataTransfer).files
             this.uploadFiles(files)
 
         },
