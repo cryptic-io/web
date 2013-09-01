@@ -4,9 +4,6 @@ less = { env: 'development' };
  *
  */
 
-var dependencies = [
-    "require" , "core/backbone" , "crypt/sjcl" , "crypt/betterCBC" , "crypt/rsa/rsa2"
-]
 
 requirejs({
     //lets set up a jade template loader
@@ -38,7 +35,12 @@ requirejs({
       }
   }
 },
-dependencies, function(require, Backbone){
+/* We have two nested requires so that we can be sure backbone and sjcl have been loaded
+ * prior to entering the rest of the functions.
+ * The reason "routes/Router is duplicated is so r.js optimizer sees it
+ */
+[ "require" , "core/backbone" , "crypt/sjcl" , "crypt/betterCBC" , "crypt/rsa/rsa2", "routes/Router" ],
+function(require, Backbone){
     require( 
         ['routes/Router'],
         function(Router) {

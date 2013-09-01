@@ -24,7 +24,7 @@ optimize: deps
 	# Compress styles
 	$(RECESS) less/bootstrap/bootstrap.less  less/flat/flat-ui.less less/cryptic.less  --compress > cryptic.css
 	# Compress JS
-	$(RJS) -o js/build.js
+	$(RJS) -o build.js
 	# Putting optimized index.html
 	rm index.html
 	ln -s index-optimized.html index.html
