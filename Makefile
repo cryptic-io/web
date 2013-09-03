@@ -16,6 +16,9 @@ RECESS=node_modules/recess/bin/recess
 ## r.js
 RJS=node_modules/requirejs/bin/r.js
 
+## Files that need to be hashed
+HASHES=index-optimized.html.hash js-build/main.js.hash js/require.js.hash cryptic.css.hash
+
 all: config coffee
 
 production: config optimize
@@ -77,4 +80,10 @@ deps: node_modules
 clean: kill-server
 	rm $(CONFIG_LOCATION) 
 	rm -r node_modules
+
+# To build the hashes
+%.hash: %
+	sha256sum $^ | awk '{print $1}' | tr -d '\n' | gpg -sa -ucryptic > $@ 
+
+hash: $(HASHES)
 

@@ -8,4 +8,6 @@ node_modules/*
 Guardfile
 cryptic.css
 server.pid
-js-build
+js-build/*
+!js-build/main.js
+!js-build/main.js.hash
