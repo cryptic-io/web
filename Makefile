@@ -83,7 +83,10 @@ clean: kill-server
 
 # To build the hashes
 %.hash: %
-	sha256sum $^ | awk '{print $1}' | tr -d '\n' | gpg -sa -ucryptic > $@ 
+	sha256sum $^ | awk '{print $$1}' | tr -d '\n' | gpg -sa -ucryptic > $@ 
 
 hash: $(HASHES)
+
+clean-hash: 
+	rm $(HASHES)
 
