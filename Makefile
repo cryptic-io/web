@@ -1,5 +1,6 @@
 CCWEB_DEBUG ?= false
 CCWEB_WEBWORKERS ?= true
+CCWEB_SERVERROOT ?= "\"\""
 CONFIG_LOCATION=js/config.js
 
 ## location of tools
@@ -64,12 +65,13 @@ tests: server.pid node_modules all
 
 $(CONFIG_LOCATION): 
 	#!/bin/sh
-	#Source profile so we get NEMO_PORT and NEMO_LOCATION env variables
+	#Source profile so we get CCWEB_DEBUG, CCWEB_WEBWORKERS, and CCWEB_SERVERROOT env variables
 	. /etc/profile
 	echo "//Auto-generated config made in the Makefile. make config" > $@
 	echo "define({" >> $@
 	echo "debug : $(CCWEB_DEBUG)" >> $@
 	echo ", webworkers : $(CCWEB_WEBWORKERS)" >> $@
+	echo ", serverRoot : $(CCWEB_SERVERROOT)" >> $@
 	echo "})" >> $@
 
 deps: node_modules

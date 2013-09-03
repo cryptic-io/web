@@ -47,11 +47,10 @@ So here it is, our wall. Open sourced for the whole world to see!
 
 
 # Act III - Config:
-* set $NEMO_LOCATION to the location of the nemo server, defaults to localhost
-* set $NEMO_PORT to the port of the nemo server, defaults to 8888
+* Run ``` make config ```, which will make the config.js file
 
 # Act IV - Build:
-* Run ``` make ``` to generate the js/config.js file 
+* Run ``` make server ``` to spawn a server on port 8008
 
 # License
     The use and distribution terms for this software are covered by the Eclipse
