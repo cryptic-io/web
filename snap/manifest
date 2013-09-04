@@ -1,4 +1,0 @@
-stage .
-choice "Do you want to rebuild config.js?"     \
-       "Yup!"               remote-script build.sh | \
-       "Nope"               pass
