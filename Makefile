@@ -17,7 +17,7 @@ RECESS=node_modules/recess/bin/recess
 ## r.js
 RJS=node_modules/requirejs/bin/r.js
 
-all: config coffee
+all: config deps coffee
 
 production: config optimize
 
