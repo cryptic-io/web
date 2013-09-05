@@ -1,12 +1,15 @@
 ({
+  appDir: "js/",
   baseUrl: ".",
-  mainConfigFile: "main.js",
+  mainConfigFile: "js/main.js",
   pragmasOnSave: {
       excludeJade : true
   },
   generateSourceMaps : true,
   preserveLicenseComments : false,
   optimize: "uglify2",
-  name: "main",
-  out: "main-built.js"
+  dir: "js-build",
+  modules : [
+    { name:"main" }
+  ]
 })
