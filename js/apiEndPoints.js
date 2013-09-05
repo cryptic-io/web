@@ -9,7 +9,7 @@ define(['config'], function(config) {
     , getFileKeys    :   serverRoot + "/api/getFileKeys"
     , uploadFile     :   serverRoot + "/api/uploadFile"
     , anonUploadFile :   serverRoot + "/api/anonUploadFile"
-    , removeFile     :   serverRoot + "/api/removeFiles"
+    , removeFile     :   serverRoot + "/api/deleteFiles"
     , multipass      :   serverRoot + "/api/getMultipass"
     , emailSubscribe :   serverRoot + "/api/emailSubscribe"
   }
