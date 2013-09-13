@@ -47,7 +47,7 @@ function(require, Backbone){
             router = new Router();
             var givenPage = Backbone.history.start()
             if (!givenPage){
-                router.navigate('home',{trigger:true})
+                router.navigate('about',{trigger:true})
             }
         })
 })
