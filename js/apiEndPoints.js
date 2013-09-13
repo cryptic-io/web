@@ -11,5 +11,6 @@ define(['config'], function(config) {
     , anonUploadFile :   serverRoot + "/api/anonUploadFile"
     , removeFile     :   serverRoot + "/api/removeFiles"
     , multipass      :   serverRoot + "/api/getMultipass"
+    , emailSubscribe :   serverRoot + "/api/emailSubscribe"
   }
 })

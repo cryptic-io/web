@@ -21,11 +21,20 @@ all: config deps coffee
 
 production: config optimize
 
-optimize: deps
+less-optimize: 
 	# Compress styles
 	$(RECESS) less/bootstrap/bootstrap.less  less/flat/flat-ui.less less/cryptic.less  --compress > cryptic.css
+
+optimize: deps less-optimize
 	# Compress JS
 	$(RJS) -o build.js
+	# Putting optimized index.html
+	rm index.html
+	ln -s index-optimized.html index.html
+
+dev-optimize: deps
+	# Compress JS w/o minification
+	$(RJS) -o js/build.js optimize=none
 	# Putting optimized index.html
 	rm index.html
 	ln -s index-optimized.html index.html

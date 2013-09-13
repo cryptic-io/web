@@ -4,7 +4,6 @@
   "description": "Cryptic.io's frontend app",
   "main": "js/main.js",
   "dependencies": {
-    "http-server": "~0.5.5",
     "coffee-script": "~1.6.3",
     "requirejs": "~2.1.8",
     "recess": "1.1.9"

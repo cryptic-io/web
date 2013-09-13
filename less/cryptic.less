@@ -23,14 +23,14 @@ css3 calc
 
 ------ Top Bar ------------
 
-*/
+    */
 
 #header {
-    background-color: #ECF0F1;
-    width: 100%;
-    height: @header-height;
-    margin: 0;
-}
+        background-color: #ECF0F1;
+        width: 100%;
+        height: @header-height;
+        margin: 0;
+    }
 
 #header > .row {
     width: 80%;
@@ -52,6 +52,28 @@ css3 calc
 
 #topBar {
     height: 100%;
+}
+
+.marginLeft {
+    margin-left: 10px;
+}
+
+.marginRight {
+    margin-right: 10px;
+}
+
+.infoBox {
+  width: 45%;
+}
+
+.infoSeparator {
+  height: 1px;
+  background-color: @silver;
+  margin: auto;
+  margin-top: 40px;
+  margin-bottom: 40px;
+  position:relative;
+  top:1px;
 }
 
 /* colors! */
@@ -176,7 +198,7 @@ css3 calc
         background-color: #7492AF;
     }
 
-    &.riverSelected {
+    &.peter-riverSelected {
         background-color: #65B8ED;
     }
 }
@@ -547,8 +569,31 @@ p.fileBarText{
 
 }
 
+
+.contactEmailLabel {
+  position: absolute;
+  z-index: 2;
+  right: 6px;
+  top: 18px;
+  font-size: 20px;
+}
+
+#contactEmail {
+  font-size: 20px;
+}
+
+.helloEmail {
+  font-size: 26px;
+}
+
+#provactiveContact {
+  font-size: 26px;
+  margin-top: 12px;
+}
+
+
 #aboutContainer{
-    width: 800px;
+    width: 80%;
 
     h1 {
         margin-left: 20px;
@@ -561,7 +606,6 @@ p.fileBarText{
     }
 
     #aboutText {
-        text-align: right;
         margin-right: 20px;
         margin-top: 20px;
     }
