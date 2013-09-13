@@ -11,19 +11,19 @@ define(["jade!templates/TopBar"], function(template){
   return Backbone.View.extend({
 
     //store the index of the buttons
-    loggedOutLayout: {
-      "about":0,
-      "upload":1,
-      "register":2,
-      "login":3
-    },
+    loggedOutLayout: [
+      "about",
+      //"upload",
+      "register",
+      "login"
+    ],
 
-    loggedInLayout: {
-      "about":0,
-      "files":1,
-      "settings":2,
-      "logout":3
-    },
+    loggedInLayout: [
+      "about",
+      "files",
+      "settings",
+      "logout"
+    ],
 
     // Keep track of a mapping between names that are used internally (here) and names that are rendered to the DOM
     prettyNames: {
@@ -36,15 +36,26 @@ define(["jade!templates/TopBar"], function(template){
       "logout":"Logout"
     },
 
+    //Specify a specifc color for a specific pretty name, the template will use this if it is given
+    nameToColor: {
+      "about"     : "carrot",
+      "upload"    : "emerald",
+      "register"  : "asphalt",
+      "login"     : "peter-river",
+      "files"     : "emerald",
+      "settings"  : "asphalt",
+      "logout"    : "peter-river"
+    },
+
     initialize: function(){
       this.layout=this.loggedOutLayout
     },
 
     render: function(){
-      var categories = _.chain(this.layout)
-                        .keys()
-                        .map(function(n){return this.prettyNames[n]},this).value()
-      this.$el.html(template({categories:categories}))
+      var categories = _.map(this.layout, function(n){return this.prettyNames[n]},this)
+      var colors = _.map(this.layout, function(n){return this.nameToColor[n]},this)
+
+      this.$el.html(template({categories:categories, colors: colors}))
 
       //hide all the selected bars to the left off screen
       _.each($('#topBar').find('.selectedBar'), function(e, i){$(e).css("left",-150*(i+1))})
@@ -77,9 +88,7 @@ define(["jade!templates/TopBar"], function(template){
       , index = this.$el.find('.topBox').index($topBox)
 
       this.moveSelectedBar(index)
-      this.trigger(_.invert(this.layout)[index]+":click")
-
-
+      this.trigger(this.layout[index]+":click")
     }
 
   })

@@ -1,12 +1,5 @@
-.topBox.carrotBtn.span
-    p= categories[0]
-    .selectedBar.carrotSelected
-.topBox.emeraldBtn.span
-    p= categories[1]
-    .selectedBar.emeraldSelected
-.topBox.asphaltBtn.span
-    p= categories[2]
-    .selectedBar.asphaltSelected
-.topBox.peter-riverBtn.span
-    p= categories[3]
-    .selectedBar.riverSelected
+//- Defin classes that specify the color of the buttons to place, the classes <color>Btn and <color>Selected must exists
+each category, index in categories
+  .topBox.span(class="#{ colors[index] }Btn")
+    p= category
+    .selectedBar(class="#{colors[index]}Selected")
