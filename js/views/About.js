@@ -1,5 +1,5 @@
 //returns the Userlogin view, responsible for the look of the user login
-define(["jade!templates/About", "tools/Multipass", "apiEndpoints"], function(template, Multipass, api){ 
+define(["jade!templates/About", "tools/Multipass", "apiEndPoints"], function(template, Multipass, api){ 
     return Backbone.View.extend({
         id : "aboutContainer",
         className : "floatingContainer",
