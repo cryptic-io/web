@@ -96,7 +96,7 @@ define(["apiEndPoints", "models/File", "models/RSA", "models/user/FS", "tools/Mu
       var folder = this.getFile(fs, loc)
       , file = folder.value[filename]
 
-      userFS.removeFile(fs, loc, filename)
+      fs = userFS.removeFile(fs, loc, filename)
 
       this.removeFileFromServer(file.value)
 
@@ -124,7 +124,7 @@ define(["apiEndPoints", "models/File", "models/RSA", "models/user/FS", "tools/Mu
 
     }
 
-    , getParentFsLocation: userFS.getParentFsLocation
+    , getParentFsLocation: _.bind(userFS.getParentFsLocation, userFS)
 
     // Given a fs and location, return an array of all the files inside
     , getFile: userFS.getFile
