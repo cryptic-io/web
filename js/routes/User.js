@@ -73,6 +73,12 @@ define(
                 .then(hideSingleFileAndShowUpload)
       })
 
+      userView.listenTo(userView.singleFileInfo, "fs:file:delete", function(fsLocation){
+        //if we want to show an indication that the file was deleted, we do that here
+        hideSingleFileAndShowUpload()
+      })
+
+
       hideSingleFileAndShowUpload = function(){
         viewport.placeRightUpOffScreen(userView.singleFileInfo.el, 1)
                 .placeRightOfCenter(fileView.el, 1)

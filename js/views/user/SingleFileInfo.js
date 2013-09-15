@@ -44,6 +44,7 @@ define(["jade!templates/user/SingleFileInfo", "tools/humanReadableByteLength"], 
             , parentLocation = userBlob.getParentFsLocation(fsLocation)
             this.model.removeFile(this.file.location, this.file.filename)
             this.model.set('fsLocation', parentLocation)
+            this.trigger("fs:file:delete",fsLocation)
         },
 
         toggleShareOptions : function(){
