@@ -179,17 +179,14 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
         },
 
         //The callback will contain the linkName
-        upload: function(callback){
+        upload: function(callback, errorCallback){
 
             // We need to check to see if we even have the buffer that we need to upload
             // If we don't have it we need to get it and comeback to this funciton
             if ( !this.has('buffer')){
-                this.getBufferFromState(_.bind(this.upload,this,callback))
+                this.getBufferFromState(_.bind(this.upload,this,callback, errorCallback))
                 return
             }
-
-
-
 
             var location = api.uploadFile
             var linkName = Math.random().toString(36).substring(2);
@@ -219,7 +216,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
                 username : username
                 , hash : hash 
                 , signature: sig
-              })
+              }, errorCallback)
             }else{
               var hash = sha1Hash(this.get('buffer'))
               uploader.send(api.anonUploadFile, this.get('buffer'), linkName, this.get('progressListener'), function(response){
@@ -229,7 +226,7 @@ define(['tools/uploader','tools/downloader','tools/FileSystemHandler', 'models/F
                 username : username
                 , hash : hash 
                 , signature: sig
-              })
+              }, errorCallback)
             }
         },
 

@@ -9,7 +9,7 @@ define(["tools/Multipass"], function(Multipass){
   Uploader.prototype = {
 
       // Extra options will be thrown into the X-Extra-Data header
-      send : function(location, arraybuffer, fileName, progressListener, callback, extraOptions) {
+      send : function(location, arraybuffer, fileName, progressListener, callback, extraOptions, errorCallback) {
           if (progressListener) progressListener({event:"Uploading", progress:0});
 
           var xhr = new XMLHttpRequest();
@@ -25,6 +25,7 @@ define(["tools/Multipass"], function(Multipass){
 
           var send = this.send
           , that = this;
+
           xhr.onerror = function(e) {
               console.error("there was an error",e)
               send.apply(that,[location, arraybuffer, fileName, progressListener, callback])
@@ -38,8 +39,6 @@ define(["tools/Multipass"], function(Multipass){
               }
           }
 
-          
-
           // finally send the request as binary data (really an arraybuffer)
           multipass.checkMultipass()
             .then(function(multipassData){
@@ -47,6 +46,9 @@ define(["tools/Multipass"], function(Multipass){
               extraOptions.multipass = JSON.parse(multipassData).multipass
               xhr.setRequestHeader("X-Extra-Data", JSON.stringify(extraOptions))
               xhr.send(arraybuffer)
+            })
+            .fail(function(error){
+              errorCallback(error)
             })
       },
 

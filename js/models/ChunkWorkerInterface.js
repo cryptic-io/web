@@ -162,10 +162,10 @@ define(['models/Chunk'],function(Chunk){
         },
         */
 
-        upload: function(callback) {
+        upload: function(callback, errorCallback) {
             //Check to see if the worker has a copy of the buffer, if not, give it one
             if (!this.placedBuffer){
-                this.setBuffer( _.bind(this.upload, this, callback), false)
+                this.setBuffer( _.bind(this.upload, this, callback, errorCallback), false)
                 return 
             }
 
@@ -184,8 +184,9 @@ define(['models/Chunk'],function(Chunk){
             },this));
 
             //If we wanted to account for an error we could do
-            this.bindError(command, function(result) {
-                console.error('There was an error with the worker: ', result);
+            this.bindError(command, function(e) {
+                console.error('There was an error with the worker: ', e.data);
+                errorCallback(e.data.result)
             });
 
         },

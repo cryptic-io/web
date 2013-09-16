@@ -92,6 +92,12 @@ requirejs({
                         status: "success",
                         result: {linkName:linkName, tag: currentChunk.get('tag')}
                     });
+                }, function(error){
+                    self.postMessage({
+                        command: "upload",
+                        status: "error",
+                        result: error
+                    });
                 });
             },
 
