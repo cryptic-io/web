@@ -8,8 +8,17 @@ h2 Settings
     .controlGroup
         input.newPass(type="password", placeholder="New Password")
     .controlGroup
-        a.btn.btn-primary.btn-large.btn-block.changePassword Change Password
+        a.btn.btn-primary.btn-block.changePassword Change Password
+#twoStepAccount.option
+  .controlGroup
+    a.btn.btn-info.btn-block Add Two Step Authentication
+.option#qrStuff(style="display:none")
+  .qrCodeInfo.text-center
+    p Use a 2 Step Authenticator app 
+    p (like Google Authenticator)
+    p to read this.
+  #qrcode
 #deleteAccount.option
   .controlGroup
-    a.btn.btn-danger.btn-large.btn-block.changePassword Delete Account
+    a.btn.btn-danger.btn-block.changePassword Delete Account
 

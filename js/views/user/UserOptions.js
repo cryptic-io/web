@@ -1,5 +1,5 @@
 //returns the User View, this contains the fs and is the parent to the userLogin
-define(["jade!templates/user/UserOptions"], function(userOptionsTemplate){ 
+define(["jade!templates/user/UserOptions", "qr" ], function(userOptionsTemplate, QRCode){ 
     return Backbone.View.extend({
         id : "userOptionsContainer"
         , className : "floatingContainer"
@@ -15,7 +15,22 @@ define(["jade!templates/user/UserOptions"], function(userOptionsTemplate){
         }
 
         , events : {
-            "click .changePassword" : "changePassword"
+            "click .changePassword" : "changePassword",
+            "click #twoStepAccount" : "addTwoStep"
+        }
+
+        , addTwoStep : function(){
+          var username = this.model.get('username')
+          var secret = this.model.createSecretKey()
+          var format = "otpauth://totp/<%= username %>@cryptic.io?secret=<%= secret %>"
+          format = _.template(format)({username:username, secret:secret})
+
+          this.$el.find('#qrStuff').show()
+
+          var qrcode = new QRCode("qrcode")
+          qrcode.makeCode(format)
+          this.trigger("settings:qr:show")
+          debugger
         }
 
         , verifyPasswordConsitency: function(){

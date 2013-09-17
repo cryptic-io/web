@@ -10,11 +10,15 @@ requirejs({
     paths: { 
         jade: './require-jade/jade'
       , jquery : "core/jquery-2.0.3.min"
+      , qr : "core/qrcode.min"
     },
     shim: {
       'core/backbone' : {
         deps : ['core/underscore', 'jquery'],
         exports : 'Backbone'
+      },
+      'qr': {
+        exports:"QRCode"
       },
       'crypt/betterCBC' : {
         deps:  ['crypt/sjcl'],
