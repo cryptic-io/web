@@ -22,6 +22,22 @@ define(['apiEndPoints', 'models/user/UserBlob', 'tools/Multipass'],function(api,
           return _.map(sjcl.random.randomWords(16), function(randomNum){ return base32[Math.abs(randomNum)%32] } ).join('');
       }
 
+      addSecretKey: function(secretKey){
+          var userBlob = this.get('userBlob')
+          var secretKeys = userBlob.get('secretKeys')
+          secretKeys.push(secretKey)
+
+          userBlob.set('secretKeys', secretKey)
+      },
+
+      revokeSecretKey: function(secretKey){
+          var userBlob = this.get('userBlob')
+          var secretKeys = userBlob.get('secretKeys')
+          secretKeys = secretKeys.filter(function(key){ return key !== secretKey })
+
+          userBlob.set('secretKeys', secretKey)
+      },
+
 
       , register: function(username, password, testerToken, use2step){
           var userBlob = this.get('userBlob')

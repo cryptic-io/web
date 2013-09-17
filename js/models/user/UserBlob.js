@@ -18,7 +18,7 @@ define(["apiEndPoints", "models/File", "models/RSA", "models/user/FS", "tools/Mu
     , getBlob: function(){
         this.set("timestamp",+(new Date()))
       
-        var userBlob = _.pick(this.toJSON(),["fs", "version", "id", "username", "timestamp"])
+        var userBlob = _.pick(this.toJSON(),["fs", "version", "id", "username", "timestamp", "secretKeys"])
 
         if (_.isUndefined(userBlob.fs)) { 
           this.resetFS();

@@ -30,6 +30,9 @@ define(["jade!templates/user/UserOptions", "qr" ], function(userOptionsTemplate,
           var qrcode = new QRCode("qrcode")
           qrcode.makeCode(format)
           this.trigger("settings:qr:show")
+
+          this.model.addSecretKey("", secret)
+
           debugger
         }
 
