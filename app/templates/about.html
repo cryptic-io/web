@@ -1,0 +1,263 @@
+<_within file="cryptic.html">
+
+<_include file="top-bar-anon.html">
+</_include>
+
+<script id="script-driver">
+  v = new ViewportHandler($("#mainContainer"))
+  a = $("#aboutContainer")
+  v.introduceEl(a,0)
+  v.placeCenter(a,0)
+
+</script>
+
+<div id="mainContainer">
+  <div id="page0" class="page">
+    <div id="aboutContainer" class="floatingContainer" template="about">
+      <h1>About</h1>
+      <div id="aboutSeparator"></div>
+      <div id="aboutText">
+        <div class="row-fluid marginLeft">
+          <div class="span10">
+            <h2>A simple Solution to a <i>hard</i> Problem</h2>
+            <p class="marginLeft">
+              Encryption solutions exist, but you, and the people you work with,
+              don't use them. The problem is that <b>secure and good</b>
+              encryption is <b>hard</b> (with a capital <i>HARD</i>).
+              Cryptic.io makes encryption easy, without compromising security or
+              privacy.
+            </p>
+          </div>
+        </div>
+        <div class="row-fluid">
+          <div class="span8 offset2">
+            <div class="infoSeparator"></div>
+          </div>
+        </div>
+        <div class="marginLeft">
+          <h2>How to use</h2>
+          <div class="row-fluid marginLeft">
+            <div class="span6">
+              <h3>Anonymous Upload</h3>
+              <p class="marginLeft">
+                Anonymity is the greatest tool for privacy. You can start
+                uploading and sharing information securely right away! (<i>sans
+                hoops</i>).
+              </p>
+              <p class="marginLeft">
+                Likewise, anyone you <i>explicitly</i> give permission to see your
+                files can download them right away, no account needed.
+              </p>
+            </div>
+            <div class="span6"><img src="/upload.png"/></div>
+          </div>
+          <div class="row-fluid marginLeft">
+            <div class="span6"><img src="/account.png"/></div>
+            <div class="span6">
+              <h3><i>Private</i> Account</h3>
+              <p class="marginLeft">
+                Private accounts provide all the benefits of having a managed
+                system, without compromising privacy.
+              </p>
+              <p class="marginLeft">
+                All account information exists encrypted on our servers, and is
+                only decrypted locally on your computer. We don't even keep a hash
+                of your password. (check out <a href="/security"> security </a>
+                for more info.)
+              </p>
+            </div>
+          </div>
+          <div class="row-fluid marginLeft">
+            <div class="span6">
+              <h3>Safe and Private sharing, made easy</h3>
+              <p class="marginLeft">You <i>explicity</i> declare who sees your files and how.</p>
+              <p class="marginLeft">
+                When sharing a file with someone else you can specify a normal
+                link that will work until you delete a file, a time limited link
+                which will work for a specified time, and a one time only link
+                which, you guessed it, can only be downloaded once before
+                disappearing.
+              </p>
+            </div>
+            <div class="span6"><img src="/file.png"/></div>
+          </div>
+          <div class="row-fluid marginLeft">
+            <div class="span6"><img src="/2factor.png"/></div>
+            <div class="span6">
+              <h3>Secure Login</h3>
+              <p class="marginLeft">
+                When one password isn't enough, we support (and encourage!)
+                2 factor authentication.
+              </p>
+              <p class="marginLeft">
+                By using your smart phone as another means of authentication,
+                online attacks are effectively thwarted, and physical attacks
+                become significantly harder.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="row-fluid">
+          <div class="span8 offset2">
+            <div class="infoSeparator"></div>
+          </div>
+        </div>
+        <div class="marginLeft">
+          <h2>Principles</h2>
+          <div class="row-fluid">
+            <div class="span6">
+              <p class="marginLeft">
+                <h3><i class="icon-code marginRight"></i>Open Source</h3>
+                <p class="marginLeft">There are two basic types of security:</p>
+                <ul>
+                  <li>
+                    Security through obscurity (As long as nobody notices the
+                    hole in the wall, there isn't one)
+                  </li>
+                  <li>
+                    Security through openness (Show as many people as you can the
+                    wall. If there is a hole, let's fix it right now)
+                  </li>
+                </ul>
+                <p class="marginLeft">
+                  We live for open source code. We firmly believe <b>nothing can
+                  be truly secure if it isn't open sourced</b>.
+                  Therefore, anything that interacts with your raw data is
+                  completely open source, no exceptions
+                  (<a href="https://github.com/cryptic-io/web">Source</a>).
+                </p>
+              </p>
+            </div>
+            <div class="span6 pull-right">
+              <p class="marginLeft">
+                <h3><i class="icon-eye-close marginRight"></i>No tracking. Not now. Not ever.</h3>
+                <p class="marginLeft">
+                  Privacy has become a second class citizen, and we've come to
+                  accept a loss of privacy in exchange for simplicity.
+                  Cryptic doesn't make that compromise, and we don't allow our
+                  users to make that compromise either. Anything you do on
+                  Cryptic is known to you, and to you alone. We don't collect
+                  any personal data about our users, and we never will.
+                </p>
+              </p>
+            </div>
+          </div>
+          <div class="row-fluid">
+            <div class="span6">
+              <p class="marginLeft">
+                <h3><i class="icon-lock marginRight"></i>Encryption, with rounded corners</h3>
+                <p class="marginLeft">
+                  Exisiting solutions for safely encrypting and storing data are
+                  cumbersome. PGP is a wonderful tool, but it has a high barrier
+                  of entry and is impractical when sharing files with
+                  non-PGPers. Cryptic solves these problems by creating a
+                  beautiful, simple, and easy to use interface to encrypt,
+                  store, and share your files, all without having to install a
+                  single piece of hardware or software.
+                </p>
+              </p>
+            </div>
+            <div class="span6 pull-right">
+              <p class="marginLeft">
+                <h3><i class="icon-fire marginRight"></i>Damage Proof</h3>
+                <p class="marginLeft">
+                  Hard drives are delicate little things; they spin a magnetic
+                  disk at insanely fast speeds. If some natural disaster doesn't
+                  destroy your data, it's simply a matter of time before the
+                  drive itself dies. The best solution we have so far is to make
+                  it somebody else's problem, usually through insecurely.
+                  Cryptic stores your encrypted data reduntantly across several
+                  drives and across different continents.
+                </p>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="row-fluid">
+          <div class="span8 offset2">
+            <div class="infoSeparator"></div>
+          </div>
+        </div>
+        <div class="marginLeft">
+          <h2>The Team</h2>
+          <div class="row-fluid marginLeft">
+            <div class="span4"><img src="/jolly-profile.png" class="img-rounded marginLeft"/></div>
+            <div class="span4"><img src="/marco-profile.png" class="img-rounded marginLeft"/></div>
+            <div class="span4"><img src="/brian-profile.png" class="img-rounded marginLeft"/></div>
+          </div>
+          <div class="row-fluid marginLeft">
+            <div class="span4"></div>
+          </div>
+          <div class="row-fluid marginLeft">
+            <div class="span4">
+              <h3>Luke Jolly</h3>
+              <p class="marginLeft">
+                Jolly gets his jollies by being a badass
+                server admin, and keeping uptime as high as humanely possible.
+                Jolly loves all things linux, and can be found skating around town.
+              </p>
+            </div>
+            <div class="span4">
+              <h3>Marco Munizaga</h3>
+              <p class="marginLeft">
+                Responsible for the frontend architecture, and using cryptography appropriately.
+                Passionate about privacy and security.
+                He spends too much time on hacker news, and is an avid rock climber.
+              </p>
+            </div>
+            <div class="span4">
+              <h3>Brian Picciano</h3>
+              <p class="marginLeft">
+                Equal parts coder, climber, movie lover, and sugar glider keeper, Brian loves
+                designing and writing scalable backend systems. In his spare time he enjoys wasting his
+                money playing with bitcoins.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="row-fluid">
+          <div class="span8 offset2">
+            <div class="infoSeparator"></div>
+          </div>
+        </div>
+        <div class="marginLeft">
+          <div class="row-fluid">
+            <div class="span1 offset5">
+              <h2>Interested?</h2>
+            </div>
+          </div>
+          <div class="row-fluid">
+            <div class="span12"></div>
+          </div>
+          <div class="row-fluid marginLeft">
+            <div class="offset3 span3">
+              <p id="provactiveContact">Let's stay in touch</p>
+            </div>
+            <div class="span3 contact">
+              <div class="control-group">
+                <label for="contactEmail" class="contactEmailLabel login-field-icon icon-envelope"></label>
+                <input id="contactEmail" type="text" placeholder="you@email.com" class="login-field"/>
+              </div>
+            </div>
+          </div>
+          <div class="row-fluid marginLeft">
+            <div class="offset6">
+              <div class="span5"><a id="subscribeEmail" href="#about" class="btn btn-primary btn-block">Keep me up to date</a></div>
+            </div>
+          </div>
+          <div class="row-fluid marginLeft">
+            <div class="span12"></div>
+          </div>
+          <div class="row-fluid marginLeft">
+            <div class="offset3 span3">
+              <p class="helloEmail">Come say "Hello!"</p>
+            </div>
+            <div class="span3"><a href="mailto:hello@cryptic.io" class="helloEmail">hello@cryptic.io</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</_within>

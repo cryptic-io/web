@@ -1,0 +1,36 @@
+<_within file="cryptic.html">
+
+<_include file="top-bar-anon.html">
+</_include>
+
+<script id="script-driver">
+  v = new ViewportHandler($("#mainContainer"))
+  el = $("#userLoginContainer")
+  v.introduceEl(el,0)
+  v.placeCenter(el,0)
+  //move the top bar
+  var index = 2
+  _.each($('#topBar').find('.selectedBar'), function(e, i){$(e).css("left",-150*(i-index))}) 
+</script>
+
+
+<div id="mainContainer">
+  <div id="page0" class="page">
+    <div id="userLoginContainer" class="floatingContainer" template="login">
+      <div id="loginBox">
+        <h1>Login</h1>
+        <div id="usernameInput" class="inputField">
+          <input type="text" placeholder="username"/>
+        </div>
+        <div id="passwordInput" class="inputField"> 
+          <input type="password" placeholder="password"/>
+        </div>
+        <!-- 
+        <div id="twoStepAuthInput">Enter 2 step authentication code:
+          <input type="text"/>
+        </div>
+        --><a id="loginBtn" href="#login" class="btn btn-block btn-primary btn-large">Login</a>
+      </div>
+    </div>
+  </div>
+</div>

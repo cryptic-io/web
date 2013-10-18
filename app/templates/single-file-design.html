@@ -1,0 +1,34 @@
+<!--  I don't expect to be using this template, save for the design aspect --> 
+
+<_within file="cryptic.html">
+
+<_include file="top-bar.html">
+</_include>
+
+<script id="script-driver">
+  v = new ViewportHandler($("#mainContainer"))
+  el = $("#userFilesContainer")
+  v.introduceEl(el,0)
+  v.placeLeftOfCenter(el,0)
+
+  el = $("#singleFileInfoContainer")
+  v.introduceEl(el,0)
+  v.placeRightOfCenter(el,0)
+
+  v.rebuildElements()
+
+  //move the top bar
+  var index = 1
+  _.each($('#topBar').find('.selectedBar'), function(e, i){$(e).css("left",-150*(i-index))}) 
+</script>
+
+
+<div id="mainContainer">
+  <div id="page0" class="page">
+    <_include file="user/user-files.html">
+    </_include>
+    <_include file="single-file.html">
+    </_include>
+
+  </div>
+</div>

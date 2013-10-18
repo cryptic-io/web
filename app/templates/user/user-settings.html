@@ -1,0 +1,51 @@
+<_within file="cryptic.html">
+
+<_include file="top-bar.html">
+</_include>
+
+<script id="script-driver">
+  v = new ViewportHandler($("#mainContainer"))
+  el = $("#userOptionsContainer")
+  v.introduceEl(el,0)
+  v.placeCenter(el,0)
+  //move the top bar
+  var index = 2
+  _.each($('#topBar').find('.selectedBar'), function(e, i){$(e).css("left",-150*(i-index))}) 
+</script>
+
+
+<div id="mainContainer">
+  <div id="page0" class="page">
+    <div id="userOptionsContainer" class="floatingContainer" template="user-settings">
+      <h2>Settings</h2>
+      <div id="changePassword" class="option">
+        <div id="changePasswordForm">
+          <div class="controlGroup">
+            <input id="oldPass" type="password" placeholder="Original Password"/>
+          </div>
+          <div class="controlGroup">
+            <input type="password" placeholder="New Password" class="newPass"/>
+          </div>
+          <div class="controlGroup">
+            <input type="password" placeholder="New Password" class="newPass"/>
+          </div>
+          <div class="controlGroup"><a class="btn btn-primary btn-block changePassword">Change Password</a></div>
+        </div>
+      </div>
+      <div id="twoStepAccount" class="option">
+        <div class="controlGroup"><a class="btn btn-info btn-block">Add Two Step Authentication</a></div>
+      </div>
+      <div id="qrStuff" style="display:none" class="option">
+        <div class="qrCodeInfo text-center">
+          <p>Use a 2 Step Authenticator app </p>
+          <p>(like Google Authenticator)</p>
+          <p>to read this.</p>
+        </div>
+        <div id="qrcode"></div>
+      </div>
+      <div id="deleteAccount" class="option">
+        <div class="controlGroup"><a class="btn btn-danger btn-block changePassword">Delete Account</a></div>
+      </div>
+    </div>
+  </div>
+</div>
