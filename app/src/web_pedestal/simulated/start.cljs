@@ -1,5 +1,6 @@
 (ns web-pedestal.simulated.start
-  (:require [io.pedestal.app.render.push.handlers.automatic :as d]
+  (:require [web-pedestal.custom-data-ui :as custom-d]
+            [io.pedestal.app.render.push.handlers.automatic :as d]
             [web-pedestal.start :as start]
             [web-pedestal.rendering :as rendering]
             [goog.Uri]
@@ -18,5 +19,5 @@
   ;; config/config.edn
   ;;
   (start/create-app (if (= "auto" (param "renderer"))
-                      d/data-renderer-config
+                      custom-d/data-renderer-config
                       (rendering/render-config))))

@@ -7,8 +7,8 @@
 ;; test/web_pedestal/behavior-test.clj.
 
 (defn init-main []
-  [[:transform-enable [:main :current-file] 
-    :swap [{msg/topic [:current-file] (msg/param :value) {:read-as :data}}]]])
+  [[:transform-enable [:main :file :current-file] 
+    :swap [{msg/topic [:file :current-file] (msg/param :value) {}}]]])
 
 (defn swap-transform [_ message]
   (:value message))
@@ -22,7 +22,7 @@
   {:version 2
    :transform [[:swap [:**] swap-transform]]
    :emit [{:init init-main}
-          [#{[:**]} (app/default-emitter [:main])]]})
+          [#{[:file :current-file]} (app/default-emitter [:main])]]})
 
 ;; Once this behavior works, run the Data UI and record
 ;; rendering data which can be used while working on a custom
