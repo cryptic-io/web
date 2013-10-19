@@ -1,21 +1,28 @@
 (ns ^:shared web-pedestal.behavior
     (:require [clojure.string :as string]
+              [io.pedestal.app :as app]
               [io.pedestal.app.messages :as msg]))
 ;; While creating new behavior, write tests to confirm that it is
 ;; correct. For examples of various kinds of tests, see
 ;; test/web_pedestal/behavior-test.clj.
 
-(defn set-value-transform [old-value message]
+(defn init-main []
+  [[:transform-enable [:main :current-file] 
+    :swap [{msg/topic [:current-file] (msg/param :value) {:read-as :data}}]]])
+
+(defn swap-transform [_ message]
   (:value message))
 
-(def example-app
+(def cryptic-app
   ;; There are currently 2 versions (formats) for dataflow
   ;; description: the original version (version 1) and the current
   ;; version (version 2). If the version is not specified, the
   ;; description will be assumed to be version 1 and an attempt
   ;; will be made to convert it to version 2.
   {:version 2
-   :transform [[:set-value [:greeting] set-value-transform]]})
+   :transform [[:swap [:**] swap-transform]]
+   :emit [{:init init-main}
+          [#{[:**]} (app/default-emitter [:main])]]})
 
 ;; Once this behavior works, run the Data UI and record
 ;; rendering data which can be used while working on a custom
