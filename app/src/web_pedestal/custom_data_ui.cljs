@@ -1,5 +1,6 @@
 (ns web-pedestal.custom-data-ui
   (:require [cljs.reader :as reader]
+            [cljs.core.async :refer [chan close! timeout put! take!]]
             [io.pedestal.app.util.log :as log]
             [io.pedestal.app.render.push :as render]
             [io.pedestal.app.messages :as msg]
@@ -8,7 +9,9 @@
             [io.pedestal.app.render.push.templates :as templates]
             [domina :as d]
             [domina.events :as event]
-            [io.pedestal.app.render.push.handlers.automatic :as auto]))
+            [web-pedestal.file-reader :as file-reader]
+            [io.pedestal.app.render.push.handlers.automatic :as auto])
+  (:require-macros [cljs.core.async.macros :as m :refer [go]]))
 
 
 (defn file-modal-input-html [id transform-name messages]
@@ -37,14 +40,19 @@
              "</div>")))))
 
 (defn generic-file-modal-collect-input [parent-id id input-queue transform-name messages]
-  (let [modal-continue-button-id (auto/modal-continue-button-id id transform-name)]
+  (let [modal-continue-button-id (auto/modal-continue-button-id id transform-name)
+        click-chan (chan)]
     (d/append! (d/by-id parent-id)
                (file-modal-input-html id transform-name messages))
-    (events/send-on-click (d/by-id modal-continue-button-id)
-                      input-queue
-                      #(auto/hide-and-return-messages id transform-name 
-                                                      (msg/fill transform-name messages 
-                                                                {:value (aget (.-files (d/by-id "filePicker")) "0")})))
+    (go 
+      (event/listen! (d/by-id modal-continue-button-id) :click #(go (>! click-chan true)))
+      (<! click-chan) ;; block until clicked
+      (events/send-transforms 
+        input-queue
+        (msg/fill transform-name messages 
+                  {:value 
+                  (<! (file-reader/split-file (aget (.-files (d/by-id "filePicker")) "0")))}))
+      (auto/hide-and-return-messages id transform-name nil))
 
     (js/showModal (auto/modal-id id transform-name))))
 
