@@ -8,10 +8,22 @@
 
 (defn init-main []
   [[:transform-enable [:main :file :current-file] 
-    :swap [{msg/topic [:file :current-file] (msg/param :value) {}}]]])
+    :update-current-file 
+    [{msg/topic [:file :current-file] 
+      (msg/param :file-size) {} 
+      (msg/param :file-buffers) {} 
+      (msg/param :chunk-size) {}}]] 
+  [:transform-enable [:main :file] 
+    :encrypt-current-file 
+    [{msg/topic [:file :current-file]}]]])
 
-(defn swap-transform [_ message]
-  (:value message))
+(defn update-current-file [_ {:keys [file-buffers file-size chunk-size]}]
+  {:file-buffers file-buffers
+   :file-size file-size
+   :chunk-size chunk-size})
+
+(defn swap-value [_ new-message]
+  (:value new-message))
 
 (def cryptic-app
   ;; There are currently 2 versions (formats) for dataflow
@@ -20,9 +32,11 @@
   ;; description will be assumed to be version 1 and an attempt
   ;; will be made to convert it to version 2.
   {:version 2
-   :transform [[:swap [:**] swap-transform]]
+   :transform [[:update-current-file [:file :current-file] update-current-file]
+               [:swap [:debug :current-file :download-link] swap-value]]
    :emit [{:init init-main}
-          [#{[:file :current-file]} (app/default-emitter [:main])]]})
+          [#{[:file :current-file]} (app/default-emitter [:main])]
+          [#{[:debug :current-file :download-link]} (app/default-emitter [])]]})
 
 ;; Once this behavior works, run the Data UI and record
 ;; rendering data which can be used while working on a custom

@@ -1,6 +1,7 @@
 (ns web-pedestal.custom-data-ui
   (:require [cljs.reader :as reader]
             [cljs.core.async :refer [chan close! timeout put! take!]]
+            [io.pedestal.app.protocols :as p]
             [io.pedestal.app.util.log :as log]
             [io.pedestal.app.render.push :as render]
             [io.pedestal.app.messages :as msg]
@@ -10,6 +11,7 @@
             [domina :as d]
             [domina.events :as event]
             [web-pedestal.file-reader :as file-reader]
+            [web-pedestal.chrome.file-system :as file-system]
             [io.pedestal.app.render.push.handlers.automatic :as auto])
   (:require-macros [cljs.core.async.macros :as m :refer [go]]))
 
@@ -47,12 +49,14 @@
     (go 
       (event/listen! (d/by-id modal-continue-button-id) :click #(go (>! click-chan true)))
       (<! click-chan) ;; block until clicked
-      (events/send-transforms 
-        input-queue
-        (msg/fill transform-name messages 
-                  {:value 
-                  (<! (file-reader/split-file (aget (.-files (d/by-id "filePicker")) "0")))}))
-      (auto/hide-and-return-messages id transform-name nil))
+      (let [file (aget (.-files (d/by-id "filePicker")) "0")]
+        (events/send-transforms 
+          input-queue
+          (msg/fill transform-name messages 
+                    {:file-size (file-reader/read-file-size file)
+                     :chunk-size file-reader/chunk-size
+                     :file-buffers (<! (file-reader/split-file file))}))
+        (auto/hide-and-return-messages id transform-name nil)))
 
     (js/showModal (auto/modal-id id transform-name))))
 
@@ -87,14 +91,24 @@
 
       (render/on-destroy! r path #(event/unlisten! (d/by-id button-id) :click)))))
 
+(defn read-current-file [renderer [_ path _ value :as args] input-queue ]
+  (let [array-buffers (file-reader/remove-padding-from-last-array-buffer
+                        (:file-size value) (:chunk-size value) (:file-buffers value))
+        url-chan (file-system/write-arraybuffers-to-file "current-file" array-buffers)]
+    (go 
+      (p/put-message input-queue {msg/type :swap msg/topic [:debug :current-file :download-link] :value (<! url-chan)}))
+    (auto/render-value-update renderer args input-queue)))
+
 
 (def data-renderer-config
   [[:node-create    []    (constantly nil)]
    [:node-destroy   []    (constantly nil)]
    [:node-create    [:**] auto/render-node-enter]
    [:node-destroy   [:**] auto/default-exit]
+   [:value          [:main :file :current-file] read-current-file]
+   [:value          [:main :file :current-file :download-link] auto/render-value-update]
    [:value          [:**] auto/render-value-update]
    [:attr           [:**] (constantly nil)]
-   [:transform-enable  [:main :file :*] file-render-event-enter]
-   ;[:transform-enable  [:**] auto/render-event-enter]
+   [:transform-enable  [:main :file :current-file] file-render-event-enter]
+   [:transform-enable  [:**] auto/render-event-enter]
    [:transform-disable [:**] auto/event-exit]])
