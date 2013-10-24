@@ -22,6 +22,11 @@
    :file-size file-size
    :chunk-size chunk-size})
 
+(defn encrypt-current-file [values a b c]
+  (.log js/console "deriving with " values a b c)
+  values
+  )
+
 (defn swap-value [_ new-message]
   (:value new-message))
 
@@ -34,6 +39,7 @@
   {:version 2
    :transform [[:update-current-file [:file :current-file] update-current-file]
                [:swap [:debug :current-file :download-link] swap-value]]
+   :derive #{[#{[:file :current-file :file-buffers]} [:file :current-file :file-buffers] encrypt-current-file :vals]}
    :emit [{:init init-main}
           [#{[:file :current-file]} (app/default-emitter [:main])]
           [#{[:debug :current-file :download-link]} (app/default-emitter [])]]})

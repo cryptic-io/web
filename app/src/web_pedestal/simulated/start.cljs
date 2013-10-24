@@ -1,6 +1,7 @@
 (ns web-pedestal.simulated.start
   (:require [web-pedestal.custom-data-ui :as custom-d]
             [io.pedestal.app.render.push.handlers.automatic :as d]
+            [io.pedestal.app :as app]
             [web-pedestal.start :as start]
             [web-pedestal.rendering :as rendering]
             [goog.Uri]
@@ -12,12 +13,17 @@
   (let [uri (goog.Uri. (.toString  (.-location js/document)))]
     (.getParameterValue uri name)))
 
+
 (defn ^:export main []
   ;; Create an application which uses the data renderer. The :data-ui
   ;; aspect is configured to run this main function. See
   ;;
   ;; config/config.edn
   ;;
-  (start/create-app (if (= "auto" (param "renderer"))
-                      custom-d/data-renderer-config
-                      (rendering/render-config))))
+  (let [app (start/create-app (if (= "auto" (param "renderer"))
+                                custom-d/data-renderer-config
+                                (rendering/render-config)))
+        services (services/->MockServices (:app app))]
+
+    (p/start services)
+    (app/consume-effects (:app app) services/services-fn)))
