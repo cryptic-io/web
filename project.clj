@@ -8,7 +8,8 @@
                  [io.pedestal/pedestal.app "0.2.1"]
                  [io.pedestal/pedestal.app-tools "0.2.1"]
                  [com.cemerick/piggieback "0.1.0"]
-                 [servant "0.1.2"] ]
+                 [servant "0.1.3"] 
+                 [ilshad/pedestal-introspector "0.1.0"]]
   :min-lein-version "2.0.0"
   :source-paths ["app/src" "app/templates"]
   :resource-paths ["config"]
@@ -30,6 +31,5 @@
                 :compiler {:optimizations :whitespace
                            :pretty-print false
                            :externs ["sjcl.js"]
-                           :output-to "main.js" 
-                           :source-map "main.js.map"}}]}
+                           :output-to "out/public/crypt-worker.js" }}]}
   :main ^{:skip-aot true} io.pedestal.app-tools.dev)

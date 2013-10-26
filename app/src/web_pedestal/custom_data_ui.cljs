@@ -12,7 +12,8 @@
             [domina.events :as event]
             [web-pedestal.file-reader :as file-reader]
             [web-pedestal.chrome.file-system :as file-system]
-            [io.pedestal.app.render.push.handlers.automatic :as auto])
+            [io.pedestal.app.render.push.handlers.automatic :as auto]
+            [ilshad.pedestal-introspector :as introspector])
   (:require-macros [cljs.core.async.macros :as m :refer [go]]))
 
 
@@ -99,9 +100,12 @@
       (p/put-message input-queue {msg/type :swap msg/topic [:debug :current-file :download-link] :value (<! url-chan)}))
     (auto/render-value-update renderer args input-queue)))
 
+(defn load-introspector [_ _ _] (introspector/bind-key))
+;(load-introspector)
 
 (def data-renderer-config
-  [[:node-create    []    (constantly nil)]
+  [;[:node-create [:main] load-introspector]
+   [:node-create    []    (constantly nil)]
    [:node-destroy   []    (constantly nil)]
    [:node-create    [:**] auto/render-node-enter]
    [:node-destroy   [:**] auto/default-exit]

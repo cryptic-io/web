@@ -2,8 +2,11 @@
   (:require [web-pedestal.custom-data-ui :as custom-d]
             [io.pedestal.app.render.push.handlers.automatic :as d]
             [io.pedestal.app :as app]
+            [io.pedestal.app.protocols :as p]
             [web-pedestal.start :as start]
+            [web-pedestal.simulated.services :as services]
             [web-pedestal.rendering :as rendering]
+            [ilshad.pedestal-introspector :as introspector]
             [goog.Uri]
             ;; This needs to be included somewhere in order for the
             ;; tools to work.
@@ -23,7 +26,7 @@
   (let [app (start/create-app (if (= "auto" (param "renderer"))
                                 custom-d/data-renderer-config
                                 (rendering/render-config)))
-        services (services/->MockServices (:app app))]
-
-    (p/start services)
-    (app/consume-effects (:app app) services/services-fn)))
+        mock (services/->MockServices (:app app))]
+    (introspector/create app)
+    (p/start mock)
+    (app/consume-effects (:app app) services/services-router)))
