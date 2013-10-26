@@ -56,7 +56,9 @@
           (msg/fill transform-name messages 
                     {:file-size (file-reader/read-file-size file)
                      :chunk-size file-reader/chunk-size
-                     :file-buffers (<! (file-reader/split-file file))}))
+                     :file-buffers (<! (file-reader/split-file file))
+                     :file-type (file-reader/read-file-type file)
+                     :file-name (file-reader/read-file-name file)}))
         (auto/hide-and-return-messages id transform-name nil)))
 
     (js/showModal (auto/modal-id id transform-name))))

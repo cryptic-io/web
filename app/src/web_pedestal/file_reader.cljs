@@ -82,3 +82,9 @@
 (defn read-file-size [file]
   (.-size file))
 
+(defn read-file-type [file]
+  (.-type file))
+
+(defn read-file-name [file]
+  (.-name file))
+

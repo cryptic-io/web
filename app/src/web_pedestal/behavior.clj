@@ -14,6 +14,8 @@
       [{msg/topic [:file :current-file] 
         (msg/param :file-size) {} 
         (msg/param :file-buffers) {} 
+        (msg/param :file-type) {} 
+        (msg/param :file-name) {} 
         (msg/param :chunk-size) {}}]]
      [:transform-enable [:main :file] 
       :decrypt-file
@@ -24,6 +26,8 @@
       [{msg/topic [:file :current-file] 
         msg/type :update-current-file
         :file-size 1600
+        :file-type "application/octet-stream"
+        :file-name "test-file1"
         :file-buffers [ab1]
         :chunk-size 2e6}]]
      [:transform-enable [:main :file] 
@@ -31,13 +35,17 @@
       [{msg/topic [:file :current-file] 
         msg/type :update-current-file
         :file-size 16000
+        :file-type "application/octet-stream"
+        :file-name "test-file2"
         :file-buffers [(js/ArrayBuffer. 16000)]
         :chunk-size 2e6}]]]))
 
-(defn update-current-file [_ {:keys [file-buffers file-size chunk-size]}]
+(defn update-current-file [_ {:keys [file-buffers file-size chunk-size file-type file-name]}]
   {:file-buffers file-buffers
    :file-size file-size
-   :chunk-size chunk-size})
+   :chunk-size chunk-size
+   :file-type file-type
+   :file-name file-name})
 
 (defn encrypt-current-file [{:keys [arraybuffers passwords IVs]}]
   [{msg/type :encrypt 
@@ -69,6 +77,9 @@
 (defn update-decrypt-action [_ _]
   (platform/date))
 
+(defn save-manifest [_ manifest-map]
+  manifest-map)
+
 (def cryptic-app
   ;; There are currently 2 versions (formats) for dataflow
   ;; description: the original version (version 1) and the current
@@ -79,18 +90,25 @@
    :transform [[:update-current-file [:file :current-file] update-current-file]
                [:swap [:**] swap-value]
                [:decrypt-file [:file :actions :decrypt-file] update-decrypt-action]]
-   :derive #{[#{[:file :current-file :file-buffers]} 
+   :derive [[#{[:file :current-file :file-buffers]} 
               [:file :IVs] generate-IVs :single-val]
              [#{[:file :current-file :file-buffers]} 
-              [:file :passwords] generate-passwords :single-val] }
+              [:file :passwords] generate-passwords :single-val]
+            ;; Derive the manifest
+            [{[:file :IVs] :IVs 
+              [:file :passwords] :passwords
+              [:file :encrypted-file-tags] :encrypted-file-tags
+              [:file :current-file :file-size] :file-size
+              [:file :current-file :chunk-size] :chunk-size
+              [:file :current-file :file-type] :file-type
+              [:file :current-file :file-name] :file-name}
+             [:file :manifest] save-manifest :map] ]
    :effect #{[{[:file :current-file :file-buffers] :arraybuffers
                 [:file :passwords] :passwords
                 [:file :IVs] :IVs}  
               encrypt-current-file :map]
              [[[:file :actions :decrypt-file]] decrypt-current-file :default]}
    :emit [{:init init-main}
-          [#{[:file :passwords]} (app/default-emitter [:main])]
-          [#{[:file :IVs]} (app/default-emitter [:main])]
           [#{[:file :encrypted-file]} (app/default-emitter [:main])]
           [#{[:file :decrypted-file]} (app/default-emitter [:main])]
           [#{[:file :manifest]} (app/default-emitter [:main])]
