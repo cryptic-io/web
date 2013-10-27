@@ -9,22 +9,55 @@
 ;;We need to know what our worker file will be, this can be found in the cljsbuild config
 (def worker-script "/crypt-worker.js")
 (def worker-count 1)
+
+;; Create our initial set of servants
 (def servant-channel (servant/spawn-servants worker-count worker-script))
 
 ;; Some prefilled servant threads
 (def encrypt-servant-fn (partial servant/servant-thread-with-key servant-channel servant/array-buffer-message :servant-encrypt))
 (def decrypt-servant-fn (partial servant/servant-thread-with-key servant-channel servant/array-buffer-message :servant-decrypt))
 
-;; Create our initial set of servants
+(defn upload-arraybuffer 
+  "Uploads an array buffer, returns the channel of the completed action"
+  [arraybuffer]
+  (go 
+    ;;return a random word, this simulates the filename returned from the server
+    (.fromBits js/sjcl.codec.hex (.randomWords js/sjcl.random 6))))
+
+(defn encrypt-arraybuffer [arraybuffer password IV]
+  (encrypt-servant-fn [password IV arraybuffer] [arraybuffer]))
+
+(defn decrypt-arraybuffer [arraybuffer password IV tag]
+  (decrypt-servant-fn [password IV tag arraybuffer] [arraybuffer]))
 
 (defn encrypt-arraybuffers [{:keys [arraybuffers passwords IVs]} input-queue]
+  (doseq [ [arraybuffer password IV index] (map vector arraybuffers passwords IVs (range (count passwords))) ]
+    (go
+      (let [ciphertext-object (<! (encrypt-arraybuffer arraybuffer password IV))
+            ct-buffer (aget ciphertext-object "ciphertext_buffer")
+            tag (aget ciphertext-object "tag")]
+        ;; give the frontend the encrypted file
+        (p/put-message input-queue
+                       {msg/type :add-encrypted-chunk
+                        msg/topic [:file :encrypted-file index]
+                        :value ct-buffer})
+        ;; now call the upload function
+        (p/put-message input-queue
+                       {msg/type :add-encrypted-chunk-info
+                        msg/topic [:file :manifest :chunks index]
+                        :tag tag
+                        :linkName (<! (upload-arraybuffer arraybuffer))
+                        :password password
+                        :IV IV})))))
+
+
+(comment
   (.log js/console (str " I'm going to encrypt the array buffers" arraybuffers passwords IVs))
   (.log js/console "sending off to the web worker!")
   (go 
     (let [ciphertext-objects (<! (crypt-servant/encrypt-arraybuffers arraybuffers encrypt-servant-fn passwords IVs))
           ciphertext-buffers (map #(aget % "ciphertext_buffer") ciphertext-objects)
           ciphertext-tags (map #(aget % "tag") ciphertext-objects)]
-      (.log js/console "ciphertext-objects where" (clj->js ciphertext-objects))
       (p/put-message input-queue 
                      {msg/type :swap 
                       msg/topic [:file :encrypted-file]
@@ -33,7 +66,8 @@
                      {msg/type :swap
                       msg/topic [:file :encrypted-file-tags]
                       :value ciphertext-tags})
-      (.log js/console "finished encrypting!"))))
+      (.log js/console "finished encrypting!")))
+  )
 
 (defn decrypt-arraybuffers [{:keys [arraybuffers passwords IVs tags]} input-queue]
   (.log js/console (str " I'm going to encrypt the array buffers" (clj->js arraybuffers) passwords IVs))
@@ -47,6 +81,8 @@
                       :value plaintext-objects})
       (.log js/console "finished decrypting"))))
 
+(defn normal-service-call [message input-queue]
+  (.log js/console (str "Sending message to server: " message)))
 
 (defn services-router [message input-queue]
   (.log js/console "I got " message " and I'm routing it")
@@ -55,8 +91,6 @@
     :decrypt (decrypt-arraybuffers message input-queue)
     (normal-service-call message input-queue)))
 
-(defn normal-service-call [message input-queue]
-  (.log js/console (str "Sending message to server: " message)))
 
 (defrecord MockServices [app]
   p/Activity

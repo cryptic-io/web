@@ -80,6 +80,9 @@
 (defn save-manifest [_ manifest-map]
   manifest-map)
 
+(defn update-chunk-info [_ message]
+  (select-keys message [:tag :password :IV :linkName]))
+  
 (def cryptic-app
   ;; There are currently 2 versions (formats) for dataflow
   ;; description: the original version (version 1) and the current
@@ -89,7 +92,9 @@
   {:version 2
    :transform [[:update-current-file [:file :current-file] update-current-file]
                [:swap [:**] swap-value]
-               [:decrypt-file [:file :actions :decrypt-file] update-decrypt-action]]
+               [:decrypt-file [:file :actions :decrypt-file] update-decrypt-action]
+               [:add-encrypted-chunk [:file :encrypted-file :*] swap-value]
+               [:add-encrypted-chunk-info [:file :manifest :chunks :*] update-chunk-info] ]
    :derive [[#{[:file :current-file :file-buffers]} 
               [:file :IVs] generate-IVs :single-val]
              [#{[:file :current-file :file-buffers]} 
@@ -114,61 +119,3 @@
           [#{[:file :manifest]} (app/default-emitter [:main])]
           [#{[:file :current-file]} (app/default-emitter [:main])]
           [#{[:debug :current-file :download-link]} (app/default-emitter [])]]})
-
-;; Once this behavior works, run the Data UI and record
-;; rendering data which can be used while working on a custom
-;; renderer. Rendering involves making a template:
-;;
-;; app/templates/web-pedestal.html
-;;
-;; slicing the template into pieces you can use:
-;;
-;; app/src/web_pedestal/html_templates.cljs
-;;
-;; and then writing the rendering code:
-;;
-;; app/src/web_pedestal/rendering.cljs
-
-(comment
-  ;; The examples below show the signature of each type of function
-  ;; that is used to build a behavior dataflow.
-
-  ;; transform
-
-  (defn example-transform [old-state message]
-    ;; returns new state
-    )
-
-  ;; derive
-
-  (defn example-derive [old-state inputs]
-    ;; returns new state
-    )
-
-  ;; emit
-
-  (defn example-emit [inputs]
-    ;; returns rendering deltas
-    )
-
-  ;; effect
-
-  (defn example-effect [inputs]
-    ;; returns a vector of messages which effect the outside world
-    )
-
-  ;; continue
-
-  (defn example-continue [inputs]
-    ;; returns a vector of messages which will be processed as part of
-    ;; the same dataflow transaction
-    )
-
-  ;; dataflow description reference
-
-  {:transform [[:op [:path] example-transform]]
-   :derive    #{[#{[:in]} [:path] example-derive]}
-   :effect    #{[#{[:in]} example-effect]}
-   :continue  #{[#{[:in]} example-continue]}
-   :emit      [[#{[:in]} example-emit]]}
-  )
