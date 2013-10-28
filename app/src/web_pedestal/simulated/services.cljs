@@ -2,6 +2,8 @@
   (:require [io.pedestal.app.protocols :as p]
             [io.pedestal.app.messages :as msg]
             [servant.core :as servant]
+            [web-pedestal.file-reader :as file-reader]
+            [web-pedestal.chrome.file-system :as file-system]
             [cljs.core.async :refer [chan close! timeout put!]]
             [web-pedestal.servant.crypt :as crypt-servant])
   (:require-macros [cljs.core.async.macros :as m :refer [go]]))
@@ -17,12 +19,35 @@
 (def encrypt-servant-fn (partial servant/servant-thread-with-key servant-channel servant/array-buffer-message :servant-encrypt))
 (def decrypt-servant-fn (partial servant/servant-thread-with-key servant-channel servant/array-buffer-message :servant-decrypt))
 
+(defn simulate-upload-string [string]
+  (let [key (.fromBits js/sjcl.codec.hex (.randomWords js/sjcl.random 6))]
+    (aset js/localStorage key string)
+    key))
+
+(defn simulate-fetch-string [key]
+  (aget js/localStorage key))
+
+(defn simulate-upload-arraybuffer [arraybuffer]
+  (let [key (.fromBits js/sjcl.codec.hex (.randomWords js/sjcl.random 6))]
+    (aset 
+      js/localStorage
+      key
+      (.apply js/String.fromCharCode nil (js/Uint16Array. arraybuffer)))
+    key))
+
+(defn simulate-fetch-arraybuffer [key]
+  (let [string (aget js/localStorage key)
+        buf (js/ArrayBuffer. (* 2 (.-length string)))
+        bufView (js/Uint16Array. buf)]
+    (doseq [i (range (.-length string))]
+      (aset bufView i (.charCodeAt string i)))
+    buf)) 
+        
 (defn upload-arraybuffer 
   "Uploads an array buffer, returns the channel of the completed action"
   [arraybuffer]
   (go 
-    ;;return a random word, this simulates the filename returned from the server
-    (.fromBits js/sjcl.codec.hex (.randomWords js/sjcl.random 6))))
+    (simulate-upload-arraybuffer arraybuffer)))
 
 (defn encrypt-arraybuffer [arraybuffer password IV]
   (encrypt-servant-fn [password IV arraybuffer] [arraybuffer]))
@@ -46,28 +71,19 @@
                        {msg/type :add-encrypted-chunk-info
                         msg/topic [:file :manifest :chunks index]
                         :tag tag
-                        :linkName (<! (upload-arraybuffer arraybuffer))
+                        :linkName (<! (upload-arraybuffer ct-buffer))
                         :password password
-                        :IV IV})))))
+                        :IV IV
+                        :index index})))))
 
-
-(comment
-  (.log js/console (str " I'm going to encrypt the array buffers" arraybuffers passwords IVs))
-  (.log js/console "sending off to the web worker!")
-  (go 
-    (let [ciphertext-objects (<! (crypt-servant/encrypt-arraybuffers arraybuffers encrypt-servant-fn passwords IVs))
-          ciphertext-buffers (map #(aget % "ciphertext_buffer") ciphertext-objects)
-          ciphertext-tags (map #(aget % "tag") ciphertext-objects)]
-      (p/put-message input-queue 
-                     {msg/type :swap 
-                      msg/topic [:file :encrypted-file]
-                      :value ciphertext-buffers})
-      (p/put-message input-queue
-                     {msg/type :swap
-                      msg/topic [:file :encrypted-file-tags]
-                      :value ciphertext-tags})
-      (.log js/console "finished encrypting!")))
-  )
+(defn download-decrypt-chunk [{:keys [link IV password tag index]} input-queue]
+  (go
+    (let [buf (simulate-fetch-arraybuffer link)]
+      (p/put-message 
+        input-queue
+        {msg/type :swap
+         msg/topic [:encrypted-file :decrypted-chunks index]
+         :value (<! (decrypt-arraybuffer buf password IV tag))}))))
 
 (defn decrypt-arraybuffers [{:keys [arraybuffers passwords IVs tags]} input-queue]
   (.log js/console (str " I'm going to encrypt the array buffers" (clj->js arraybuffers) passwords IVs))
@@ -84,11 +100,37 @@
 (defn normal-service-call [message input-queue]
   (.log js/console (str "Sending message to server: " message)))
 
+(defn upload-manifest [message input-queue]
+  (p/put-message 
+    input-queue
+    {msg/type :swap
+     msg/topic [:file :manifest-link]
+     :value (simulate-upload-string (:encrypted-manifest message))}))
+
+(defn download-manifest [message input-queue]
+  (p/put-message 
+    input-queue
+    {msg/type :swap
+     msg/topic [:encrypted-file :encrypted-manifest]
+     :value (simulate-fetch-string (:link message))}))
+
+(defn write-chunks-to-file [message input-queue]
+  (go
+     (p/put-message
+       input-queue
+       {msg/type :swap
+        msg/topic [:encrypted-file :decrypted-link]
+        :value (<! (file-system/write-arraybuffers-to-file "decrypted-file" (:value message)))})))
+
 (defn services-router [message input-queue]
   (.log js/console "I got " message " and I'm routing it")
   (condp = (msg/type message) 
     :encrypt (encrypt-arraybuffers message input-queue)
     :decrypt (decrypt-arraybuffers message input-queue)
+    :upload-encrypted-manifest (upload-manifest message input-queue)
+    :fetch-manifest (download-manifest message input-queue)
+    :fetch-chunk (download-decrypt-chunk message input-queue)
+    :write-chunks (write-chunks-to-file message input-queue)
     (normal-service-call message input-queue)))
 
 

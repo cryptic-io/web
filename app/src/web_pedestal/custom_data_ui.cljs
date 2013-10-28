@@ -95,12 +95,13 @@
       (render/on-destroy! r path #(event/unlisten! (d/by-id button-id) :click)))))
 
 (defn read-current-file [renderer [_ path _ value :as args] input-queue ]
-  (let [array-buffers (file-reader/remove-padding-from-last-array-buffer
-                        (:file-size value) (:chunk-size value) (:file-buffers value))
-        url-chan (file-system/write-arraybuffers-to-file "current-file" array-buffers)]
-    (go 
-      (p/put-message input-queue {msg/type :swap msg/topic [:debug :current-file :download-link] :value (<! url-chan)}))
-    (auto/render-value-update renderer args input-queue)))
+  (when-not (nil? (:file-buffers value))
+    (let [array-buffers (file-reader/remove-padding-from-last-array-buffer
+                          (:file-size value) (:chunk-size value) (:file-buffers value))
+          url-chan (file-system/write-arraybuffers-to-file "current-file" array-buffers)]
+      (go 
+        (p/put-message input-queue {msg/type :swap msg/topic [:debug :current-file :download-link] :value (<! url-chan)}))
+      (auto/render-value-update renderer args input-queue))))
 
 (defn load-introspector [_ _ _] (introspector/bind-key))
 ;(load-introspector)
