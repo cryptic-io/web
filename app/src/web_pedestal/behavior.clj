@@ -10,45 +10,45 @@
 
 (defn init-main []
   (let [ab1 (js/ArrayBuffer. 1600)]
-    [[:transform-enable [:main :file :current-file] 
+    [[:transform-enable [:main :upload-file :current-file] 
       :update-current-file 
-      [{msg/topic [:file :current-file] 
+      [{msg/topic [:upload-file :current-file] 
         (msg/param :file-size) {} 
         (msg/param :file-buffers) {} 
         (msg/param :file-type) {} 
         (msg/param :file-name) {} 
         (msg/param :chunk-size) {}}]]
-     [:transform-enable [:main :file] 
+     [:transform-enable [:main :upload-file] 
       :decrypt-file
-      [{msg/topic [:file :actions :decrypt-file]}]]
-     [:transform-enable [:main :file] 
+      [{msg/topic [:upload-file :actions :decrypt-file]}]]
+     [:transform-enable [:main :upload-file] 
       :use-test-file
-      [{msg/topic [:file :current-file] 
+      [{msg/topic [:upload-file :current-file] 
         msg/type :update-current-file
         :file-size 1600
         :file-type "application/octet-stream"
         :file-name "test-file1"
         :file-buffers [ab1]
         :chunk-size 2e6}]]
-     [:transform-enable [:main :file] 
+     [:transform-enable [:main :upload-file] 
       :use-test-file2
-      [{msg/topic [:file :current-file] 
+      [{msg/topic [:upload-file :current-file] 
         msg/type :update-current-file
         :file-size 16000
         :file-type "application/octet-stream"
         :file-name "test-file2"
         :file-buffers [(js/ArrayBuffer. 16000)]
         :chunk-size 2e6}]]
-     [:transform-enable [:main :encrypted-file] 
+     [:transform-enable [:main :download-file] 
       :load-manifest
-      [{msg/topic [:encrypted-file :manifest-keys] 
+      [{msg/topic [:download-file :manifest-keys] 
         msg/type :load-manifest
         (msg/param :manifest-url) {}}]]
-     [:transform-enable [:main :encrypted-file] 
+     [:transform-enable [:main :download-file] 
       :load-test-manifest
-      [{msg/topic [:encrypted-file :manifest-keys] 
+      [{msg/topic [:download-file :manifest-keys] 
         msg/type :load-manifest
-        :manifest-url "#9ce4d32a3510e56501c6da3f8bbe8e32e166d4ca5ac69d79/CPjpRlXmCPPOkZPMfy0zjc_47pbSoiykoR2IRX8Xb_A"}]]]))
+        :manifest-url "#ccd448f309bca8795f7ba95ddf3eaab0d01c1e2e3f468291/O66xsj3y3qu-01w8-ukz4UFbYxwAXtMBtEYrIZUFy54"}]]]))
 
 (defn update-current-file [_ {:keys [file-buffers file-size chunk-size file-type file-name]}]
   {:file-buffers file-buffers
@@ -66,10 +66,10 @@
 (defn decrypt-current-file [inputs]
   (when (= (first (:input-paths inputs))  (get-in inputs [:message msg/topic]))
     [{msg/type :decrypt
-      :arraybuffers (get-in inputs [:new-model :file :encrypted-file])
-      :passwords (get-in inputs [:new-model :file :passwords])
-      :IVs (get-in inputs [:new-model :file :IVs])
-      :tags (get-in inputs [:new-model :file :encrypted-file-tags])}]))
+      :arraybuffers (get-in inputs [:new-model :upload-file :download-file])
+      :passwords (get-in inputs [:new-model :upload-file :passwords])
+      :IVs (get-in inputs [:new-model :upload-file :IVs])
+      :tags (get-in inputs [:new-model :upload-file :encrypted-file-tags])}]))
 
 (defn generate-passwords [_ arraybuffers]
   (let [count (count arraybuffers)]
@@ -98,9 +98,9 @@
 
 (defn manifest-done? [inputs]
   (and 
-    (not= 0 (get-in inputs [:new-model :file :manifest :chunk-count]))
-    (= (get-in inputs [:new-model :file :manifest :chunk-count])
-       (count (get-in inputs [:new-model :file :current-file :file-buffers])))))
+    (not= 0 (get-in inputs [:new-model :upload-file :manifest :chunk-count]))
+    (= (get-in inputs [:new-model :upload-file :manifest :chunk-count])
+       (count (get-in inputs [:new-model :upload-file :current-file :file-buffers])))))
 
 (defn generate-manifest-password-iv [_ inputs]
   (when (manifest-done? inputs)
@@ -110,13 +110,13 @@
        :password password})))
 
 (defn encrypt-manifest [_ inputs]
-  (.log js/console "manifest count is" (get-in inputs [:new-model :file :manifest :chunk-count]) (clj->js inputs))
+  (.log js/console "manifest count is" (get-in inputs [:new-model :upload-file :manifest :chunk-count]) (clj->js inputs))
   (when (manifest-done? inputs)
     ;; Done with the chunks, we can encrypt now
     (.log js/console "inputs where =")
-    (let [iv (get-in inputs [:new-model :file :manifest :keys :IV])
-          password (get-in inputs [:new-model :file :manifest :keys :password])]
-      (.encrypt js/sjcl password (pr-str (js->clj (get-in inputs [:new-model :file :manifest]))) (clj->js {:iv iv :ks 256}))))) 
+    (let [iv (get-in inputs [:new-model :upload-file :manifest :keys :IV])
+          password (get-in inputs [:new-model :upload-file :manifest :keys :password])]
+      (.encrypt js/sjcl password (pr-str (js->clj (get-in inputs [:new-model :upload-file :manifest]))) (clj->js {:iv iv :ks 256}))))) 
 
 (defn decrypt-manifest [_ {:keys [password encrypted-manifest]}]
   (when (not-any? nil? [password encrypted-manifest])
@@ -140,29 +140,30 @@
   [{msg/type :fetch-manifest
     :link link}])
 
-(defn fetch-chunk [{:keys [tag password linkName IV index] :as chunk-info}]
-  (when-not (nil? linkName)
-    (.log js/console "chunk info is" chunk-info (clj->js chunk-info))
-    [{msg/type :fetch-chunk
-      :tag tag
-      :password password
-      :link linkName
-      :IV IV
-      :index index}]))
+(defn fetch-chunks [chunks]
+  (when-not (nil? chunks)
+    (for [{:keys [tag password linkName IV index]} (map second chunks)]
+      {msg/type :fetch-chunk
+        :tag tag
+        :password password
+        :link linkName
+        :IV IV
+        :index index})))
 
 (defn decryption-done? [inputs]
   (and 
-    (not= 0 (get-in inputs [:new-model :encrypted-file :manifest :chunk-count]))
-    (= (get-in inputs [:new-model :encrypted-file :manifest :chunk-count])
-       (count (get-in inputs [:new-model :encrypted-file :decrypted-chunks])))))
+    (not= 0 (get-in inputs [:new-model :download-file :manifest :chunk-count]))
+    (= (get-in inputs [:new-model :download-file :manifest :chunk-count])
+       (count (get-in inputs [:new-model :download-file :decrypted-chunks])))))
 
 (defn write-chunks-to-file [inputs]
-  (.log js/console "checking if encryption is done" (clj->js inputs))
+  (.log js/console "checking if decryption is done" (clj->js inputs))
   (when (decryption-done? inputs)
     (.log js/console "It is")
     [{msg/type :write-chunks
+      :file-name (get-in inputs [:new-model :download-file :manifest :file-name])
       :value (->>
-               (get-in inputs [:new-model :encrypted-file :decrypted-chunks])
+               (get-in inputs [:new-model :download-file :decrypted-chunks])
                (apply vector)
                (sort-by first)
                (map second))}]))
@@ -174,50 +175,50 @@
   ;; description will be assumed to be version 1 and an attempt
   ;; will be made to convert it to version 2.
   {:version 2
-   :transform [[:update-current-file [:file :current-file] update-current-file]
+   :transform [[:update-current-file [:upload-file :current-file] update-current-file]
                [:swap [:**] swap-value]
-               [:load-manifest [:encrypted-file :manifest-keys] load-manifest]
-               [:decrypt-file [:file :actions :decrypt-file] update-decrypt-action]
-               [:add-encrypted-chunk [:file :encrypted-file :*] swap-value]
-               [:add-encrypted-chunk-info [:file :manifest :chunks :*] update-chunk-info] ]
-   :derive [[#{[:file :current-file :file-buffers]} 
-              [:file :IVs] generate-IVs :single-val]
-             [#{[:file :current-file :file-buffers]} 
-              [:file :passwords] generate-passwords :single-val]
+               [:load-manifest [:download-file :manifest-keys] load-manifest]
+               [:decrypt-file [:upload-file :actions :decrypt-file] update-decrypt-action]
+               [:add-encrypted-chunk [:upload-file :download-file :*] swap-value]
+               [:add-encrypted-chunk-info [:upload-file :manifest :chunks :*] update-chunk-info] ]
+   :derive [[#{[:upload-file :current-file :file-buffers]} 
+              [:upload-file :IVs] generate-IVs :single-val]
+             [#{[:upload-file :current-file :file-buffers]} 
+              [:upload-file :passwords] generate-passwords :single-val]
             ;; Derive the manifest
-            [{[:file :IVs] :IVs 
-              [:file :passwords] :passwords
-              [:file :encrypted-file-tags] :encrypted-file-tags
-              [:file :current-file :file-size] :file-size
-              [:file :current-file :chunk-size] :chunk-size
-              [:file :current-file :file-type] :file-type
-              [:file :current-file :file-name] :file-name}
-             [:file :manifest] save-manifest :map]
-            [#{[:file :manifest :chunks]} [:file :manifest :chunk-count] update-chunk-count :single-val]
-            [#{[:file :manifest]} [:file :manifest :keys] generate-manifest-password-iv :default]
-            [#{[:file :manifest]} [:file :encrypted-manifest] encrypt-manifest :default]
-            [{[:file :manifest-link] :manifest-link
-              [:file :manifest :keys :password] :password} 
-             [:file :manifest-url] generate-manifest-url :map]
-            [{[:encrypted-file :manifest-keys :password] :password
-               [:encrypted-file :encrypted-manifest] :encrypted-manifest}
-             [:encrypted-file :manifest] decrypt-manifest :map]]
-   :effect #{[{[:file :current-file :file-buffers] :arraybuffers
-                [:file :passwords] :passwords
-                [:file :IVs] :IVs}  
+            [{[:upload-file :IVs] :IVs 
+              [:upload-file :passwords] :passwords
+              [:upload-file :encrypted-file-tags] :encrypted-file-tags
+              [:upload-file :current-file :file-size] :file-size
+              [:upload-file :current-file :chunk-size] :chunk-size
+              [:upload-file :current-file :file-type] :file-type
+              [:upload-file :current-file :file-name] :file-name}
+             [:upload-file :manifest] save-manifest :map]
+            [#{[:upload-file :manifest :chunks]} [:upload-file :manifest :chunk-count] update-chunk-count :single-val]
+            [#{[:upload-file :manifest]} [:upload-file :manifest :keys] generate-manifest-password-iv :default]
+            [#{[:upload-file :manifest]} [:upload-file :encrypted-manifest] encrypt-manifest :default]
+            [{[:upload-file :manifest-link] :manifest-link
+              [:upload-file :manifest :keys :password] :password} 
+             [:upload-file :manifest-url] generate-manifest-url :map]
+            [{[:download-file :manifest-keys :password] :password
+               [:download-file :encrypted-manifest] :encrypted-manifest}
+             [:download-file :manifest] decrypt-manifest :map]]
+   :effect #{[{[:upload-file :current-file :file-buffers] :arraybuffers
+                [:upload-file :passwords] :passwords
+                [:upload-file :IVs] :IVs}  
               encrypt-current-file :map]
-             [[[:file :actions :decrypt-file]] decrypt-current-file :default]
-             [[[:file :encrypted-manifest]] upload-encrypted-manifest :single-val]
-             [[[:encrypted-file :manifest-keys]] fetch-manifest :single-val]
-             [[[:encrypted-file :manifest :chunks :*]] fetch-chunk :single-val]
-             [[[:encrypted-file :decrypted-chunks]] write-chunks-to-file :default]}
+             [[[:upload-file :actions :decrypt-file]] decrypt-current-file :default]
+             [[[:upload-file :encrypted-manifest]] upload-encrypted-manifest :single-val]
+             [[[:download-file :manifest-keys]] fetch-manifest :single-val]
+             [[[:download-file :manifest :chunks]] fetch-chunks :single-val]
+             [[[:download-file :decrypted-chunks]] write-chunks-to-file :default]}
    :emit [{:init init-main}
-          [#{[:file :encrypted-file]} (app/default-emitter [:main])]
-          [#{[:file :encrypted-manifest]} (app/default-emitter [:main])]
-          [#{[:file :decrypted-file]} (app/default-emitter [:main])]
-          [#{[:encrypted-file :*]} (app/default-emitter [:main])]
-          [#{[:file :actions :*]} (app/default-emitter [:main])]
-          [#{[:file :manifest]} (app/default-emitter [:main])]
-          [#{[:file :manifest-url]} (app/default-emitter [:main])]
-          [#{[:file :current-file]} (app/default-emitter [:main])]
+          [#{[:upload-file :encrypted-file]} (app/default-emitter [:main])]
+          [#{[:upload-file :encrypted-manifest]} (app/default-emitter [:main])]
+          [#{[:upload-file :decrypted-file]} (app/default-emitter [:main])]
+          [#{[:download-file :*]} (app/default-emitter [:main])]
+          [#{[:upload-file :actions :*]} (app/default-emitter [:main])]
+          [#{[:upload-file :manifest]} (app/default-emitter [:main])]
+          [#{[:upload-file :manifest-url]} (app/default-emitter [:main])]
+          [#{[:upload-file :current-file]} (app/default-emitter [:main])]
           [#{[:debug :current-file :download-link]} (app/default-emitter [])]]})

@@ -50,3 +50,26 @@
     filename 
     (map #(js/Blob. (array %)) arraybuffers)))
 
+(defn store-arraybuffer
+  "store a single arraybuffer with a given key"
+  [key arraybuffer]
+  (write-arraybuffers-to-file key [arraybuffer]))
+
+(defn fetch-arraybuffer
+  "fetch a single arraybuffer"
+  [ab-key]
+  (let [arraybuffer-chan (chan)]
+    (go 
+      (let [fs (<! (load-fs (* 1024 1024)))]
+        (.getFile (.-root fs) ab-key (js-obj)
+          (fn [file-entry]
+            (.file file-entry 
+              (fn [file]
+                (let [reader (js/FileReader.)]
+                  (set! js/asdff reader)
+                  (set! (.-onloadend reader) 
+                        #(go (>! arraybuffer-chan (aget reader "result"))))
+                  (.readAsArrayBuffer reader file))))))))
+    arraybuffer-chan))
+
+

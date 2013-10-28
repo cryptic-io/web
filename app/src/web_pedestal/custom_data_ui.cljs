@@ -112,10 +112,10 @@
    [:node-destroy   []    (constantly nil)]
    [:node-create    [:**] auto/render-node-enter]
    [:node-destroy   [:**] auto/default-exit]
-   [:value          [:main :file :current-file] read-current-file]
-   [:value          [:main :file :current-file :download-link] auto/render-value-update]
+   [:value          [:main :upload-file :current-file] read-current-file]
+   [:value          [:main :upload-file :current-file :download-link] auto/render-value-update]
    [:value          [:**] auto/render-value-update]
    [:attr           [:**] (constantly nil)]
-   [:transform-enable  [:main :file :current-file] file-render-event-enter]
+   [:transform-enable  [:main :upload-file :current-file] file-render-event-enter]
    [:transform-enable  [:**] auto/render-event-enter]
    [:transform-disable [:**] auto/event-exit]])

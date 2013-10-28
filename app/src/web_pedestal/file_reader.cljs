@@ -37,7 +37,7 @@
 
 (defn- pad-last-array-buffer [array-buffers]
   (conj
-    (butlast array-buffers)
+    (vec (butlast array-buffers))
     (pad-arraybuffer (last array-buffers))))
 
 (defn- remove-padding-from-last-array-buffer [file-size chunk-size array-buffers]
