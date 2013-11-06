@@ -13,7 +13,7 @@ define(["jade!templates/TopBar"], function(template){
     //store the index of the buttons
     loggedOutLayout: [
       "about",
-      //"upload",
+      "upload",
       "register",
       "login"
     ],
