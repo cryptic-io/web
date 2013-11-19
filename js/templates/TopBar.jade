@@ -1,5 +1,6 @@
 //- Defin classes that specify the color of the buttons to place, the classes <color>Btn and <color>Selected must exists
 each category, index in categories
-  .topBox.span(class="#{ colors[index] }Btn")
-    p= category
-    .selectedBar(class="#{colors[index]}Selected")
+  a(href="##{ routes[index] }")
+    .topBox.span(class="#{ colors[index] }Btn")
+      p= category
+      .selectedBar(class="#{colors[index]}Selected")

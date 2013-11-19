@@ -47,6 +47,16 @@ define(["jade!templates/TopBar"], function(template){
       "logout"    : "peter-river"
     },
 
+    routeNames : {
+      "about"     : "about",
+      "upload"    : "home",
+      "register"  : "register",
+      "login"     : "login",
+      "files"     : "user",
+      "settings"  : "settings",
+      "logout"    : "user"
+    },
+
     initialize: function(){
       this.layout=this.loggedOutLayout
     },
@@ -54,8 +64,9 @@ define(["jade!templates/TopBar"], function(template){
     render: function(){
       var categories = _.map(this.layout, function(n){return this.prettyNames[n]},this)
       var colors = _.map(this.layout, function(n){return this.nameToColor[n]},this)
+      var routes = _.map(this.layout, function(n){return this.routeNames[n]},this)
 
-      this.$el.html(template({categories:categories, colors: colors}))
+      this.$el.html(template({categories:categories, colors: colors, routes:routes}))
 
       //hide all the selected bars to the left off screen
       _.each($('#topBar').find('.selectedBar'), function(e, i){$(e).css("left",-150*(i+1))})
@@ -84,6 +95,8 @@ define(["jade!templates/TopBar"], function(template){
     select : function(category){ this.moveSelectedBar(this.layout[category]) },
 
     handleCategoryClick : function(e){
+      e.preventDefault()
+      
       var $topBox = $(e.target).closest(".topBox")
       , index = this.$el.find('.topBox').index($topBox)
 
