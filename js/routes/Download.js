@@ -20,9 +20,9 @@ define(["views/ProgressBars", "views/Progress", "views/File"], function(Progress
       //this will be called when the file begins to download
       fileView.on("file:start:download",function(){
         viewport.exeunt()
-                .introduce(barsContainer,0)
-                .placeCenter(barsContainer.el,0)
-                .moveToPage(0)
+                .introduce(barsContainer,4)
+                .placeCenter(barsContainer.el,4)
+                .moveToPage(4)
       })
 
       fileView.on("file:name", function(name){
