@@ -25,11 +25,18 @@ define(["core/q", "apiEndPoints"], function(Q, apiEndPoints){
 
         xhr.open("POST", apiEndPoints.multipass, true);
         xhr.onload = function(e) {
-          if (this.status == 200) {
+          if (this.status === 200) {
             xhrDefer.resolve(JSON.parse(xhr.responseText))
+          } else if (this.status === 404) {
+            defer.reject({error:"multipass:404"})
+          } else {
+            defer.reject({error:"multipass:unknown"})
           }
         }
         xhr.send()
+
+        xhr.onerror = function(e){
+        }
 
         xhrDefer.promise.then(_.bind(this.saveMultipass, this, data))
                         .then(function(multipass){defer.resolve(multipass)})

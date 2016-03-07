@@ -163,11 +163,12 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
         },
 
         //Returns the linkName for the manifest and the key
-        upload: function(callback){
+        upload: function(callback, errorCallback){
             //check to see if we have made chunks for this file or not
             if (!this.has('chunks')){
-                return this.split(_.bind(this.upload,this,callback));
+                return this.split(_.bind(this.upload,this,callback, errorCallback));
             }
+
             var chunks = this.get('chunks');
             var file = this.get('file');
             var chunkSize = Chunk.prototype.defaults.chunkSize
@@ -181,10 +182,10 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
             // The chunks array will act as a queue, and we will spawn
             // maxWorkers number of workers to read from the queue
            
-            _.each(_.range(this.get('maxWorkers')), _.bind(function(){this.recursivelyUploadChunks(chunks)},this))
+            _.each(_.range(this.get('maxWorkers')), _.bind(function(){this.recursivelyUploadChunks(chunks, errorCallback)},this))
         },
 
-        recursivelyUploadChunks: function(chunks){
+        recursivelyUploadChunks: function(chunks, errorCallback){
           //stopping condition
           if (!chunks.length) return;
 
@@ -198,12 +199,12 @@ define(['models/Chunk','models/Manifest','models/ChunkWorkerInterface', 'models/
             this.manifest.setChunkLinkName(index, linkName, chunk, function(){
               //async way of knowing when all the chunks have been uploaded, we go on to upload the chunks
               uploadManifest()
-
             })
 
             //now we recursively upload the chunks, given there are still chunks to process
-            if (chunks.length) this.recursivelyUploadChunks(chunks)
-          }, this, chunks.length))
+            if (chunks.length) this.recursivelyUploadChunks(chunks, errorCallback)
+          }, this, chunks.length),
+          errorCallback)
         },
 
         download: function(linkName, passcode, callback){

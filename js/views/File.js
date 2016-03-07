@@ -1,7 +1,7 @@
 //returns the file view
 define(
-    ["core/q", "models/File","views/ProgressBars", "jade!templates/FileUpload", "tools/humanReadableByteLength"]
-    , function(Q, FileModel, ProgressBarsView, fileUploadTemplate, hrByteLength){ 
+    ["core/q", "models/File","views/ProgressBars", "jade!templates/FileUpload", "tools/humanReadableByteLength", "tools/errors"]
+    , function(Q, FileModel, ProgressBarsView, fileUploadTemplate, hrByteLength, errors){ 
     return Backbone.View.extend({
 
         id : "uploadBoxContainer",
@@ -212,19 +212,13 @@ define(
                              , type: fileModel.get('file').type})
 
                 callback()
-            },this))
+            },this), _.bind(function(error){
+              alert(errors[error.error])
+              this.trigger("file:error",error)
+            }, this))
         },
 
         downloadFile: function(linkName, passcode, callback){
-
-            /*var progressBarsView = new ProgressBarsView({el:barsContainer, bars:{title:"Downloading...", items:[{text:"", percent:"0%"}]}}) //create a new view for all the bars
-            progressBarsView.render()
-            progressView = progressBarsView.getIndividualProgressViews()[0] //only care about the first one since we are only downloading one thing
-
-            this.downloadProgressView = progressView
-
-            this.downloadDeffered.resolve(progressView)
-            */
 
             this.model = new FileModel({user:this.options.user})
 
